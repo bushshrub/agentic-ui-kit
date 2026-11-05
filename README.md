@@ -7,14 +7,11 @@ can take on your app's look.
 > [!WARNING]
 > **This is AI-written slop. You probably shouldn't use it.**
 > It isn't reviewed or hardened, the API will change without notice, and it may stop being maintained at
-> any time. It isn't on npm. If you still want to try it, see [Install from source](#install-from-source),
-> or fork it and treat the code as your own.
+> any time. If you still want to try it, pin an exact version, or fork it and treat the code as your own.
 
 ![A full chat app built from the kit](docs/images/app.png)
 
 ## Install
-
-Not on npm yet. When it is, this will be:
 
 ```sh
 npm install agentic-ui-kit
