@@ -1,0 +1,51 @@
+# Publishes agentic-ui-kit to npm when a GitHub release is published.
+# Auth is npm trusted publishing (OIDC): no token secret. Configure it once on npmjs.com under the
+# package's Settings > Trusted publishing (user bushshrub, repo agentic-ui-kit, workflow release.yml).
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # for trusted publishing and provenance
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4 # version from packageManager in package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Update npm # trusted publishing needs npm 11.5.1 or later
+        run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check the release tag matches the package version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(node -p 'require("./packages/react/package.json").version')
+          if [ "${TAG#v}" != "$version" ]; then
+            echo "::error::Release tag $TAG does not match packages/react/package.json version $version. Bump the version, then release v$version."
+            exit 1
+          fi
+
+      - run: pnpm -r typecheck
+      - run: pnpm test
+
+      # Publish the pnpm-packed tarball: plain `npm publish` ignores publishConfig.exports.
+      - run: pnpm --filter agentic-ui-kit pack
+      - name: Publish
+        env:
+          # Pre-releases go to the "next" dist-tag so `npm install agentic-ui-kit` keeps getting the latest stable.
+          DIST_TAG: ${{ github.event.release.prerelease && 'next' || 'latest' }}
+        run: npm publish ./agentic-ui-kit-*.tgz --tag "$DIST_TAG"
