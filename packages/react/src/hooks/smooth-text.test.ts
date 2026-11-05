@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import { StrictMode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useSmoothText } from "./smooth-text";
 
@@ -36,4 +37,20 @@ it("shows replaced text at once", () => {
   const { result, rerender } = renderHook(({ text }) => useSmoothText(text, false), { initialProps: { text: "first answer" } });
   rerender({ text: "an edited answer" });
   expect(result.current).toBe("an edited answer");
+});
+
+// StrictMode runs effects, their cleanup, then the effects again on mount. A part whose first render already
+// has text (part.start and the first delta in one batch) used to stay blank: the cleanup cancelled the frame
+// but left it marked as running, so the loop never restarted.
+it("reveals text that is already there on mount under StrictMode", () => {
+  const { result, rerender } = renderHook(({ text, streaming }) => useSmoothText(text, streaming), {
+    initialProps: { text: "Sun", streaming: true },
+    wrapper: StrictMode,
+  });
+  rerender({ text: "Sunlight scatters.", streaming: true });
+  act(() => vi.advanceTimersByTime(500));
+  expect(result.current.length).toBeGreaterThan(0);
+  rerender({ text: "Sunlight scatters.", streaming: false });
+  act(() => vi.advanceTimersByTime(500));
+  expect(result.current).toBe("Sunlight scatters.");
 });

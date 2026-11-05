@@ -57,7 +57,14 @@ export function useSmoothText(text: string, streaming: boolean): string {
     s.frame = requestAnimationFrame(step);
   }, [text, streaming, s, prefersReducedMotion]);
 
-  useEffect(() => () => cancelAnimationFrame(s.frame), [s]);
+  // Also clear the id, so a remount (StrictMode runs effects twice) starts the loop again.
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(s.frame);
+      s.frame = 0;
+    },
+    [s],
+  );
 
   return shown;
 }
