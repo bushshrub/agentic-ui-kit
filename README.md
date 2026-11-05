@@ -5,10 +5,10 @@ tool-call rows; approvals; tools that change the page around the chat. Themed en
 can take on your app's look.
 
 > [!WARNING]
-> **This is a personal project, mostly written with AI, and it is slop. You probably shouldn't use it.**
-> It exists for my own apps. It isn't reviewed or hardened, the API will change without notice, and it
-> may stop being maintained at any time. It isn't on npm. If you still want to try it, see
-> [Install from source](#install-from-source), or fork it and treat the code as your own.
+> **This is AI-written slop. You probably shouldn't use it.**
+> It isn't reviewed or hardened, the API will change without notice, and it may stop being maintained at
+> any time. It isn't on npm. If you still want to try it, see [Install from source](#install-from-source),
+> or fork it and treat the code as your own.
 
 ![A full chat app built from the kit](docs/images/app.png)
 
