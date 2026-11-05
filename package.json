@@ -1,10 +1,10 @@
 {
-  "name": "llm-chat-uikit",
+  "name": "agentic-ui-kit-monorepo",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.10.0",
   "scripts": {
-    "test": "vitest run",
+    "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "storybook": "pnpm --filter playground storybook",
     "build-storybook": "pnpm --filter playground build-storybook"

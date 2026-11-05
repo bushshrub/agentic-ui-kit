@@ -1,4 +1,4 @@
-import type { StreamEvent, ToolCallPart } from "@llm-chat/core";
+import type { StreamEvent, ToolCallPart } from "@agentic-ui-kit/core";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { expect, it, vi } from "vitest";

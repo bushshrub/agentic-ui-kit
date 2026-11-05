@@ -1,4 +1,4 @@
-import type { Message, Part } from "@llm-chat/core";
+import type { Message, Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { ArrowDown } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";

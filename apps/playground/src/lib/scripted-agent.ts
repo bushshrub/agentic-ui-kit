@@ -1,5 +1,5 @@
-import type { StreamEvent, ToolCallPart } from "@llm-chat/core";
-import type { SendRequest, Transport } from "@llm-chat/react";
+import type { StreamEvent, ToolCallPart } from "agentic-ui-kit/core";
+import type { SendRequest, Transport } from "agentic-ui-kit";
 
 const wait = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve) => {

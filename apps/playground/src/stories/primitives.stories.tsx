@@ -19,7 +19,7 @@ import {
   MenuTrigger,
   Popover,
   SubmenuTrigger,
-} from "@llm-chat/react";
+} from "agentic-ui-kit";
 import {
   AlertTriangle,
   Camera,

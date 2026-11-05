@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { sampleContext } from "@llm-chat/core/fixtures";
-import { ContextPanel } from "@llm-chat/react";
+import { sampleContext } from "@agentic-ui-kit/core/fixtures";
+import { ContextPanel } from "agentic-ui-kit";
 
 const meta: Meta<typeof ContextPanel> = {
   title: "Components/ContextPanel",

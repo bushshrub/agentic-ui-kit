@@ -1,4 +1,4 @@
-import type { ActivityPart, ToolCallPart } from "@llm-chat/core";
+import type { ActivityPart, ToolCallPart } from "@agentic-ui-kit/core";
 import { Globe } from "lucide-react";
 import { createContext, useContext, useMemo, type ComponentType, type ReactNode } from "react";
 import { useAgentSnapshot, useAgentTool, type AgentTool } from "../hooks/agent";

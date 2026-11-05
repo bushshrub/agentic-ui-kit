@@ -1,4 +1,4 @@
-import type { ModelInfo } from "@llm-chat/core";
+import type { ModelInfo } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { AlertTriangle, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";

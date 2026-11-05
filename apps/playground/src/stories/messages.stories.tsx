@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { reduceEvents, type Message, type StreamEvent } from "@llm-chat/core";
-import { agentRun, fullThinkingRun, mathRun, researchRun } from "@llm-chat/core/fixtures";
-import { AssistantMessage, UserMessage } from "@llm-chat/react";
+import { reduceEvents, type Message, type StreamEvent } from "agentic-ui-kit/core";
+import { agentRun, fullThinkingRun, mathRun, researchRun } from "@agentic-ui-kit/core/fixtures";
+import { AssistantMessage, UserMessage } from "agentic-ui-kit";
 import { useReplay } from "../lib/replay";
 
 const question =

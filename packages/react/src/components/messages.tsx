@@ -1,4 +1,4 @@
-import { toBlocks, type Message, type Part } from "@llm-chat/core";
+import { toBlocks, type Message, type Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { Check, Copy, Pencil, RefreshCw, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
 import { useState, type ReactNode } from "react";

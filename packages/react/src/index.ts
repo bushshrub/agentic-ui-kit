@@ -28,6 +28,7 @@ export type { ChatThemeProps } from "./primitives/chat-theme";
 // Hooks
 export { useChat, userMessage } from "./hooks/use-chat";
 export type { Transport, SendRequest, SendOptions, UseChat, UseChatOptions, PendingApproval } from "./hooks/use-chat";
+export { sseTransport, type SseTransportOptions, type SseRequestBody } from "./hooks/sse-transport";
 export { AgentProvider, AgentRegistry, useAgentRegistry, useAgentSnapshot, useAgentTool, useAgentContext } from "./hooks/agent";
 export type { AgentTool, ToolContext, ToolSpec, JsonSchema } from "./hooks/agent";
 export { useSmoothText } from "./hooks/smooth-text";

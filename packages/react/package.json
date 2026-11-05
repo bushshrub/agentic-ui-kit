@@ -1,21 +1,69 @@
 {
-  "name": "@llm-chat/react",
-  "version": "0.0.0",
-  "private": true,
+  "name": "agentic-ui-kit",
+  "version": "0.1.0",
+  "description": "React UI kit for LLM chat and agentic apps: streaming messages, tool calls, approvals, themable with CSS variables.",
+  "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bushshrub/agentic-ui-kit.git",
+    "directory": "packages/react"
+  },
+  "keywords": [
+    "react",
+    "llm",
+    "chat",
+    "ai",
+    "agent",
+    "ui-kit",
+    "tool-calls",
+    "streaming"
+  ],
   "exports": {
     ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css"
+    "./core": "./src/core.ts",
+    "./tailwind.css": "./src/styles.css"
   },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/types/react/src/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./core": {
+        "types": "./dist/types/react/src/core.d.ts",
+        "import": "./dist/core.js"
+      },
+      "./styles.css": "./dist/styles.css",
+      "./tailwind.css": "./dist/tailwind.css",
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
-    "typecheck": "tsc -p ."
+    "build": "node build.mjs",
+    "prepack": "node build.mjs",
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "react": "^19",
     "react-dom": "^19"
   },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "@llm-chat/core": "workspace:*",
     "@streamdown/code": "^2.0.0",
     "@streamdown/math": "^1.0.3",
     "clsx": "^2.1.1",
@@ -27,6 +75,8 @@
     "streamdown": "2.7.1"
   },
   "devDependencies": {
+    "@agentic-ui-kit/core": "workspace:*",
+    "@tailwindcss/cli": "^4.3.4",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "^14.6.8",
     "@types/node": "^26.6.6",
@@ -34,6 +84,8 @@
     "@types/react-dom": "^19.3.0",
     "jsdom": "31.0.0",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "tailwindcss": "4.3.4",
+    "tsdown": "^0.23.5"
   }
 }

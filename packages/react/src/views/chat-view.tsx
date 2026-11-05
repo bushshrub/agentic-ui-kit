@@ -1,4 +1,4 @@
-import type { Message, Part } from "@llm-chat/core";
+import type { Message, Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { ApprovalCard } from "../components/approval-card";

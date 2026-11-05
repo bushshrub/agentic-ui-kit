@@ -1,6 +1,6 @@
-import type { StreamEvent } from "@llm-chat/core";
-import { agentRun, fullThinkingRun, mathRun, researchRun } from "@llm-chat/core/fixtures";
-import type { SendRequest, Transport } from "@llm-chat/react";
+import type { StreamEvent } from "agentic-ui-kit/core";
+import { agentRun, fullThinkingRun, mathRun, researchRun } from "@agentic-ui-kit/core/fixtures";
+import type { SendRequest, Transport } from "agentic-ui-kit";
 
 const runs = [agentRun, researchRun, fullThinkingRun, mathRun];
 

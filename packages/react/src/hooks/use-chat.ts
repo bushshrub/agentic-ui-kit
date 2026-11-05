@@ -6,7 +6,7 @@ import {
   type Message,
   type StreamEvent,
   type ToolCallPart,
-} from "@llm-chat/core";
+} from "@agentic-ui-kit/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAgentRegistry, type AgentRegistry, type AgentTool, type ToolSpec } from "./agent";
 

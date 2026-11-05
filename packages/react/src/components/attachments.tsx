@@ -1,4 +1,4 @@
-import type { AttachmentPart } from "@llm-chat/core";
+import type { AttachmentPart } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { FileText, Pencil, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";

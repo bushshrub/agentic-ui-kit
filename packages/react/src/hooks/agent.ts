@@ -1,4 +1,4 @@
-import type { ToolCallPart } from "@llm-chat/core";
+import type { ToolCallPart } from "@agentic-ui-kit/core";
 import { createContext, createElement, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 
 /** JSON Schema for a tool's input, as the model provider expects it. */

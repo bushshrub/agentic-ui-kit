@@ -1,4 +1,4 @@
-import { applyEvent, type Message, type StreamEvent } from "@llm-chat/core";
+import { applyEvent, type Message, type StreamEvent } from "agentic-ui-kit/core";
 import { useEffect, useState } from "react";
 
 /**

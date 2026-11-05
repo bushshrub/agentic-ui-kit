@@ -2,6 +2,7 @@ packages:
   - packages/*
   - apps/*
 allowBuilds:
+  '@parcel/watcher': false
   esbuild: true
 minimumReleaseAgeExclude:
   - lucide-react@1.69.0

@@ -1,6 +1,6 @@
-import type { Message, ModelInfo } from "@llm-chat/core";
-import { reduceEvents, resolveEffort } from "@llm-chat/core";
-import { agentRun } from "@llm-chat/core/fixtures";
+import type { Message, ModelInfo } from "agentic-ui-kit/core";
+import { reduceEvents, resolveEffort } from "agentic-ui-kit/core";
+import { agentRun } from "@agentic-ui-kit/core/fixtures";
 import {
   AttachButton,
   AttachmentRow,
@@ -21,7 +21,7 @@ import {
   userMessage,
   type Density,
   type DraftAttachment,
-} from "@llm-chat/react";
+} from "agentic-ui-kit";
 import { Camera, Globe, Paperclip, Search, Share, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { fixtureTransport } from "./fixture-transport";

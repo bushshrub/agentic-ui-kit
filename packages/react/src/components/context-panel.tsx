@@ -1,4 +1,4 @@
-import type { ContextCategory, ContextGroup, ContextUsage } from "@llm-chat/core";
+import type { ContextCategory, ContextGroup, ContextUsage } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { Disclosure } from "../primitives/disclosure";
 import { Tooltip } from "../primitives/tooltip";

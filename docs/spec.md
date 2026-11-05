@@ -1,4 +1,4 @@
-# llm-chat-uikit spec
+# agentic-ui-kit spec
 
 Reusable building blocks for LLM chat in React, styled like claude.ai by default, plus a multi-user web chat
 built from them. The kit must drop into other apps (e.g. a job board, a team-chat bot) and take on their theme and their own
@@ -30,7 +30,7 @@ docs/
 ```
 
 Dependency rule: `packages/*` never import from `apps/*`. `react` depends on `core`; `server` depends on
-`core` only. Package names are placeholders (`@llm-chat/core`, `@llm-chat/react`).
+`core` only. Package names are placeholders (`@agentic-ui-kit/core`, `agentic-ui-kit`).
 
 ## Stack
 
@@ -53,7 +53,7 @@ Dependency rule: `packages/*` never import from `apps/*`. `react` depends on `co
 
 ## Layers
 
-`@llm-chat/react` has four layers, in `src/primitives`, `src/hooks`, `src/components`, `src/views`. Each
+`agentic-ui-kit` has four layers, in `src/primitives`, `src/hooks`, `src/components`, `src/views`. Each
 imports only from the ones before it; `src/layers.test.ts` fails otherwise. Storybook groups stories the
 same way, then shows the kit in each host under Hosts.
 

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { reduceEvents, toBlocks, type ActivityPart, type StreamEvent } from "@llm-chat/core";
-import { mathRun, researchRun, stoppedRun } from "@llm-chat/core/fixtures";
-import { ActivityGroup } from "@llm-chat/react";
+import { reduceEvents, toBlocks, type ActivityPart, type StreamEvent } from "agentic-ui-kit/core";
+import { mathRun, researchRun, stoppedRun } from "@agentic-ui-kit/core/fixtures";
+import { ActivityGroup } from "agentic-ui-kit";
 
 function activityOf(events: StreamEvent[]): ActivityPart[] {
   const block = toBlocks(reduceEvents(events)!.parts).find((b) => b.kind === "activity");

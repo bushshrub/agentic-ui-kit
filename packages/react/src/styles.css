@@ -1,8 +1,8 @@
 /*
- * Theme and Tailwind setup for @llm-chat/react. Import after Tailwind in the host app's CSS:
+ * Theme and Tailwind setup for agentic-ui-kit. Import after Tailwind in the host app's CSS:
  *
  *   @import "tailwindcss";
- *   @import "@llm-chat/react/styles.css";
+ *   @import "agentic-ui-kit/tailwind.css";
  *
  * Every visual value is a --chat-* variable. A host retheme sets them on :root or on any wrapper element;
  * components only use the Tailwind names below (bg-chat-surface, text-chat-muted, ...), never raw colors.

@@ -1,4 +1,4 @@
-import { Badge, ChatHeader, ChatList, ChatTheme, IconButton, Panel, type ChatListSection } from "@llm-chat/react";
+import { Badge, ChatHeader, ChatList, ChatTheme, IconButton, Panel, type ChatListSection } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Hash, Maximize2, X } from "lucide-react";
 import { useState } from "react";

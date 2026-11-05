@@ -1,4 +1,4 @@
-import type { ToolCallPart } from "@llm-chat/core";
+import type { ToolCallPart } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { ShieldQuestion } from "lucide-react";
 import type { PendingApproval } from "../hooks/use-chat";

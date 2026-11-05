@@ -3,3 +3,8 @@ dist
 storybook-static
 *.log
 .DS_Store
+.build
+packages/react/README.md
+packages/react/LICENSE
+packages/react/dist
+*.tgz

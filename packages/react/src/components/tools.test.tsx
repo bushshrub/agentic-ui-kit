@@ -1,5 +1,5 @@
-import { reduceEvents, toBlocks, type ActivityPart, type StreamEvent } from "@llm-chat/core";
-import { mathRun, researchRun } from "@llm-chat/core/fixtures";
+import { reduceEvents, toBlocks, type ActivityPart, type StreamEvent } from "@agentic-ui-kit/core";
+import { mathRun, researchRun } from "@agentic-ui-kit/core/fixtures";
 import { expect, it } from "vitest";
 import { activityHeading, defaultToolViews } from "./tools";
 

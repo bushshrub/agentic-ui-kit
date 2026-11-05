@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AttachmentRow, Composer, ModelPicker, useAttachments, type DraftAttachment } from "@llm-chat/react";
+import { AttachmentRow, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
 import { useState } from "react";
 import { attachMenu, DemoChat, fakeUpload, history, models } from "../lib/demo-chat";
 

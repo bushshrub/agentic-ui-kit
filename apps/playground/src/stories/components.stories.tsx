@@ -1,4 +1,4 @@
-import type { ToolCallPart } from "@llm-chat/core";
+import type { ToolCallPart } from "agentic-ui-kit/core";
 import {
   ActivityGroup,
   AttachmentCard,
@@ -12,7 +12,7 @@ import {
   ToolViewsProvider,
   defaultToolViews,
   type ToolView,
-} from "@llm-chat/react";
+} from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { FlaskConical, Share } from "lucide-react";
 import { useState } from "react";

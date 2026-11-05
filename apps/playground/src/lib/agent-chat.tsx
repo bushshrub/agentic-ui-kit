@@ -1,4 +1,4 @@
-import { Button, ChatHeader, ChatView, useChat, type Density, type Transport } from "@llm-chat/react";
+import { Button, ChatHeader, ChatView, useChat, type Density, type Transport } from "agentic-ui-kit";
 import { Sparkles } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 

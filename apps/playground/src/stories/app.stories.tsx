@@ -12,7 +12,7 @@ import {
   SidebarItem,
   SidebarUser,
   type ChatListSection,
-} from "@llm-chat/react";
+} from "agentic-ui-kit";
 import { FolderOpen, ListFilter, LogOut, MessageSquarePlus, Search, Settings } from "lucide-react";
 import { useState } from "react";
 import { DemoChat, history } from "../lib/demo-chat";

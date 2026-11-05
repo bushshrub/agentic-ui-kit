@@ -1,4 +1,4 @@
-import { activityTokens, type ActivityPart } from "@llm-chat/core";
+import { activityTokens, type ActivityPart } from "@agentic-ui-kit/core";
 import { useState, type ReactNode } from "react";
 import { Disclosure } from "../primitives/disclosure";
 import { Markdown } from "./markdown";

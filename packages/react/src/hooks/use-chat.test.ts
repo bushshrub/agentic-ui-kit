@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@llm-chat/core";
+import type { StreamEvent } from "@agentic-ui-kit/core";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, it } from "vitest";
 import { useChat, type SendRequest, type Transport } from "./use-chat";

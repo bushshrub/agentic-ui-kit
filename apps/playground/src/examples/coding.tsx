@@ -1,4 +1,4 @@
-import { AgentProvider, Badge, ChatTheme, Panel, useAgentContext, useChatTool } from "@llm-chat/react";
+import { AgentProvider, Badge, ChatTheme, Panel, useAgentContext, useChatTool } from "agentic-ui-kit";
 import { clsx } from "clsx";
 import { AlertTriangle, CheckCircle2, FileCode2, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
