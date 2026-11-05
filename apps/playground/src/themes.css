@@ -1,0 +1,143 @@
+/*
+ * Host themes, as each app would write them. A host maps its own tokens onto --chat-* on whatever element
+ * wraps the chat (here a data attribute; a host could also set `--chat-bg: var(--color-page)` on :root).
+ */
+
+/* warm: light page, IBM Plex, terracotta accent. */
+[data-chat-theme="warm"] {
+  color-scheme: light;
+  --chat-bg: #faf9f5; /* --color-page */
+  --chat-sidebar: #f3f1ea; /* --color-sidebar */
+  --chat-surface: #ffffff; /* --color-surface */
+  --chat-raised: #ffffff;
+  --chat-hover: #ebe7dc; /* --color-control */
+  --chat-selected: #e0dbcd; /* --color-control-hover */
+  --chat-bubble: #ebe7dc;
+  --chat-popover: #ffffff;
+  --chat-popover-border: #e8e4d8;
+  --chat-popover-hover: #f0ede4;
+  --chat-border: #e8e4d8; /* --color-border */
+  --chat-border-strong: #d6d1c2;
+  --chat-divider: #f0ede4; /* --color-row-line */
+  --chat-code-bg: #ffffff;
+  --chat-code-border: #e8e4d8;
+  --chat-inline-code: #ebe7dc;
+  --chat-fg: #29261b; /* --color-ink */
+  --chat-muted: #6b6658;
+  --chat-subtle: #8a8475;
+  --chat-accent: #c96442;
+  --chat-check: #4f6fdc;
+  --chat-warning: #a8590c;
+  --chat-warning-bg: #fbf1e3;
+  --chat-danger: #b3261e;
+  --chat-focus: #4f6fdc;
+  --chat-font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --chat-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --chat-font-serif: "Source Serif 4", Georgia, serif;
+  --chat-shadow-popover: 0 8px 24px rgb(41 38 27 / 0.12);
+  --chat-message-font-size: 1rem;
+}
+
+/* console: dark, Inter everywhere, blue accent. */
+[data-chat-theme="console"] {
+  color-scheme: dark;
+  --chat-bg: #161615; /* --bg */
+  --chat-sidebar: #1f1e1d; /* --surface */
+  --chat-surface: #1f1e1d;
+  --chat-raised: #2b2a28;
+  --chat-hover: #2b2a28; /* --pill */
+  --chat-selected: #33322f;
+  --chat-bubble: #2b2a28;
+  --chat-popover: #1f1e1d;
+  --chat-popover-border: #33322f; /* --line */
+  --chat-popover-hover: #2b2a28;
+  --chat-border: #33322f;
+  --chat-border-strong: #45443f;
+  --chat-divider: #262523;
+  --chat-code-bg: #1b1a19;
+  --chat-code-border: #2b2a28;
+  --chat-inline-code: #2b2a28;
+  --chat-fg: #e2e0d9; /* --text */
+  --chat-muted: #aaa69e;
+  --chat-subtle: #75726a;
+  --chat-accent: #7ea6ff; /* --accent */
+  --chat-check: #7ea6ff;
+  --chat-warning: #f0a04b;
+  --chat-warning-bg: #3a2a14;
+  --chat-danger: #f06a5e;
+  --chat-focus: #7ea6ff;
+  --chat-font-message: var(--chat-font-sans);
+  --chat-message-font-size: 0.9375rem;
+  --chat-radius-lg: 14px;
+}
+
+/* dashboard: flat, Inter 14px, square-ish, bordered. */
+[data-chat-theme="dashboard-light"],
+[data-chat-theme="dashboard-dark"] {
+  --chat-font-message: var(--chat-font-sans);
+  --chat-message-font-size: 0.875rem;
+  --chat-message-line-height: 1.55;
+  --chat-radius-sm: 6px;
+  --chat-radius-md: 10px;
+  --chat-radius-lg: 10px;
+  --chat-radius-popover: 10px;
+  --chat-content-width: 100%;
+}
+[data-chat-theme="dashboard-light"] {
+  color-scheme: light;
+  --chat-bg: #f6f7f9;
+  --chat-sidebar: #ffffff;
+  --chat-surface: #ffffff;
+  --chat-raised: #ffffff;
+  --chat-hover: #eceef2;
+  --chat-selected: #e1e4e9;
+  --chat-bubble: #ffffff;
+  --chat-popover: #ffffff;
+  --chat-popover-border: #e1e4e9;
+  --chat-popover-hover: #eceef2;
+  --chat-border: #e1e4e9;
+  --chat-border-strong: #cfd3da;
+  --chat-divider: #e1e4e9;
+  --chat-code-bg: #ffffff;
+  --chat-code-border: #e1e4e9;
+  --chat-inline-code: #eceef2;
+  --chat-fg: #17191d;
+  --chat-muted: #6f7580;
+  --chat-subtle: #8a909a;
+  --chat-accent: #3f73dc;
+  --chat-check: #3f73dc;
+  --chat-warning: #a8590c;
+  --chat-warning-bg: #fbf1e3;
+  --chat-danger: #c9372c;
+  --chat-focus: #3f73dc;
+  --chat-shadow-popover: 4px 4px 0 #e1e4e9;
+}
+[data-chat-theme="dashboard-dark"] {
+  color-scheme: dark;
+  --chat-bg: #17191d;
+  --chat-sidebar: #17191d;
+  --chat-surface: #202329;
+  --chat-raised: #202329;
+  --chat-hover: #2a2e35;
+  --chat-selected: #30343b;
+  --chat-bubble: #202329;
+  --chat-popover: #17191d;
+  --chat-popover-border: #30343b;
+  --chat-popover-hover: #2a2e35;
+  --chat-border: #30343b;
+  --chat-border-strong: #3d424a;
+  --chat-divider: #30343b;
+  --chat-code-bg: #1b1e23;
+  --chat-code-border: #30343b;
+  --chat-inline-code: #2a2e35;
+  --chat-fg: #f3f4f6;
+  --chat-muted: #a3a9b2;
+  --chat-subtle: #7d838c;
+  --chat-accent: #78a7ff;
+  --chat-check: #78a7ff;
+  --chat-warning: #f0a04b;
+  --chat-warning-bg: #3a2a14;
+  --chat-danger: #f06a5e;
+  --chat-focus: #78a7ff;
+  --chat-shadow-popover: 4px 4px 0 #202329;
+}

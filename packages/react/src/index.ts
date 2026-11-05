@@ -1,0 +1,95 @@
+/*
+ * Four layers; each imports only from the layers above it in this file.
+ *   Primitives  generic UI, no chat knowledge (a host app can build any screen with them)
+ *   Hooks       headless state: the chat, the smooth text reveal, the sidebar
+ *   Components  chat pieces with one job each, built from primitives
+ *   Views       assemblies that fill a page or pane, mostly slots
+ */
+
+// Primitives
+export { Button, IconButton } from "./primitives/button";
+export type { ButtonProps, IconButtonProps } from "./primitives/button";
+export { Badge } from "./primitives/badge";
+export type { BadgeProps } from "./primitives/badge";
+export { Tooltip } from "./primitives/tooltip";
+export { Caret } from "./primitives/caret";
+export { Disclosure } from "./primitives/disclosure";
+export { Popover, Menu, MenuItem, MenuSearch, MenuSection, MenuSeparator, MenuNote, MenuTrigger, SubmenuTrigger } from "./primitives/menu";
+export { ContextMenu } from "./primitives/context-menu";
+export type { ContextMenuProps } from "./primitives/context-menu";
+export { Modal, Drawer } from "./primitives/overlay";
+export type { ModalProps, DrawerProps } from "./primitives/overlay";
+export { Panel } from "./primitives/panel";
+export type { PanelProps } from "./primitives/panel";
+export { CodeBlock } from "./primitives/code-block";
+export { ChatTheme } from "./primitives/chat-theme";
+export type { ChatThemeProps } from "./primitives/chat-theme";
+
+// Hooks
+export { useChat, userMessage } from "./hooks/use-chat";
+export type { Transport, SendRequest, SendOptions, UseChat, UseChatOptions, PendingApproval } from "./hooks/use-chat";
+export { AgentProvider, AgentRegistry, useAgentRegistry, useAgentSnapshot, useAgentTool, useAgentContext } from "./hooks/agent";
+export type { AgentTool, ToolContext, ToolSpec, JsonSchema } from "./hooks/agent";
+export { useSmoothText } from "./hooks/smooth-text";
+export { useSidebar, useMediaQuery, DRAWER_QUERY } from "./hooks/sidebar-state";
+
+// Components: a message
+export { UserMessage, AssistantMessage, formatRelativeTime, messageText } from "./components/messages";
+export type { UserMessageProps, AssistantMessageProps, Feedback } from "./components/messages";
+export { Markdown } from "./components/markdown";
+export type { MarkdownProps } from "./components/markdown";
+export { ActivityGroup } from "./components/activity-group";
+export type { ActivityGroupProps } from "./components/activity-group";
+export {
+  ToolViewsProvider,
+  useToolView,
+  useToolViews,
+  activityLabel,
+  activityHeading,
+  commandTool,
+  webSearchTool,
+  memoryTool,
+  defaultToolViews,
+  formatDuration,
+  useChatTool,
+} from "./components/tools";
+export type { ToolView, ToolViews, SearchResult, ChatTool } from "./components/tools";
+export { ApprovalCard } from "./components/approval-card";
+export type { ApprovalCardProps } from "./components/approval-card";
+export { TokenCounter, useCountUp, formatTokens } from "./components/token-counter";
+export type { TokenCounterProps } from "./components/token-counter";
+export { ContextPanel } from "./components/context-panel";
+export type { ContextPanelProps } from "./components/context-panel";
+
+// Components: input
+export { Composer, AttachButton } from "./components/composer";
+export type { ComposerProps, AttachButtonProps } from "./components/composer";
+export { ModelPicker } from "./components/model-picker";
+export type { ModelPickerProps } from "./components/model-picker";
+export { useAttachments, AttachmentCard, AttachmentRow, PastedTextDialog } from "./components/attachments";
+export type {
+  DraftAttachment,
+  UploadResult,
+  UseAttachments,
+  UseAttachmentsOptions,
+  AttachmentCardData,
+  AttachmentCardProps,
+  AttachmentRowProps,
+  PastedTextDialogProps,
+} from "./components/attachments";
+
+// Components: around the conversation
+export { MessageList } from "./components/message-list";
+export type { MessageListProps } from "./components/message-list";
+export { ChatHeader, ChatTitleMenu } from "./components/chat-header";
+export type { ChatHeaderProps, ChatTitleMenuProps } from "./components/chat-header";
+export { ChatList } from "./components/chat-list";
+export type { ChatListProps, ChatListSection, ChatListItem, ChatSummary, ProjectSummary } from "./components/chat-list";
+
+// Views
+export { ChatView, EmptyState } from "./views/chat-view";
+export type { ChatViewProps, EmptyStateProps, Density } from "./views/chat-view";
+export { AppShell, SidebarToggle } from "./views/app-shell";
+export type { AppShellProps, SidebarToggleProps } from "./views/app-shell";
+export { Sidebar, SidebarItem, SidebarUser } from "./views/sidebar";
+export type { SidebarProps, SidebarItemProps, SidebarUserProps } from "./views/sidebar";

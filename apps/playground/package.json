@@ -1,0 +1,30 @@
+{
+  "name": "playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@llm-chat/core": "workspace:*",
+    "@llm-chat/react": "workspace:*",
+    "clsx": "^2.1.1",
+    "lucide-react": "1.69.0",
+    "react": "19.3.1",
+    "react-aria-components": "1.22.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "10.6.6",
+    "@storybook/react-vite": "10.6.6",
+    "@tailwindcss/vite": "4.3.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "6.2.1",
+    "storybook": "10.6.6",
+    "tailwindcss": "4.3.4",
+    "vite": "8.3.6"
+  }
+}

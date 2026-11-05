@@ -1,0 +1,333 @@
+/*
+ * Theme and Tailwind setup for @llm-chat/react. Import after Tailwind in the host app's CSS:
+ *
+ *   @import "tailwindcss";
+ *   @import "@llm-chat/react/styles.css";
+ *
+ * Every visual value is a --chat-* variable. A host retheme sets them on :root or on any wrapper element;
+ * components only use the Tailwind names below (bg-chat-surface, text-chat-muted, ...), never raw colors.
+ */
+
+@import "katex/dist/katex.min.css";
+
+@source "./";
+
+@theme inline {
+  --color-chat-bg: var(--chat-bg);
+  --color-chat-sidebar: var(--chat-sidebar);
+  --color-chat-surface: var(--chat-surface);
+  --color-chat-raised: var(--chat-raised);
+  --color-chat-hover: var(--chat-hover);
+  --color-chat-selected: var(--chat-selected);
+  --color-chat-bubble: var(--chat-bubble);
+  --color-chat-popover: var(--chat-popover);
+  --color-chat-popover-border: var(--chat-popover-border);
+  --color-chat-popover-hover: var(--chat-popover-hover);
+  --color-chat-border: var(--chat-border);
+  --color-chat-border-strong: var(--chat-border-strong);
+  --color-chat-divider: var(--chat-divider);
+  --color-chat-code-bg: var(--chat-code-bg);
+  --color-chat-code-border: var(--chat-code-border);
+  --color-chat-inline-code: var(--chat-inline-code);
+  --color-chat-fg: var(--chat-fg);
+  --color-chat-muted: var(--chat-muted);
+  --color-chat-subtle: var(--chat-subtle);
+  --color-chat-accent: var(--chat-accent);
+  --color-chat-check: var(--chat-check);
+  --color-chat-warning: var(--chat-warning);
+  --color-chat-warning-bg: var(--chat-warning-bg);
+  --color-chat-danger: var(--chat-danger);
+  --color-chat-focus: var(--chat-focus);
+
+  --font-chat-sans: var(--chat-font-sans);
+  --font-chat-serif: var(--chat-font-serif);
+  --font-chat-mono: var(--chat-font-mono);
+
+  --radius-chat-sm: var(--chat-radius-sm);
+  --radius-chat-md: var(--chat-radius-md);
+  --radius-chat-lg: var(--chat-radius-lg);
+  --radius-chat-popover: var(--chat-radius-popover);
+
+  --shadow-chat-popover: var(--chat-shadow-popover);
+
+  --animate-chat-in: chat-in 120ms ease-out;
+  --animate-chat-out: chat-out 90ms ease-in forwards;
+  --animate-chat-fade-in: chat-fade-in 200ms ease-out;
+  --animate-chat-fade-out: chat-fade-in 150ms ease-in reverse forwards;
+  --animate-chat-drawer-in: chat-drawer-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-chat-drawer-out: chat-drawer-in 160ms ease-in reverse forwards;
+  --animate-chat-drawer-in-right: chat-drawer-in-right 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-chat-drawer-out-right: chat-drawer-in-right 160ms ease-in reverse forwards;
+
+  @keyframes chat-drawer-in-right {
+    from {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes chat-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes chat-drawer-in {
+    from {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes chat-in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+  @keyframes chat-out {
+    to {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+}
+
+@layer base {
+  /* Default theme: claude.ai dark. */
+  :root,
+  [data-chat-theme="claude-dark"] {
+    color-scheme: dark;
+
+    --chat-bg: #191919;
+    --chat-sidebar: #1f1f1f;
+    --chat-surface: #303030;
+    --chat-raised: #3a3a3a;
+    --chat-hover: #3d3d3d;
+    --chat-selected: #4a4a4a;
+    --chat-bubble: #2a2a2a;
+    --chat-popover: #303030;
+    --chat-popover-border: #383838;
+    --chat-popover-hover: #4f4f4f;
+    --chat-border: #303030;
+    --chat-border-strong: #454545;
+    /* Faint lines inside the message column, e.g. the activity box. */
+    --chat-divider: #222222;
+    --chat-code-bg: #1c1c1c;
+    --chat-code-border: #252525;
+    --chat-inline-code: #2e2e2e;
+    --chat-fg: #ecebe6;
+    --chat-muted: #a3a29e;
+    --chat-subtle: #75746f;
+    --chat-accent: #d97757;
+    --chat-check: #6c9cf0;
+    --chat-warning: #e8b04b;
+    --chat-warning-bg: #4a3b1c;
+    --chat-danger: #e5675c;
+    --chat-focus: #6c9cf0;
+
+    --chat-font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --chat-font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+    --chat-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    /*
+     * --chat-font-message (unset): assistant message text. Falls back to the serif, like claude.ai; hosts
+     * with sans UIs set it to var(--chat-font-sans). Left unset here so it follows a nested theme's fonts.
+     */
+
+    --chat-radius-sm: 6px;
+    --chat-radius-md: 10px;
+    --chat-radius-lg: 16px;
+    --chat-radius-popover: 12px;
+    --chat-shadow-popover: 0 8px 24px rgb(0 0 0 / 0.5);
+
+    /* Message column. Hosts and users adjust these; ChatView reads them. */
+    --chat-content-width: 48rem;
+    --chat-content-padding: 1.5rem;
+    --chat-message-font-size: 1.0625rem;
+    --chat-message-line-height: 1.65;
+  }
+}
+
+/*
+ * Markdown in messages. Streamdown runs with a class prefix, so none of its own utility classes apply and
+ * the host's classes never leak in; everything is styled here by element and data-streamdown attribute.
+ */
+@layer components {
+  .chat-markdown {
+    font-family: var(--chat-font-message, var(--chat-font-serif));
+    font-size: var(--chat-message-font-size);
+    line-height: var(--chat-message-line-height);
+    color: var(--chat-fg);
+    overflow-wrap: anywhere;
+  }
+  .chat-markdown > div > * + * {
+    margin-top: 0.75em;
+  }
+  .chat-markdown :is(h1, h2, h3, h4) {
+    font-weight: 600;
+    line-height: 1.3;
+    margin-top: 1.25em;
+  }
+  .chat-markdown h1 { font-size: 1.5em; }
+  .chat-markdown h2 { font-size: 1.3em; }
+  .chat-markdown h3 { font-size: 1.12em; }
+  .chat-markdown strong { font-weight: 650; }
+  .chat-markdown :is(ul, ol) {
+    padding-left: 1.6em;
+  }
+  .chat-markdown ul { list-style: disc; }
+  .chat-markdown ol { list-style: decimal; }
+  .chat-markdown li + li { margin-top: 0.3em; }
+  .chat-markdown li > :is(ul, ol) { margin-top: 0.3em; }
+  .chat-markdown a {
+    color: var(--chat-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--chat-subtle);
+    text-underline-offset: 3px;
+  }
+  .chat-markdown a:hover { text-decoration-color: var(--chat-fg); }
+  .chat-markdown blockquote {
+    border-left: 3px solid var(--chat-border-strong);
+    padding-left: 1em;
+    color: var(--chat-muted);
+  }
+  .chat-markdown hr { border-color: var(--chat-border); margin-block: 1.5em; }
+  .chat-markdown [data-chat-inline-code] {
+    font-family: var(--chat-font-mono);
+    font-size: 0.82em;
+    background: var(--chat-inline-code);
+    border-radius: 5px;
+    padding: 0.12em 0.35em;
+  }
+  .chat-markdown [data-streamdown="table-wrapper"] {
+    overflow-x: auto;
+    margin-block: 1em;
+  }
+  .chat-markdown table {
+    border-collapse: collapse;
+    font-family: var(--chat-font-sans);
+    font-size: 0.875rem;
+  }
+  .chat-markdown :is(th, td) {
+    border-bottom: 1px solid var(--chat-border);
+    padding: 0.45em 0.9em 0.45em 0;
+    text-align: left;
+  }
+  .chat-markdown th { font-weight: 600; }
+  .chat-markdown .katex-display {
+    margin-block: 1em;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .chat-markdown .katex { font-size: 1.08em; }
+  /* KaTeX CSS must match the katex version @streamdown/math renders with (0.16.x). */
+}
+
+/*
+ * Streamed words fade in as they mount (see word-fade.ts). The fade is long enough that several groups
+ * are mid-fade at once, so the end of the text trails off instead of typing left to right.
+ */
+@layer components {
+  .chat-markdown.chat-fade .chat-word {
+    animation: chat-word-in var(--chat-fade-duration, 700ms) ease-out both;
+  }
+}
+
+@keyframes chat-word-in {
+  from { opacity: 0; }
+}
+
+/*
+ * A ChatView sizes itself to its pane, not the window, so several can sit side by side or stacked (an
+ * agent dashboard). The view is an inline-size container ("chat"); its body is a size container
+ * ("chat-body") so the composer and empty state can respond to a short pane too.
+ */
+@layer components {
+  .chat-view {
+    container: chat / inline-size;
+  }
+  .chat-view-body {
+    container: chat-body / size;
+    --chat-gutter: var(--chat-content-padding);
+  }
+  @container chat (max-width: 34rem) {
+    .chat-view-body {
+      --chat-gutter: min(var(--chat-content-padding), 0.75rem);
+    }
+  }
+  @container chat (max-width: 24rem) {
+    .chat-picker-detail {
+      display: none;
+    }
+  }
+  @container chat-body (max-height: 24rem) {
+    .chat-empty-greeting {
+      display: none;
+    }
+  }
+}
+
+/* Highlighted code: each token has both theme colors; the chat theme's color-scheme picks one. */
+@layer components {
+  .chat-code-token {
+    color: light-dark(var(--shiki-light), var(--shiki-dark));
+  }
+}
+
+/* A highlight sweeping across live labels ("Thinking…", "Searching the web"). */
+@layer components {
+  /*
+   * The gradient repeats in fixed-size tiles and moves one tile per cycle, so the highlight travels at
+   * the same speed whatever the label's length. Live (activity-group.tsx) offsets the start to a shared
+   * clock, so re-renders and remounts never restart or jump the sweep.
+   */
+  .chat-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      var(--chat-muted) 0%,
+      var(--chat-muted) 35%,
+      var(--chat-fg) 50%,
+      var(--chat-muted) 65%,
+      var(--chat-muted) 100%
+    );
+    background-size: 20em 100%;
+    background-repeat: repeat-x;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: chat-shimmer var(--chat-shimmer-duration, 2s) linear infinite;
+  }
+  .chat-markdown.chat-thinking {
+    font-family: var(--chat-font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--chat-muted);
+  }
+}
+
+/* A light sweeping across a card while it uploads. */
+@layer components {
+  .chat-shimmer-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--chat-fg) 12%, transparent) 50%, transparent 70%) 0 0 / 300% 100%;
+    animation: chat-shimmer-surface 1.6s linear infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes chat-shimmer-surface {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+@keyframes chat-shimmer {
+  from { background-position: -20em 0; }
+  to { background-position: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-markdown.chat-fade .chat-word { animation: none; }
+  .chat-shimmer-surface::after { animation: none; background: color-mix(in srgb, var(--chat-fg) 6%, transparent); }
+  .chat-shimmer { animation: none; color: var(--chat-muted); background: none; }
+  /* Popovers, drawers, dialogs: no slide or scale. A tiny duration keeps exit handling working. */
+  [data-entering], [data-exiting] { animation-duration: 1ms !important; }
+}

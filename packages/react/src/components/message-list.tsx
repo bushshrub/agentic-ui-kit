@@ -1,0 +1,105 @@
+import type { Message, Part } from "@llm-chat/core";
+import { clsx } from "clsx";
+import { ArrowDown } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { IconButton } from "../primitives/button";
+import { AssistantMessage, UserMessage, type Feedback } from "./messages";
+
+export interface MessageListProps {
+  messages: Message[];
+  onRetry?: (assistantId: string) => void;
+  onEdit?: (userId: string) => void;
+  onFeedback?: (assistantId: string, feedback: Feedback) => void;
+  renderPart?: (part: Part) => ReactNode;
+  /** Under the last message, inside the scroll area, e.g. the docked composer. Stays in view at the bottom. */
+  footer?: ReactNode;
+  className?: string;
+}
+
+/** How close to the bottom still counts as "at the bottom", in px. */
+const STICK_SLOP = 48;
+
+/**
+ * The scrolling conversation. It follows a streaming reply while the reader is at the bottom and leaves
+ * them alone once they scroll up, with a button to jump back. Sending a message always jumps down.
+ */
+export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart, footer, className }: MessageListProps) {
+  const scroller = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const stuck = useRef(true);
+  const [atBottom, setAtBottom] = useState(true);
+
+  const toBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    const el = scroller.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior });
+  }, []);
+
+  const onScroll = () => {
+    const el = scroller.current;
+    if (!el) return;
+    const bottom = el.scrollHeight - el.scrollTop - el.clientHeight < STICK_SLOP;
+    stuck.current = bottom;
+    setAtBottom(bottom);
+  };
+
+  // Follow growing content while stuck.
+  useEffect(() => {
+    const el = content.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      if (stuck.current) toBottom();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [toBottom]);
+
+  // A new user message means the reader just sent it: go to the bottom.
+  const lastUser = messages.findLast((m) => m.role === "user")?.id;
+  useLayoutEffect(() => {
+    stuck.current = true;
+    setAtBottom(true);
+    toBottom();
+  }, [lastUser, toBottom]);
+
+  return (
+    <div className={clsx("relative min-h-0 flex-1", className)}>
+      <div ref={scroller} onScroll={onScroll} className="h-full overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin]">
+        <div ref={content} className="flex min-h-full flex-col">
+          <div
+            role="log"
+            aria-label="Conversation"
+            className="mx-auto flex w-full max-w-[calc(var(--chat-content-width)+2*var(--chat-gutter,var(--chat-content-padding)))] flex-1 flex-col gap-6 px-[var(--chat-gutter,var(--chat-content-padding))] pt-6 pb-4"
+          >
+            {messages.map((m) =>
+              m.role === "user" ? (
+                <UserMessage key={m.id} message={m} {...(onEdit && { onEdit: () => onEdit(m.id) })} />
+              ) : (
+                <AssistantMessage
+                  key={m.id}
+                  message={m}
+                  {...(onRetry && { onRetry: () => onRetry(m.id) })}
+                  {...(onFeedback && { onFeedback: (f: Feedback) => onFeedback(m.id, f) })}
+                  {...(renderPart && { renderPart })}
+                />
+              ),
+            )}
+          </div>
+          {footer && <div className="sticky bottom-0">{footer}</div>}
+        </div>
+      </div>
+      {!atBottom && (
+        <IconButton
+          label="Scroll to bottom"
+          variant="subtle"
+          onPress={() => {
+            stuck.current = true;
+            toBottom("smooth");
+          }}
+          className="absolute bottom-[min(10rem,40%)] left-1/2 -translate-x-1/2 rounded-full border border-chat-border shadow-chat-popover"
+        >
+          <ArrowDown />
+        </IconButton>
+      )}
+    </div>
+  );
+}

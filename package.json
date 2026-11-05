@@ -1,0 +1,16 @@
+{
+  "name": "llm-chat-uikit",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.10.0",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "pnpm -r typecheck",
+    "storybook": "pnpm --filter playground storybook",
+    "build-storybook": "pnpm --filter playground build-storybook"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

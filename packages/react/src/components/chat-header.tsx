@@ -1,0 +1,115 @@
+import { clsx } from "clsx";
+import { ChevronDown, FolderPlus, Pencil, Pin, PinOff, Plus, Share, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
+import { Button } from "../primitives/button";
+import { Menu, MenuItem, MenuSearch, MenuSeparator, MenuTrigger, Popover, SubmenuTrigger } from "../primitives/menu";
+
+export interface ChatHeaderProps {
+  title: ReactNode;
+  /** Opens from the title, e.g. `<ChatTitleMenu>`. Without it the title is plain text. */
+  menu?: ReactNode;
+  /** Left of the title, e.g. a project breadcrumb or the sidebar toggle on small screens. */
+  leading?: ReactNode;
+  /** Right side, e.g. Share or a context button. */
+  actions?: ReactNode;
+  className?: string;
+}
+
+/** The bar above a chat: breadcrumb and title with its menu, actions on the right. */
+export function ChatHeader({ title, menu, leading, actions, className }: ChatHeaderProps) {
+  return (
+    <header className={clsx("flex h-12 shrink-0 items-center gap-1 px-3 font-chat-sans", className)}>
+      {leading}
+      {menu ? (
+        <MenuTrigger>
+          <Button size="sm" className="min-w-0 text-chat-fg">
+            <span className="truncate">{title}</span>
+            <ChevronDown aria-hidden className="size-3.5 shrink-0 text-chat-muted" />
+          </Button>
+          <Popover placement="bottom start">{menu}</Popover>
+        </MenuTrigger>
+      ) : (
+        <h1 className="min-w-0 truncate px-2 text-sm text-chat-fg">{title}</h1>
+      )}
+      <div className="ml-auto flex shrink-0 items-center gap-1">{actions}</div>
+    </header>
+  );
+}
+
+export interface ChatTitleMenuProps {
+  pinned?: boolean;
+  onPin?: () => void;
+  onRename?: () => void;
+  projects?: { id: string; name: string }[];
+  onAddToProject?: (projectId: string) => void;
+  onCreateProject?: () => void;
+  onShare?: () => void;
+  onDelete?: () => void;
+  /** Extra items, placed before Delete. */
+  children?: ReactNode;
+}
+
+/** Pin, Rename, Add to project (searchable), Share, Delete. Each shows only when its handler is set. */
+export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProject, onCreateProject, onShare, onDelete, children }: ChatTitleMenuProps) {
+  const act = (key: React.Key) => {
+    if (key === "pin") onPin?.();
+    else if (key === "rename") onRename?.();
+    else if (key === "share") onShare?.();
+    else if (key === "delete") onDelete?.();
+  };
+  return (
+    <Menu aria-label="Chat actions" className="min-w-44" onAction={act}>
+      {onPin && (
+        <MenuItem id="pin" icon={pinned ? <PinOff /> : <Pin />} shortcut="P">
+          {pinned ? "Unpin" : "Pin"}
+        </MenuItem>
+      )}
+      {onRename && (
+        <MenuItem id="rename" icon={<Pencil />} shortcut="R">
+          Rename
+        </MenuItem>
+      )}
+      {onAddToProject && (
+        <SubmenuTrigger>
+          <MenuItem id="project" icon={<FolderPlus />}>
+            Add to project
+          </MenuItem>
+          <Popover placement="end top" className="w-60">
+            <MenuSearch placeholder="Search or create a project">
+              <Menu
+                aria-label="Projects"
+                className="max-h-72"
+                onAction={(key) => (key === "__new" ? onCreateProject?.() : onAddToProject(String(key)))}
+              >
+                {onCreateProject && (
+                  <MenuItem id="__new" icon={<Plus />}>
+                    New project
+                  </MenuItem>
+                )}
+                {(projects ?? []).map((p) => (
+                  <MenuItem key={p.id} id={p.id}>
+                    {p.name}
+                  </MenuItem>
+                ))}
+              </Menu>
+            </MenuSearch>
+          </Popover>
+        </SubmenuTrigger>
+      )}
+      {onShare && (
+        <MenuItem id="share" icon={<Share />}>
+          Share chat
+        </MenuItem>
+      )}
+      {children}
+      {onDelete && (
+        <>
+          <MenuSeparator />
+          <MenuItem id="delete" icon={<Trash2 />} shortcut="D" tone="danger">
+            Delete
+          </MenuItem>
+        </>
+      )}
+    </Menu>
+  );
+}
