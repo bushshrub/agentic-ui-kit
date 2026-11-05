@@ -1,6 +1,7 @@
 import type React from "react";
 import { clsx } from "clsx";
 import { Fragment } from "react";
+import { useCodeThemes } from "./appearance";
 import { useHighlight } from "./highlight";
 
 export interface CodeBlockProps {
@@ -16,7 +17,9 @@ export interface CodeBlockProps {
 
 /** Monospace code with Shiki highlighting, scrolling past a fixed height. */
 export function CodeBlock({ code, language, label = language, variant = "plain", className }: CodeBlockProps) {
-  const lines = useHighlight(code, language);
+  const result = useHighlight(code, language);
+  const lines = result?.lines;
+  const themeBackground = useCodeThemes().background === "theme" && variant === "boxed" && !!result;
   // Highlighting lags the text while streaming: keep the colored part and show the newest text plain after it.
   const done = lines?.map((l) => l.map((t) => t.content).join("")).join("\n");
   const highlighted = lines && done !== undefined && code.startsWith(done) ? lines : undefined;
@@ -24,6 +27,8 @@ export function CodeBlock({ code, language, label = language, variant = "plain",
   return (
     <div
       data-chat-code-block
+      data-chat-code-bg={themeBackground ? "theme" : undefined}
+      style={themeBackground ? (result.vars as React.CSSProperties) : undefined}
       className={clsx(
         variant === "boxed" && "my-4 rounded-chat-md border border-chat-code-border bg-chat-code-bg px-4 py-3.5",
         className,

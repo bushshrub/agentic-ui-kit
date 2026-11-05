@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "../primitives/appearance";
 
 /** Slowest reveal, in characters per second, so a trickle of tokens still reads as steady typing. */
 const MIN_RATE = 45;
@@ -8,9 +9,6 @@ const LAG_SECONDS = 0.35;
 const FINISH_RATE = 600;
 /** Text is released in groups this far apart, so each group of words fades in together. */
 const CHUNK_MS = 90;
-
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 /**
  * Paces streamed text so it appears at an even rate instead of in network-sized bursts. The reveal speed
@@ -23,6 +21,7 @@ const prefersReducedMotion = () =>
 export function useSmoothText(text: string, streaming: boolean): string {
   const [shown, setShown] = useState(() => (streaming ? "" : text));
   const state = useRef({ shown, target: text, streaming, frame: 0, last: 0, carry: 0, lastCommit: 0 });
+  const prefersReducedMotion = useReducedMotion();
   const s = state.current;
   s.target = text;
   s.streaming = streaming;
@@ -56,7 +55,7 @@ export function useSmoothText(text: string, streaming: boolean): string {
       s.frame = s.shown.length < full.length ? requestAnimationFrame(step) : 0;
     };
     s.frame = requestAnimationFrame(step);
-  }, [text, streaming, s]);
+  }, [text, streaming, s, prefersReducedMotion]);
 
   useEffect(() => () => cancelAnimationFrame(s.frame), [s]);
 

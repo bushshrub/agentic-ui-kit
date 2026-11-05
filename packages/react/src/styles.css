@@ -271,6 +271,14 @@
   }
 }
 
+/* codeThemes.background = "theme": the block takes the Shiki theme's own background and text color. Unlayered so it wins over utilities. */
+[data-chat-code-bg="theme"] {
+  background-color: light-dark(var(--shiki-light-bg), var(--shiki-dark-bg));
+}
+[data-chat-code-bg="theme"] pre {
+  color: light-dark(var(--shiki-light), var(--shiki-dark));
+}
+
 /* A highlight sweeping across live labels ("Thinking…", "Searching the web"). */
 @layer components {
   /*
@@ -324,10 +332,19 @@
   to { background-position: 0 0; }
 }
 
+/*
+ * Reduced motion. Applies with the OS setting, unless data-chat-motion="full" is on an ancestor (ChatTheme
+ * `motion`, or <html>); and always under data-chat-motion="reduce". Keep the two lists in sync.
+ */
 @media (prefers-reduced-motion: reduce) {
-  .chat-markdown.chat-fade .chat-word { animation: none; }
-  .chat-shimmer-surface::after { animation: none; background: color-mix(in srgb, var(--chat-fg) 6%, transparent); }
-  .chat-shimmer { animation: none; color: var(--chat-muted); background: none; }
+  .chat-markdown.chat-fade .chat-word:not([data-chat-motion="full"] *) { animation: none; }
+  .chat-shimmer-surface:not([data-chat-motion="full"] *)::after { animation: none; background: color-mix(in srgb, var(--chat-fg) 6%, transparent); }
+  .chat-shimmer:not([data-chat-motion="full"] *) { animation: none; color: var(--chat-muted); background: none; }
   /* Popovers, drawers, dialogs: no slide or scale. A tiny duration keeps exit handling working. */
-  [data-entering], [data-exiting] { animation-duration: 1ms !important; }
+  [data-entering]:not([data-chat-motion="full"] *), [data-exiting]:not([data-chat-motion="full"] *) { animation-duration: 1ms !important; }
 }
+
+[data-chat-motion="reduce"] .chat-markdown.chat-fade .chat-word { animation: none; }
+[data-chat-motion="reduce"] .chat-shimmer-surface::after { animation: none; background: color-mix(in srgb, var(--chat-fg) 6%, transparent); }
+[data-chat-motion="reduce"] .chat-shimmer { animation: none; color: var(--chat-muted); background: none; }
+[data-chat-motion="reduce"] [data-entering], [data-chat-motion="reduce"] [data-exiting] { animation-duration: 1ms !important; }

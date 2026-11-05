@@ -1,6 +1,7 @@
 import { clsx } from "clsx";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "../primitives/appearance";
 
 /** Compact token count: 526, 1.4k, 33k, 76.8k, 1M. */
 export function formatTokens(n: number): string {
@@ -20,8 +21,9 @@ function trim(value: number): string {
 export function useCountUp(target: number): number {
   const [value, setValue] = useState(target);
   const valueRef = useRef(target);
+  const prefersReducedMotion = useReducedMotion();
   useEffect(() => {
-    if (typeof window === "undefined" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       valueRef.current = target;
       setValue(target);
       return;
@@ -41,7 +43,7 @@ export function useCountUp(target: number): number {
     };
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [target]);
+  }, [target, prefersReducedMotion]);
   return Math.round(value);
 }
 

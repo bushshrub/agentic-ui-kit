@@ -195,6 +195,14 @@ or on any element to theme part of it:
 To theme only part of a page, wrap it in `<ChatTheme theme="mine">` and match `[data-chat-theme="mine"]` in
 your CSS. Menus and dialogs opened inside then render into that element, so they get the same theme.
 
+`ChatTheme` also takes two appearance props. `codeThemes` picks the Shiki themes for code blocks and Markdown
+fences (any bundled theme id; an unknown id falls back to the default with one console warning):
+`<ChatTheme codeThemes={{ light: "catppuccin-latte", dark: "dracula" }}>`. Blocks keep `--chat-code-bg` unless you
+add `background: "theme"`, which uses the Shiki theme's own background and text color. `motion` is `"system"`
+(default: follow the OS reduced-motion setting), `"reduce"` (always use the reduced rules) or `"full"` (keep
+animations even when the OS asks for less). It sets `data-chat-motion` on the element; an app that does not use
+`ChatTheme` can put `data-chat-motion="reduce"` on `<html>` instead.
+
 The full list of variables is at the top of
 [`packages/react/src/styles.css`](packages/react/src/styles.css).
 
