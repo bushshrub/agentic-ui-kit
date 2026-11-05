@@ -152,6 +152,9 @@ render into the nearest `ChatTheme`, so a themed region keeps its theme in menus
   ...), sections holding `ChatList`s, user footer with plan and a menu.
 - `EmptyState`: greeting + centered composer.
 - `ChatView`: breadcrumb header with title menu and Share, message list, docked composer, disclaimer line.
+- `ChatTranscript`: a chat to read, not continue (shared links, exports). The same message list with no
+  composer, approvals, retry, edit or feedback (Copy stays); `header` and a pinned `footer` slot (e.g.
+  "Continue this chat"); starts at the top (`MessageList start="top"`).
 
 Each view is assembled from the components above, so a host can use the view or rebuild it from parts.
 

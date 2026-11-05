@@ -10,7 +10,7 @@ import type { Feedback } from "../components/messages";
 export type Density = "full" | "panel" | "inline";
 
 /** Column defaults per density; `contentWidth` / `contentPadding` override them. */
-const densityVars: Record<Density, CSSProperties> = {
+export const densityVars: Record<Density, CSSProperties> = {
   full: {},
   panel: { "--chat-content-width": "100%", "--chat-content-padding": "1rem", "--chat-message-font-size": "1rem" } as CSSProperties,
   inline: { "--chat-content-width": "100%", "--chat-content-padding": "0.75rem", "--chat-message-font-size": "0.9375rem" } as CSSProperties,

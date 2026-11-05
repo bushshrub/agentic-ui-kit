@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AttachmentRow, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
+import { AttachmentRow, Badge, Button, ChatHeader, ChatTranscript, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
 import { useState } from "react";
 import { attachMenu, DemoChat, fakeUpload, history, models } from "../lib/demo-chat";
 
@@ -11,6 +11,24 @@ export const InProgress: StoryObj = {
   render: () => (
     <div className="h-dvh">
       <DemoChat start={history} title="Speeding up CI" />
+    </div>
+  ),
+};
+
+/** A shared chat, read only: no composer, retry, edit or feedback; Copy stays. Starts at the top. */
+export const Shared: StoryObj = {
+  render: () => (
+    <div className="h-dvh">
+      <ChatTranscript
+        messages={history}
+        header={<ChatHeader title="Speeding up CI" actions={<Badge>Shared</Badge>} />}
+        footer={
+          <div className="flex items-center justify-between gap-3 rounded-chat-md border border-chat-border bg-chat-surface px-4 py-3 font-chat-sans text-sm">
+            <span className="text-chat-muted">Shared by Alex · a snapshot from Nov 5</span>
+            <Button variant="primary">Continue this chat</Button>
+          </div>
+        }
+      />
     </div>
   ),
 };

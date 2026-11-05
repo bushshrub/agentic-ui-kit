@@ -13,6 +13,8 @@ export interface MessageListProps {
   renderPart?: (part: Part) => ReactNode;
   /** Under the last message, inside the scroll area, e.g. the docked composer. Stays in view at the bottom. */
   footer?: ReactNode;
+  /** Where reading starts: "bottom" (default, a live chat) or "top" (a transcript read from the start). */
+  start?: "bottom" | "top";
   className?: string;
 }
 
@@ -23,10 +25,10 @@ const STICK_SLOP = 48;
  * The scrolling conversation. It follows a streaming reply while the reader is at the bottom and leaves
  * them alone once they scroll up, with a button to jump back. Sending a message always jumps down.
  */
-export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart, footer, className }: MessageListProps) {
+export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart, footer, start = "bottom", className }: MessageListProps) {
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
-  const stuck = useRef(true);
+  const stuck = useRef(start === "bottom");
   const [atBottom, setAtBottom] = useState(true);
 
   const toBottom = useCallback((behavior: ScrollBehavior = "auto") => {
@@ -53,12 +55,20 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart,
     return () => observer.disconnect();
   }, [toBottom]);
 
-  // A new user message means the reader just sent it: go to the bottom.
+  // A new user message means the reader just sent it: go to the bottom. Read from the top, the messages
+  // there on mount do not count; only note whether there is more below.
   const lastUser = messages.findLast((m) => m.role === "user")?.id;
+  const jumpedFor = useRef<string | undefined | null>(start === "top" ? lastUser : null);
   useLayoutEffect(() => {
+    if (lastUser === jumpedFor.current) {
+      onScroll();
+      return;
+    }
+    jumpedFor.current = lastUser;
     stuck.current = true;
     setAtBottom(true);
     toBottom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onScroll only reads refs
   }, [lastUser, toBottom]);
 
   return (

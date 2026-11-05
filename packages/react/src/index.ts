@@ -91,6 +91,8 @@ export type { ChatListProps, ChatListSection, ChatListItem, ChatSummary, Project
 // Views
 export { ChatView, EmptyState } from "./views/chat-view";
 export type { ChatViewProps, EmptyStateProps, Density } from "./views/chat-view";
+export { ChatTranscript } from "./views/chat-transcript";
+export type { ChatTranscriptProps } from "./views/chat-transcript";
 export { AppShell, SidebarToggle } from "./views/app-shell";
 export type { AppShellProps, SidebarToggleProps } from "./views/app-shell";
 export { Sidebar, SidebarItem, SidebarUser } from "./views/sidebar";
