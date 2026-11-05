@@ -8,3 +8,4 @@ packages/react/README.md
 packages/react/LICENSE
 packages/react/dist
 *.tgz
+.claude/worktrees
