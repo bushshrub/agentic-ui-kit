@@ -1,0 +1,307 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const tsx = `import { ChatView, sseTransport, useChat } from 'agentic-ui-kit';
+import 'agentic-ui-kit/styles.css';
+
+const transport = sseTransport({ url: '/api/chat' });
+
+export function App() {
+  const chat = useChat({ transport });
+  return (
+    <div style={{ height: '100dvh' }}>
+      <ChatView
+        messages={chat.messages}
+        busy={chat.busy}
+        onSend={(text) => chat.send(text)}
+        onStop={chat.stop}
+      />
+    </div>
+  );
+}`;
+
+const sh = `npm install agentic-ui-kit`;
+
+const css = `:root {
+  --chat-bg: #fbfaf7;
+  --chat-fg: #1f1d1a;
+  --chat-accent: #c4552d;
+  --chat-font-sans: 'IBM Plex Sans', sans-serif;
+  --chat-radius-md: 10px;
+  color-scheme: light;
+}`;
+
+const products = [
+  {
+    title: 'Get started',
+    text: 'Install the kit, put a ChatView on the page, and make it look like your app.',
+    link: '/get-started/install/',
+    icon: 'M4 8l8-4 8 4-8 4zM4 8v8l8 4 8-4V8M12 12v8',
+  },
+  {
+    title: 'Inline visuals',
+    text: 'Let the model draw interactive widgets and your own components inside a reply.',
+    link: '/inline-visuals/overview/',
+    icon: 'M4 5h16v14H4zM4 9h16M8 13h3M8 16h6',
+  },
+  {
+    title: 'Custom harness',
+    text: 'Connect your own agent to the kit, and feed errors back to the model.',
+    link: '/custom-harness/connecting-your-agent/',
+    icon: 'M8 9l-3 3 3 3M16 9l3 3-3 3M13.5 7l-3 10',
+  },
+  {
+    title: 'Reference',
+    text: 'The layers of the kit, and what you can change and what is fixed.',
+    link: '/reference/whats-in-the-kit/',
+    icon: 'M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11',
+  },
+];
+
+// Small line icons for the buttons, 16 by 16.
+const icons = {
+  play: '<path d="M5 3.5v9l7-4.5z"/>',
+  book: '<path d="M3 2.5h7a2.5 2.5 0 0 1 2.5 2.5v8.5H5.5A2.5 2.5 0 0 1 3 11zM3 11a2.5 2.5 0 0 1 2.5-2.5h7"/>',
+  braces:
+    '<path d="M6 2.5c-1.5 0-2 .7-2 2V6c0 1-.5 2-1.5 2 1 0 1.5 1 1.5 2v1.5c0 1.3.5 2 2 2M10 2.5c1.5 0 2 .7 2 2V6c0 1 .5 2 1.5 2-1 0-1.5 1-1.5 2v1.5c0 1.3-.5 2-2 2"/>',
+};
+const icon = (name: keyof typeof icons) =>
+  `<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
+---
+
+<section class="hero">
+  <div class="intro">
+    <p class="eyebrow">agentic-ui-kit</p>
+    <h1 id="_top">Chat UIs<br />for agents</h1>
+    <p class="tagline">
+      React components for agent chat UIs: streaming messages, tool calls, inline visuals.
+    </p>
+    <button type="button" class="search" data-open-search>
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+        <path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4"></path>
+      </svg>
+      <span>Search</span>
+      <kbd data-search-key>Ctrl K</kbd>
+    </button>
+    <div class="actions">
+      <a href={`${base}/get-started/install/`}><Fragment set:html={icon('play')} />Get started</a>
+      <a href={`${base}/storybook/`}><Fragment set:html={icon('book')} />Storybook</a>
+      <a href={`${base}/reference/whats-in-the-kit/`}><Fragment set:html={icon('braces')} />Reference</a>
+    </div>
+  </div>
+  <div class="code-panel" data-code-tabs>
+    <Code code={tsx} lang="tsx" title="App.tsx" />
+    <Code code={css} lang="css" title="theme.css" />
+    <Code code={sh} lang="sh" title="Install" />
+  </div>
+</section>
+
+<section class="products">
+  <p class="eyebrow">Guides</p>
+  <h2>Choose where to start</h2>
+  <p class="section-text">Pick a topic.</p>
+  <div class="cards">
+    {
+      products.map((product) => (
+        <a class="card" href={`${base}${product.link}`}>
+          <div class="card-art">
+            <svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true">
+              <path d={product.icon} fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3>{product.title}</h3>
+            <p>{product.text}</p>
+            <span class="card-link"><Fragment set:html={icon('play')} />Read</span>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  import '../scripts/code-tabs';
+
+  // Starlight opens search with Ctrl K, or Cmd K on a Mac.
+  if (/Mac|iPhone|iPad/.test(navigator.platform)) {
+    const key = document.querySelector('[data-search-key]');
+    if (key) key.textContent = '⌘K';
+  }
+
+  document.querySelector('[data-open-search]')?.addEventListener('click', (event) => {
+    // Stop this click here. Starlight closes the search dialog on a click outside it.
+    event.stopPropagation();
+    document.querySelector<HTMLButtonElement>('site-search button[data-open-modal]')?.click();
+  });
+</script>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3rem;
+    align-items: center;
+    padding-block: 2rem 4rem;
+  }
+  .eyebrow {
+    margin: 0;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+  h1 {
+    margin: 1rem 0 0;
+    font-family: var(--kit-font-serif);
+    font-size: clamp(2.75rem, 2rem + 3vw, 4rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--sl-color-white);
+  }
+  .tagline {
+    max-width: 30rem;
+    margin-top: 1.5rem;
+    color: var(--sl-color-gray-2);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+  }
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 18rem;
+    margin-top: 1.75rem;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--kit-surface);
+    color: var(--sl-color-gray-3);
+    font: inherit;
+    font-size: var(--sl-text-sm);
+    cursor: pointer;
+  }
+  .search span {
+    flex: 1;
+    text-align: start;
+  }
+  .search kbd {
+    padding: 0 0.35rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.25rem;
+    font-family: var(--sl-font-mono);
+    font-size: 0.75rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+  .actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--kit-pill);
+    color: var(--sl-color-gray-1);
+    font-size: var(--sl-text-sm);
+    text-decoration: none;
+  }
+  .actions a:hover {
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-4);
+  }
+  .code-panel {
+    min-width: 0;
+  }
+  .products {
+    padding-bottom: 3rem;
+  }
+  .products h2 {
+    margin: 0.5rem 0 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--sl-color-white);
+  }
+  .section-text {
+    margin-top: 0.5rem;
+    color: var(--sl-color-gray-2);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    color: inherit;
+    text-decoration: none;
+  }
+  .card:hover {
+    border-color: var(--sl-color-gray-4);
+  }
+  .card-art {
+    display: grid;
+    place-items: center;
+    height: 9rem;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    background: var(--kit-surface);
+    color: var(--sl-color-gray-2);
+  }
+  .card-body {
+    padding: 1.25rem;
+  }
+  .card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 500;
+    color: var(--sl-color-white);
+  }
+  .card p {
+    margin-top: 0.5rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+  }
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+  }
+  .card:hover .card-link {
+    color: var(--sl-color-white);
+  }
+
+  @media (min-width: 50rem) {
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 72rem) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 4rem;
+      padding-block: 4rem 6rem;
+    }
+    .cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

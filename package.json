@@ -7,7 +7,9 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "storybook": "pnpm --filter playground storybook",
-    "build-storybook": "pnpm --filter playground build-storybook"
+    "build-storybook": "pnpm --filter playground build-storybook",
+    "docs:dev": "pnpm --filter docs dev",
+    "docs:build": "pnpm --filter docs build"
   },
   "devDependencies": {
     "typescript": "7.0.2",

@@ -1,0 +1,125 @@
+---
+import Search from '@astrojs/starlight/components/Search.astro';
+import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+
+// Storybook is built into the same site, next to the docs.
+const storybook = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/storybook/`;
+const topics = Astro.locals.starlightSidebarTopics?.topics ?? [];
+---
+
+<div class="header">
+  <div class="title-wrapper">
+    <SiteTitle />
+  </div>
+
+  <nav class="topics" aria-label="Sections">
+    {
+      topics.map((topic) => (
+        <a href={topic.link} aria-current={topic.isCurrent ? 'page' : undefined}>
+          {topic.label}
+        </a>
+      ))
+    }
+  </nav>
+
+  <div class="right-group">
+    <Search />
+    <div class="desktop-only">
+      <ThemeSelect />
+    </div>
+    <a class="ext" href={storybook}>Storybook</a>
+    <a class="console" href="https://github.com/bushshrub/agentic-ui-kit">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>
+      GitHub
+    </a>
+  </div>
+</div>
+
+<style>
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    height: 100%;
+  }
+  .title-wrapper {
+    min-width: 0;
+    overflow: clip;
+    padding: 0.25rem;
+    margin: -0.25rem;
+  }
+  .topics {
+    display: none;
+    gap: 0.25rem;
+  }
+  .topics a {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .topics a:hover {
+    color: var(--sl-color-white);
+  }
+  .topics a[aria-current='page'] {
+    background: var(--kit-pill);
+    color: var(--sl-color-white);
+  }
+  .right-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .desktop-only {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+  }
+  .ext {
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .ext:hover {
+    color: var(--sl-color-white);
+  }
+  .console {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 0.5rem;
+    background: var(--sl-color-white);
+    color: var(--sl-color-black);
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .console:hover {
+    opacity: 0.85;
+  }
+
+  @media (min-width: 50rem) {
+    .desktop-only {
+      display: flex;
+    }
+  }
+  @media (min-width: 64rem) {
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+    }
+    .topics {
+      display: flex;
+    }
+    .right-group {
+      justify-self: end;
+    }
+  }
+</style>
