@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-The kit is only the UI. To put your agent behind it at all, see [Plugging in a harness](../plugging-in-a-harness/);
+The kit is only the UI. To put your agent behind it at all, see [Plugging in a harness](/custom-harness/plugging-in-a-harness/);
 this page is about giving it the kit's visuals. Your harness picks the model, the prompt and the tool names; the kit draws what the
 model writes. Everything it suggests (prompt sections, tool definitions) is a starting point you can rewrite.
 
