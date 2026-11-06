@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChatTranscript, ChatView, userMessage, type WidgetAllow } from "agentic-ui-kit";
+import { ChatTranscript, ChatView, ToolViewsProvider, userMessage, type WidgetAllow } from "agentic-ui-kit";
 import { parsePartialJson, visualizeTool, type Message, type Part } from "agentic-ui-kit/core";
 import { useEffect, useState } from "react";
+import { visualViews } from "../lib/visual-views";
 import calendarHtml from "../widgets/calendar.html?raw";
 import mapHtml from "../widgets/map.html?raw";
 import workoutHtml from "../widgets/workout.html?raw";
@@ -86,12 +87,14 @@ function VisualChat({ demo, instant = false, readOnly = false }: { demo: Demo; i
   };
   return (
     <div className="h-dvh">
-      <ChatView
-        messages={messages}
-        busy={streaming}
-        onSend={prompt}
-        widgets={{ ...(demo.allow && { allow: demo.allow }), ...(readOnly && { onPrompt: undefined }) }}
-      />
+      <ToolViewsProvider tools={visualViews}>
+        <ChatView
+          messages={messages}
+          busy={streaming}
+          onSend={prompt}
+          widgets={{ ...(demo.allow && { allow: demo.allow }), ...(readOnly && { onPrompt: undefined }) }}
+        />
+      </ToolViewsProvider>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { uiActionSchema } from "@agentic-ui-kit/core";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, expect, it, vi } from "vitest";
-import { UiComponentsProvider, UiTree, useUiAction, type UiComponent, type UiStateStore } from "./ui-tree";
+import { readTreeInput, UiComponentsProvider, UiTree, useUiAction, type UiComponent, type UiStateStore } from "./ui-tree";
 import { WidgetHostProvider } from "./widget-frame";
 
 afterEach(cleanup);
@@ -104,4 +104,15 @@ it("sends a message only when the host allows it", async () => {
   render(tree(send));
   fireEvent.click(screen.getByText("Ask"));
   expect(onPrompt).toHaveBeenCalledTimes(1);
+});
+
+it("reads a root the model sent as a JSON string, even one cut short", () => {
+  expect(readTreeInput({ root: '{"component":"Text","props":{"text":"hi"}}', state: '{"a":1}' })).toEqual({
+    root: { component: "Text", props: { text: "hi" } },
+    state: { a: 1 },
+  });
+  expect(readTreeInput({ root: '{"component":"Stack","children":[{"component":"Te' })).toMatchObject({ root: { component: "Stack" } });
+  // A stray bracket midway (seen from a real model): the nodes before it survive.
+  const broken = '{"component":"Stack","children":[{"component":"Text","props":{"text":"hi"}}]]},{"component":"Text"}]}';
+  expect(readTreeInput({ root: broken })).toEqual({ root: { component: "Stack", children: [{ component: "Text", props: { text: "hi" } }] } });
 });

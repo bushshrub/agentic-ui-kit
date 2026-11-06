@@ -1,4 +1,4 @@
-import { visualizeTool, type ToolCallPart, type VisualizeInput, type WidgetPart } from "@agentic-ui-kit/core";
+import type { ToolCallPart, VisualizeInput, WidgetPart } from "@agentic-ui-kit/core";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLabels } from "../primitives/labels";
 
@@ -421,27 +421,45 @@ export function WidgetPartView({ part }: { part: WidgetPart }) {
   return <WidgetFrame document html={resource.html} {...(resource.csp && { csp: resource.csp })} {...(part.title && { title: part.title })} {...props} />;
 }
 
-/** The kit's view of the visualize tool (`show_widget`): the streaming widget_code in a WidgetFrame. */
-function VisualizeBlock({ part }: { part: ToolCallPart }) {
-  const props = useHostProps();
-  const input = (part.input ?? part.partialInput ?? {}) as Partial<VisualizeInput>;
-  const streaming = part.status === "streaming" || part.status === "input";
-  const html = typeof input.widget_code === "string" ? input.widget_code : "";
-  if (part.status === "error" && !html) return null;
-  const loading = Array.isArray(input.loading_messages) ? input.loading_messages.filter((l): l is string => typeof l === "string" && l !== "") : [];
-  return (
-    <WidgetFrame
-      html={html}
-      streaming={streaming}
-      {...(typeof input.title === "string" && { title: input.title })}
-      {...(loading.length > 0 && { loadingMessages: loading.slice(0, 4) })}
-      {...props}
-    />
-  );
+/** What a widget tool call's input means for the frame. */
+export interface WidgetToolInput {
+  html?: string;
+  title?: string;
+  loadingMessages?: string[];
 }
 
-export const visualizeView = { Block: VisualizeBlock };
-export const visualizeToolName = visualizeTool.name;
+const str = (v: unknown) => (typeof v === "string" ? v : undefined);
+
+/** Reads the fields of the suggested `visualizeTool` (widget_code, title, loading_messages). */
+export function readVisualizeInput(input: unknown): WidgetToolInput {
+  const i = (input ?? {}) as Partial<Record<keyof VisualizeInput, unknown>>;
+  const loading = Array.isArray(i.loading_messages) ? i.loading_messages.filter((l): l is string => typeof l === "string" && l !== "") : [];
+  return { ...(str(i.widget_code) !== undefined && { html: str(i.widget_code)! }), ...(str(i.title) && { title: str(i.title)! }), ...(loading.length && { loadingMessages: loading.slice(0, 4) }) };
+}
+
+/**
+ * A tool view that draws a call's (streaming) input in a WidgetFrame, for whatever tool your harness uses
+ * to write HTML. Register it under your tool's name: `{ show_widget: widgetToolView() }`. `read` maps your
+ * tool's input (possibly cut short while it streams) to the frame's fields; the default reads the suggested
+ * `visualizeTool`'s fields.
+ */
+export function widgetToolView(read: (input: unknown) => WidgetToolInput = readVisualizeInput) {
+  function WidgetToolBlock({ part }: { part: ToolCallPart }) {
+    const props = useHostProps();
+    const { html = "", title, loadingMessages } = read(part.input ?? part.partialInput);
+    if (part.status === "error" && !html) return null;
+    return (
+      <WidgetFrame
+        html={html}
+        streaming={part.status === "streaming" || part.status === "input"}
+        {...(title && { title })}
+        {...(loadingMessages?.length && { loadingMessages })}
+        {...props}
+      />
+    );
+  }
+  return { Block: WidgetToolBlock };
+}
 
 /** The default `onOpenLink` of ChatView and ChatTranscript: a new tab with no opener. */
 export function openInNewTab(url: string) {

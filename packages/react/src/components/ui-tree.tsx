@@ -1,5 +1,6 @@
 import {
   isStateRef,
+  parsePartialJson,
   matchesSchema,
   uiActionSchema,
   type RenderUiInput,
@@ -154,15 +155,42 @@ export function UiTree({ id, root, state: initial, streaming = false }: UiTreePr
   );
 }
 
-function RenderUiBlock({ part }: { part: ToolCallPart }) {
-  const input = (part.input ?? part.partialInput ?? {}) as Partial<RenderUiInput>;
-  const streaming = part.status === "streaming" || part.status === "input";
-  if (!input.root) return null;
-  return <UiTree id={part.id} root={input.root} {...(input.state && { state: input.state })} streaming={streaming} />;
+/** JSON as far as it is valid: a stray bracket midway keeps the nodes before it instead of losing all. */
+function salvageJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    // V8: "at position 1768"; Firefox: "at line 1 column 1769".
+    const m = /position (\d+)|line 1 column (\d+)/.exec(String(error));
+    const at = m ? Number(m[1] ?? Number(m[2]) - 1) : text.length;
+    return parsePartialJson(text.slice(0, at));
+  }
 }
 
-/** The kit's view of `render_ui` calls. */
-export const renderUiView = { Block: RenderUiBlock };
+/** Reads `{ root, state }`. Models sometimes send `root` or `state` as a JSON string; those are parsed too. */
+export function readTreeInput(input: unknown): { root?: unknown; state?: Record<string, unknown> } {
+  const i = (input ?? {}) as Partial<Record<keyof RenderUiInput, unknown>>;
+  const unwrap = (v: unknown) => (typeof v === "string" ? salvageJson(v) : v);
+  const root = unwrap(i.root);
+  const state = unwrap(i.state);
+  return { ...(root !== undefined && { root }), ...(typeof state === "object" && state !== null && { state: state as Record<string, unknown> }) };
+}
+
+/**
+ * A tool view that draws a call's (streaming) input as a tree of your registered components, for whatever
+ * tool your harness uses. Register it under your tool's name: `{ render_ui: uiTreeToolView() }`. `read` maps
+ * your tool's input to the tree and its starting state; the default reads `{ root, state }`, the shape of
+ * the suggested `renderUiTool`.
+ */
+export function uiTreeToolView(read: (input: unknown) => { root?: unknown; state?: Record<string, unknown> } = readTreeInput) {
+  function UiTreeToolBlock({ part }: { part: ToolCallPart }) {
+    const { root, state } = read(part.input ?? part.partialInput);
+    if (!root) return null;
+    const ok = typeof state === "object" && state !== null;
+    return <UiTree id={part.id} root={root} {...(ok && { state })} streaming={part.status === "streaming" || part.status === "input"} />;
+  }
+  return { Block: UiTreeToolBlock };
+}
 
 /**
  * The escape hatch: raw HTML or SVG in a sandboxed WidgetFrame, as a node of the tree. Register it only if

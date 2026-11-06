@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChatView, htmlComponent, UiComponentsProvider, userMessage, type UiStateStore } from "agentic-ui-kit";
+import { ChatView, htmlComponent, ToolViewsProvider, UiComponentsProvider, userMessage, type UiStateStore } from "agentic-ui-kit";
 import type { Message } from "agentic-ui-kit/core";
 import { useMemo, useState } from "react";
 import { laptopCompare, weekendPlan, type VisualScript } from "../examples/visual-replies";
 import { useReplay } from "../lib/replay";
+import { visualViews } from "../lib/visual-views";
 import { uiComponents } from "../lib/ui-components";
 import { replyEvents } from "../lib/visual-reply";
 
@@ -35,7 +36,9 @@ function ScriptedChat({ script }: { script: VisualScript }) {
   return (
     <div className="h-dvh">
       <UiComponentsProvider components={components} persist={persist}>
-        <ChatView messages={messages} busy={reply?.status === "streaming"} onSend={onSend} {...(script.allow && { widgets: { allow: script.allow } })} />
+        <ToolViewsProvider tools={visualViews}>
+          <ChatView messages={messages} busy={reply?.status === "streaming"} onSend={onSend} {...(script.allow && { widgets: { allow: script.allow } })} />
+        </ToolViewsProvider>
       </UiComponentsProvider>
     </div>
   );

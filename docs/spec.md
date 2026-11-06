@@ -319,8 +319,13 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
-- End-to-end run of inline visuals with a real model (qwen3.8-flash-next on the gateway, Responses API) to
-  see if it is viable. (The combined story is done: "Inline visuals/Replies".)
+- The kit is only UI: harnesses bring their own tools and prompts. Tool definitions and the design guide are
+  suggestions; views map any tool name/input shape (`widgetToolView(read)`, `uiTreeToolView(read)`).
+- Make it as easy as possible for any model to build a good UI first time: checks whose messages a model can
+  act on (tree: unknown component, bad prop, path; widget code: document tags, hard-coded colors, blocked
+  network), widget runtime errors passed to the host, so a harness feeds them back instead of retrying.
+- Markdown docs with examples: plugging the visuals into a custom harness (tools, prompts, feeding errors back).
+- Storybook against a real model via a gitignored .env (see below).
 - Storybook against a real model: a gitignored .env in this repo (endpoint, key, model) so stories can talk to
   a live model; keys never committed.
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.

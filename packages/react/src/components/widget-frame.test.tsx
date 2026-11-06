@@ -3,7 +3,8 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { Message } from "@agentic-ui-kit/core";
 import { ChatTranscript } from "../views/chat-transcript";
 import { ChatView } from "../views/chat-view";
-import { intersectAllow, WidgetFrame, widgetCsp } from "./widget-frame";
+import { ToolViewsProvider, defaultToolViews } from "./tools";
+import { intersectAllow, WidgetFrame, widgetCsp, widgetToolView } from "./widget-frame";
 
 afterEach(cleanup);
 
@@ -155,12 +156,14 @@ const reply: Message = {
   ],
 };
 
-it("draws widget parts and show_widget calls; a ChatView's widgets send through onSend, a transcript's cannot", async () => {
+const views = { ...defaultToolViews, show_widget: widgetToolView() };
+
+it("draws widget parts and calls of the tool the host maps to widgetToolView; a ChatView's widgets send through onSend, a transcript's cannot", async () => {
   globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} } as unknown as typeof ResizeObserver;
   Element.prototype.scrollTo ??= () => {};
   const prompt = { method: "ui/message", params: { role: "user", content: [{ type: "text", text: "more" }] } };
   const onSend = vi.fn();
-  const view = render(<ChatView messages={[reply]} onSend={onSend} />);
+  const view = render(<ToolViewsProvider tools={views}><ChatView messages={[reply]} onSend={onSend} /></ToolViewsProvider>);
   const frames = [...view.container.querySelectorAll("iframe")];
   expect(frames.map((f) => f.title)).toEqual(["week", "map"]);
   await fromWindow(frames[1]!.contentWindow, prompt);
