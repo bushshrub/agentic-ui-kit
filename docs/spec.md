@@ -318,6 +318,8 @@ Each slice ends with tests passing and the states visible in the playground.
 12. Later: search, projects with instructions, share links, light theme, voice.
 
 ## Queued
+- A resent show_widget / show_ui (after error feedback) should replace the broken one above it, not stack
+  under it: a `replaces` input, or the kit collapsing a superseded call in the same reply (from llm-chat-ui).
 
 - The kit is only UI: harnesses bring their own tools and prompts. Tool definitions and the design guide are
   suggestions; views map any tool name/input shape (`widgetToolView(read)`, `uiTreeToolView(read)`).

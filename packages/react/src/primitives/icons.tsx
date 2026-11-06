@@ -109,6 +109,13 @@ export interface ChatIcons {
   file: ReactNode;
   /** Remove an attachment. */
   remove: ReactNode;
+  /**
+   * Left of the thinking / tool-steps summary while the model works, e.g. your logo animating. None by
+   * default.
+   */
+  activity?: ReactNode;
+  /** The same spot once the steps are done, e.g. the logo at rest. None by default. */
+  activityDone?: ReactNode;
 }
 
 /** Lucide icons, plus the claude.ai caret. Unsized: the places that show them size them with CSS. */

@@ -1,6 +1,7 @@
 import { activityTokens, type ActivityPart } from "@agentic-ui-kit/core";
 import { useState, type ReactNode } from "react";
 import { Disclosure } from "../primitives/disclosure";
+import { useIcons } from "../primitives/icons";
 import { useLabels } from "../primitives/labels";
 import { Markdown } from "./markdown";
 import { activityHeading, isWorking, activityLabel, useToolView, useToolViews } from "./tools";
@@ -37,6 +38,7 @@ export function ActivityGroup({ parts, defaultExpanded = false, className }: Act
           onExpandedChange={setExpanded}
           summary={
             <>
+              <Lead live={live} />
               <Live live={live}>{activityHeading(parts, views, labels)}</Live>
               {after}
             </>
@@ -52,6 +54,18 @@ export function ActivityGroup({ parts, defaultExpanded = false, className }: Act
         </Disclosure>
       )}
     </div>
+  );
+}
+
+/** The host's mark left of the summary (`icons.activity` while working, `icons.activityDone` after), if set. */
+function Lead({ live }: { live: boolean }) {
+  const icons = useIcons();
+  const icon = live ? icons.activity : icons.activityDone;
+  if (!icon) return null;
+  return (
+    <span aria-hidden className="chat-activity-icon mr-1.5 inline-flex size-[1.15em] shrink-0 items-center self-center [&_svg]:size-full">
+      {icon}
+    </span>
   );
 }
 
@@ -95,6 +109,7 @@ function SingleStep({
       onExpandedChange={onExpandedChange}
       summary={
         <>
+          <Lead live={live} />
           <Live live={live}>{summary}</Live>
           {after}
         </>
