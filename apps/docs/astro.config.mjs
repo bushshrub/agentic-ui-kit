@@ -79,7 +79,7 @@ export default defineConfig({
           entryPoints: [`${repoRoot}packages/react`, `${repoRoot}packages/core`],
           output: 'reference/api',
           sidebar: { label: 'API reference', collapsed: true },
-          typeDoc: { plugin: [new URL('./scripts/typedoc-module-names.mjs', import.meta.url).pathname], entryPointStrategy: 'packages', packageOptions: { entryPoints: ['src/index.ts'], tsconfig: 'tsconfig.json' }, excludeExternals: true, excludePrivate: true, excludeInternal: true, readme: new URL('./scripts/api-readme.md', import.meta.url).pathname },
+          typeDoc: { plugin: [new URL('./scripts/typedoc-module-names.mjs', import.meta.url).pathname], entryPointStrategy: 'packages', packageOptions: { entryPoints: ['src/index.ts'], tsconfig: 'tsconfig.json', readme: 'none' }, excludeExternals: true, excludePrivate: true, excludeInternal: true, readme: new URL('./scripts/api-readme.md', import.meta.url).pathname },
         }),
         starlightSidebarTopics([
           {
