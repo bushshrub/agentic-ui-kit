@@ -2,6 +2,7 @@ import type { ActivityPart, ToolCallPart } from "@agentic-ui-kit/core";
 import { useIcons, IconSlot } from "../primitives/icons";
 import { createContext, useContext, useMemo, type ComponentType, type ReactNode } from "react";
 import { useAgentSnapshot, useAgentTool, type AgentTool } from "../hooks/agent";
+import { useChatExtensions } from "./extensions";
 import { askUserToolView } from "./ask-user";
 import { CodeBlock } from "../primitives/code-block";
 import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
@@ -71,7 +72,9 @@ export function useToolView(name: string): ToolView {
 
 /** The provider's views, plus views brought by tools the page registered (`ChatTool.view`). */
 export function useToolViews(): ToolViews {
-  const base = useContext(ToolViewsContext) ?? defaultToolViews;
+  const fromExtensions = useChatExtensions().toolViews;
+  const provided = useContext(ToolViewsContext) ?? defaultToolViews;
+  const base = useMemo(() => (fromExtensions ? { ...fromExtensions, ...provided } : provided), [fromExtensions, provided]);
   const registry = useAgentSnapshot();
   const version = registry?.getVersion() ?? 0;
   return useMemo(() => {

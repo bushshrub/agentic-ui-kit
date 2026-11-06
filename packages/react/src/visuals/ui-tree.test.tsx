@@ -1,8 +1,9 @@
-import { uiActionSchema } from "@agentic-ui-kit/core";
+import { uiActionSchema } from "@agentic-ui-kit/core/visuals";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { readTreeInput, UiComponentsProvider, UiTree, useUiAction, type UiComponent, type UiStateStore } from "./ui-tree";
+import { VisualsProvider } from "./provider";
 import { WidgetHostProvider } from "./widget-frame";
 
 afterEach(cleanup);
@@ -118,14 +119,14 @@ it("reads a root the model sent as a JSON string, even one cut short", () => {
 });
 
 it("draws ```ui blocks in a reply, each with its own state, and code without a provider", async () => {
-  const { Markdown } = await import("./markdown");
+  const { Markdown } = await import("../components/markdown");
   const text = 'Intro\n\n```ui\n<State picked="A" />\n<Text text={$state.picked} />\n<Button label="Pick B" onPress={{action: "set", key: "picked", value: "B"}} />\n```\n\nBetween\n\n```ui\n<Text text={$state.picked} />\n<State picked="Z" />\n```\n';
   const ids = new Set<string>();
   const persist: UiStateStore = { load: (id) => void ids.add(id), save: () => {} };
   const { unmount } = render(
-    <UiComponentsProvider components={components} persist={persist}>
+    <VisualsProvider components={components} persist={persist}>
       <Markdown partId="m1">{text}</Markdown>
-    </UiComponentsProvider>,
+    </VisualsProvider>,
   );
   expect(await screen.findByText("A")).toBeTruthy();
   expect(screen.getByText("Z")).toBeTruthy();

@@ -1,6 +1,8 @@
-import { widgetLoaderMessages, type ToolCallPart, type VisualizeInput, type WidgetPart } from "@agentic-ui-kit/core";
+import { type ToolCallPart, type WidgetPart } from "@agentic-ui-kit/core";
+import { widgetLoaderMessages, type VisualizeInput } from "@agentic-ui-kit/core/visuals";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLabels } from "../primitives/labels";
+import { useChatInteraction } from "../components/extensions";
 
 /*
  * WidgetFrame draws untrusted HTML in a sandboxed iframe: model-written fragments (the visualize tool, `widget`
@@ -54,13 +56,22 @@ export interface WidgetHost {
 
 const WidgetHostContext = createContext<WidgetHost>({});
 
-/** Sets what widgets below may do. ChatView and ChatTranscript set it from their `widgets` prop. */
+/** Sets what widgets below may do. `VisualsProvider` sets it from its `host` prop. */
 export function WidgetHostProvider({ host, children }: { host: WidgetHost; children: ReactNode }) {
   return <WidgetHostContext.Provider value={host}>{children}</WidgetHostContext.Provider>;
 }
 
+/** The host's abilities. Inside a ChatView, `onPrompt` sends through its `onSend`; a ChatTranscript has no `onPrompt` or `onCallTool`. */
 export function useWidgetHost(): WidgetHost {
-  return useContext(WidgetHostContext);
+  const host = useContext(WidgetHostContext);
+  const { send, readOnly } = useChatInteraction();
+  return useMemo(() => {
+    if (readOnly) {
+      const { onPrompt: _prompt, onCallTool: _call, ...rest } = host;
+      return rest;
+    }
+    return send ? { onPrompt: send, ...host } : host;
+  }, [host, send, readOnly]);
 }
 
 export interface WidgetFrameProps extends Omit<WidgetHost, "readResource" | "onWidgetError"> {

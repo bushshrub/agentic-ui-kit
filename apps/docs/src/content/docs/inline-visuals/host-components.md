@@ -12,8 +12,8 @@ sidebar:
 Register components with a JSON Schema for their props (with zod: `z.toJSONSchema`). The model can use them
 two ways:
 
-- **As JSX in a tool call** (recommended): give the model `showUiTool(specs)` and register
-  `uiMarkupToolView()` under its name. The model passes JSX as a string; the chat draws it element by
+- **As JSX in a tool call** (recommended): give the model `showUiTool(specs)` and `VisualsProvider`
+  draws its `show_ui` calls (`uiMarkupToolView()`, for a tool of another name). The model passes JSX as a string; the chat draws it element by
   element as the argument streams:
 
   ```text
@@ -24,33 +24,32 @@ two ways:
   Strings go in quotes, everything else in braces (`items={[{"label": "Tent"}]}`), and state reads as
   `value={$state.tab}`. JavaScript is not run.
 - **As a ` ```ui ` block in the reply**: put `uiMarkupGuide(specs)` in the system prompt; inside
-  `UiComponentsProvider` the chat draws those blocks the same way.
+  `VisualsProvider` the chat draws those blocks the same way.
 - **As a JSON tree in a tool call**: give the model `renderUiTool(specs)`, which describes them. Its `render_ui` calls are trees of your components;
 a node with an unknown component or props that don't fit renders nothing.
 
 ## The ready-made set
 
-The kit ships components so you don't write them: `uiComponents` from `agentic-ui-kit`, with their specs
-(`uiComponentSpecs`) in `agentic-ui-kit/core` for a server that has no React.
+The kit ships components so you don't write them: `uiComponents` from `agentic-ui-kit/visuals`, with their specs
+(`uiComponentSpecs`) in `agentic-ui-kit/visuals/core` for a server that has no React.
 
 - **Display**: Stack, Grid, Card, Heading, Text, Metric, List, Table, Badge, Progress.
 - **Interactive**: Checklist, Tabs, Show, Button.
 
 ```tsx
-import { UiComponentsProvider, uiComponentSet } from "agentic-ui-kit";
-import { renderUiTool } from "agentic-ui-kit/core";
+import { VisualsProvider, uiComponentSet } from "agentic-ui-kit/visuals";
 
 const components = uiComponentSet({ exclude: ["Button"] }); // no Button: the model is never told of it
-<UiComponentsProvider components={components} persist={store}>
+<VisualsProvider components={components} persist={store}>
   <ChatView {...chat} />
-</UiComponentsProvider>;
+</VisualsProvider>;
 ```
 
 On the server, build the tool from the same picks, so the model only hears of (and `checkUiTree` only
 accepts) what you registered:
 
 ```ts
-import { renderUiTool, uiSpecSet } from "agentic-ui-kit/core";
+import { renderUiTool, uiSpecSet } from "agentic-ui-kit/visuals/core";
 
 const specs = uiSpecSet({ exclude: ["Button"] }); // same options as uiComponentSet
 // tools: [renderUiTool(specs), ...]; checkUiTree(input, specs)
@@ -80,9 +79,9 @@ const components: UiComponent[] = [
   htmlComponent, // optional: raw HTML in a WidgetFrame, for what your components can't show
 ];
 // tools: [renderUiTool(components.map(({ render, ...spec }) => spec)), ...]
-<UiComponentsProvider components={components} persist={store}>
+<VisualsProvider components={components} persist={store}>
   <ChatView {...chat} />
-</UiComponentsProvider>;
+</VisualsProvider>;
 ```
 
 Inside a component, `useUiAction()` runs an action from its props (`uiActionSchema`: set a state key, send

@@ -5,21 +5,25 @@ import { dirname, join, relative } from "node:path";
 import { build } from "tsdown";
 
 rmSync("dist", { recursive: true, force: true });
-await build({ entry: ["src/index.ts", "src/core.ts"], format: "esm", dts: false, platform: "neutral", outDir: "dist", logLevel: "warn" });
+await build({ entry: { index: "src/index.ts", core: "src/core.ts", visuals: "src/visuals/index.ts", "visuals-core": "src/visuals/core.ts" }, format: "esm", dts: false, platform: "neutral", outDir: "dist", logLevel: "warn" });
 
 // Types: tsc emits dist/types/{react,core}/src; the internal core package becomes a relative import.
 execFileSync("tsc", ["-p", "tsconfig.build.json", "--outDir", "dist/types"], { stdio: "inherit" });
 const coreIndex = "dist/types/core/src/index.js";
+const coreVisuals = "dist/types/core/src/visuals.js";
 for (const file of readdirSync("dist/types/react/src", { recursive: true, withFileTypes: false })) {
   if (!String(file).endsWith(".d.ts")) continue;
   const path = join("dist/types/react/src", String(file));
-  const to = relative(dirname(path), coreIndex);
-  const text = readFileSync(path, "utf8").replaceAll('"@agentic-ui-kit/core"', JSON.stringify(to.startsWith(".") ? to : `./${to}`));
+  const rel = (target) => {
+    const to = relative(dirname(path), target);
+    return JSON.stringify(to.startsWith(".") ? to : `./${to}`);
+  };
+  const text = readFileSync(path, "utf8").replaceAll('"@agentic-ui-kit/core"', rel(coreIndex)).replaceAll('"@agentic-ui-kit/core/visuals"', rel(coreVisuals));
   writeFileSync(path, text);
 }
 
-// The React entry uses hooks and context: mark it for frameworks with server components.
-writeFileSync("dist/index.js", `"use client";\n${readFileSync("dist/index.js", "utf8")}`);
+// The React entries use hooks and context: mark them for frameworks with server components.
+for (const file of ["dist/index.js", "dist/visuals.js"]) writeFileSync(file, `"use client";\n${readFileSync(file, "utf8")}`);
 
 // tailwind.css: for hosts on Tailwind v4. Their build generates the utilities from dist/*.js.
 const source = readFileSync("src/styles.css", "utf8");

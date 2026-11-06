@@ -8,7 +8,7 @@ import { Composer, type ComposerProps } from "../components/composer";
 import { MessageList } from "../components/message-list";
 import type { Feedback, MessageActions } from "../components/messages";
 import { useLabels } from "../primitives/labels";
-import { openInNewTab, WidgetHostProvider, type WidgetHost } from "../components/widget-frame";
+import { ChatInteractionProvider } from "../components/extensions";
 
 export type Density = "full" | "panel" | "inline";
 
@@ -49,12 +49,6 @@ export interface ChatViewProps {
   /** Add your own buttons to each message's action row, or hide copy and the time. */
   messageActions?: MessageActions;
   renderPart?: (part: Part) => ReactNode;
-  /**
-   * What widgets (sandboxed visuals) may do: the domains they may load, and their callbacks. A widget's
-   * sendPrompt sends through `onSend` and its links open in a new tab unless set here; set a callback to
-   * `undefined` to turn it off.
-   */
-  widgets?: WidgetHost;
   /** Usually a `<ChatHeader>`. */
   header?: ReactNode;
   /**
@@ -101,7 +95,6 @@ export function ChatView({
   onReadAloud,
   messageActions,
   renderPart,
-  widgets,
   header,
   composer,
   emptyState,
@@ -117,10 +110,7 @@ export function ChatView({
     ...(contentWidth && { "--chat-content-width": contentWidth }),
     ...(contentPadding && { "--chat-content-padding": contentPadding }),
   } as CSSProperties;
-  const host = useMemo<WidgetHost>(
-    () => ({ onPrompt: onSend, onOpenLink: openInNewTab, ...widgets }),
-    [onSend, widgets],
-  );
+  const interaction = useMemo(() => ({ send: onSend }), [onSend]);
   const empty = messages.length === 0;
   const [body, short] = useShortPane();
   const labels = useLabels();
@@ -148,7 +138,7 @@ export function ChatView({
           <div className="w-full max-w-(--chat-content-width)">{emptyState ? emptyState(box("centered")) : box("centered")}</div>
         </div>
       ) : (
-        <WidgetHostProvider host={host}>
+        <ChatInteractionProvider value={interaction}>
         <MessageList
           messages={messages}
           {...(onRetry && { onRetry })}
@@ -174,7 +164,7 @@ export function ChatView({
             </div>
           }
         />
-        </WidgetHostProvider>
+        </ChatInteractionProvider>
       )}
       </div>
     </div>

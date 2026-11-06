@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { widgetFrameLoader } from "@agentic-ui-kit/core";
+import { widgetFrameLoader } from "@agentic-ui-kit/core/visuals";
 import { expect, it } from "vitest";
 
 it("the playground serves the current widget frame loader", () => {

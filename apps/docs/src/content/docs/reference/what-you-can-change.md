@@ -21,8 +21,8 @@ your brand and of the space it sits in.
 - Wording and locale: `ChatTheme labels`, see Theming. Icons: `ChatTheme icons`, Lucide by default.
 - Content: the `header`, `footer`, `notice`, `emptyState` and `disclaimer` slots, custom parts through
   `renderPart`, and tool views through `useChatTool`.
-- Inline visuals: which domains widgets may load and which of their abilities are on (`widgets`), and the
-  components the model may compose (`UiComponentsProvider`).
+- Inline visuals (`agentic-ui-kit/visuals`): which domains widgets may load and which of their abilities are
+  on (`VisualsProvider host`), and the components the model may compose (`VisualsProvider components`).
 
 **Fixed on purpose**
 

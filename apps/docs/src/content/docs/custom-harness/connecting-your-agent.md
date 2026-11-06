@@ -34,7 +34,7 @@ the same specs plus a `render`. Keep the specs in a module both import, with no 
 
 ```ts
 // shared/ui-specs.ts
-import type { UiComponentSpec } from "agentic-ui-kit/core";
+import type { UiComponentSpec } from "agentic-ui-kit/visuals/core";
 
 export const uiSpecs: UiComponentSpec[] = [
   { name: "Stack", description: "Children in a column.", children: true },
@@ -52,7 +52,7 @@ Tools and guide depend only on the specs, so they are the same bytes every turn 
 prompt cache warm:
 
 ```ts
-import { showUiTool, visualizeGuide, visualizeTool } from "agentic-ui-kit/core";
+import { showUiTool, visualizeGuide, visualizeTool } from "agentic-ui-kit/visuals/core";
 import { uiSpecs } from "../shared/ui-specs";
 
 const instructions = [yourInstructions, visualizeGuide].join("\n\n"); // the guide only if you offer show_widget
@@ -71,21 +71,25 @@ Both tools are no-ops on the server: the UI is drawn by the chat. Return the che
 ## 3. The web side
 
 ```tsx
-import { ChatView, ToolViewsProvider, UiComponentsProvider, defaultToolViews, uiMarkupToolView, widgetToolView, type UiComponent } from "agentic-ui-kit";
+import { ChatView } from "agentic-ui-kit";
+import { VisualsProvider, type UiComponent } from "agentic-ui-kit/visuals";
 import { uiSpecs } from "../shared/ui-specs";
 
 const renders = { Stack: StackView, Metric: MetricView };
 const components: UiComponent[] = uiSpecs.map((spec) => ({ ...spec, render: renders[spec.name] }));
-const tools = { ...defaultToolViews, show_ui: uiMarkupToolView(), show_widget: widgetToolView() }; // keys = your tool names
 
-<UiComponentsProvider components={components} persist={stateStore}>
-  <ToolViewsProvider tools={tools}>
-    <ChatView {...chat} widgets={{ allow: { resourceDomains: ["https://tile.openstreetmap.org"] } }} />
-  </ToolViewsProvider>
-</UiComponentsProvider>;
+<VisualsProvider
+  components={components}
+  persist={stateStore}
+  host={{ allow: { resourceDomains: ["https://tile.openstreetmap.org"] } }}
+>
+  <ChatView {...chat} />
+</VisualsProvider>;
 ```
 
-- Name your tools whatever you like: register the views under your names. If your tool's input has another
+- `VisualsProvider` draws the suggested tools (`show_ui`, `show_widget`, `render_ui`). To name your tools
+  yourself, register the views under your names in a `ToolViewsProvider` (its entries win), with
+  `{ ...defaultToolViews, ...visualToolViews, my_tool: uiMarkupToolView() }`. If your tool's input has another
   shape, pass a reader: `uiMarkupToolView((input) => input.jsx)`, `widgetToolView((input) => ({ html: input.code }))`.
 - ` ```ui ` blocks in reply text are drawn with `components` too; other code blocks stay code. Set
   `markup={false}` on the provider to show them as code instead.

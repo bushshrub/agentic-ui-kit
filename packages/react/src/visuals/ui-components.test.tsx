@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { uiComponentSpecs, uiSpecs } from "@agentic-ui-kit/core";
+import { uiComponentSpecs, uiSpecs } from "@agentic-ui-kit/core/visuals";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it } from "vitest";
 import { uiComponents, uiComponentSet } from "./ui-components";

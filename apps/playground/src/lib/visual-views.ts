@@ -1,13 +1,8 @@
-import { defaultToolViews, uiMarkupToolView, uiTreeToolView, widgetToolView, type ToolViews } from "agentic-ui-kit";
-import { renderUiToolName, showUiToolName, visualizeTool } from "agentic-ui-kit/core";
+import { defaultToolViews, type ToolViews } from "agentic-ui-kit";
+import { visualToolViews } from "agentic-ui-kit/visuals";
 
 /**
- * The playground's harness uses the kit's suggested tools, so it maps those names to the kit's views. A host
- * with its own tools registers the same views under its names, with a `read` for its input shape.
+ * The kit's views for the suggested tools, on top of the default views. `<VisualsProvider>` adds the visual
+ * ones by itself; this is for a host that sets its own `ToolViewsProvider` and wants both lists in one object.
  */
-export const visualViews: ToolViews = {
-  ...defaultToolViews,
-  [visualizeTool.name]: widgetToolView(),
-  [showUiToolName]: uiMarkupToolView(),
-  [renderUiToolName]: uiTreeToolView(),
-};
+export const visualViews: ToolViews = { ...defaultToolViews, ...visualToolViews };

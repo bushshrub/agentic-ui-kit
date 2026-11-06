@@ -23,7 +23,7 @@ Return the check's feedback as the tool result. The model reads it like any othe
 again:
 
 ```ts
-import { checkUiMarkupCode, checkUiTree, checkWidgetCode } from "agentic-ui-kit/core";
+import { checkUiMarkupCode, checkUiTree, checkWidgetCode } from "agentic-ui-kit/visuals/core";
 
 if (call.name === "show_ui") return checkUiMarkupCode(call.input.markup, uiSpecs).feedback;
 if (call.name === "show_widget") return checkWidgetCode(call.input.widget_code, allow).feedback;
@@ -50,7 +50,7 @@ templates (Qwen's, for one) don't show tool call ids to the model at all, so put
 too: `withCallId(call.id, feedback)` starts it with "Drawn as <id>.". If the model passes a visual's `title`
 instead of its id, the kit matches the latest visual with that title. Warning-only
 feedback (hard-coded colors) says the widget works and not to redraw it. Your own drawing tool can take part
-too: add `replacesProperty` from agentic-ui-kit/core to its input schema and `replacesGuide` to its description.
+too: add `replacesProperty` from agentic-ui-kit/visuals/core to its input schema and `replacesGuide` to its description.
 
 ## UI blocks in the reply
 
@@ -58,7 +58,7 @@ There is no tool call to answer, so check the reply when it is done and append t
 request:
 
 ```ts
-import { checkUiMarkup } from "agentic-ui-kit/core";
+import { checkUiMarkup } from "agentic-ui-kit/visuals/core";
 
 const check = checkUiMarkup(replyText, uiSpecs);
 if (!check.ok) {
@@ -72,10 +72,12 @@ fixes it while the user watches, at the cost of another request.
 
 ## Errors at runtime
 
-A widget's script can still fail in the browser. `widgets.onWidgetError` gets each message once:
+A widget's script can still fail in the browser. `host.onWidgetError` of `VisualsProvider` gets each message once:
 
 ```tsx
-<ChatView {...chat} widgets={{ onWidgetError: ({ partId, message }) => api.reportWidgetError(chatId, partId, message) }} />
+<VisualsProvider host={{ onWidgetError: ({ partId, message }) => api.reportWidgetError(chatId, partId, message) }}>
+  <ChatView {...chat} />
+</VisualsProvider>
 ```
 
 Send it to your server and add it to the model's next input, e.g. `Your widget failed: x is not defined

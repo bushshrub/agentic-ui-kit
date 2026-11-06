@@ -1,8 +1,9 @@
 import type { Message, PartStatus, ToolCallPart } from "@agentic-ui-kit/core";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { MessageList } from "./message-list";
-import { ToolViewsProvider } from "./tools";
+import { MessageList } from "../components/message-list";
+import { VisualsProvider } from "./provider";
+import { ToolViewsProvider } from "../components/tools";
 
 beforeEach(() => {
   Element.prototype.scrollTo = () => {};
@@ -25,9 +26,11 @@ const call = (id: string, text: string, replaces?: string, status: PartStatus = 
 const reply = (id: string, parts: ToolCallPart[]): Message => ({ id, parentId: null, role: "assistant", status: "done", createdAt: "2026-11-05T10:00:00Z", parts });
 const tools = { draw: { Block: ({ part }: { part: ToolCallPart }) => <p>{(part.input as { text: string }).text}</p> } };
 const list = (messages: Message[]) => (
-  <ToolViewsProvider tools={tools}>
-    <MessageList messages={messages} />
-  </ToolViewsProvider>
+  <VisualsProvider>
+    <ToolViewsProvider tools={tools}>
+      <MessageList messages={messages} />
+    </ToolViewsProvider>
+  </VisualsProvider>
 );
 
 it("draws a same-reply update in the first call's place, once its input is complete", () => {

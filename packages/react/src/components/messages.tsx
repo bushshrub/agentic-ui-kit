@@ -1,6 +1,6 @@
-import { toBlocks, type Message, type Part } from "@agentic-ui-kit/core";
+import { toBlocks, type Message, type Part, type ToolCallPart } from "@agentic-ui-kit/core";
 import { CopyButton } from "../primitives/copy-button";
-import { chainsOf, ToolChain } from "./replacements";
+import { useChatExtensions } from "./extensions";
 import { clsx } from "clsx";
 import { useIcons } from "../primitives/icons";
 import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -10,7 +10,6 @@ import { ActivityGroup } from "./activity-group";
 import { AttachmentCard, PastedTextDialog } from "./attachments";
 import { Markdown } from "./markdown";
 import { useToolViews } from "./tools";
-import { WidgetPartView } from "./widget-frame";
 
 /** "just now", "5 minutes ago", "21 hours ago", "yesterday", then a date. */
 export function formatRelativeTime(iso: string, now = Date.now(), labels: ChatLabels = defaultLabels): string {
@@ -167,7 +166,8 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
   const streaming = message.status === "streaming";
   const views = useToolViews();
   const blocks = toBlocks(message.parts, (part) => views[part.name]?.Block !== undefined);
-  const { first, chains } = chainsOf(message);
+  const { renderPart: extensionPart, toolChains } = useChatExtensions();
+  const { first, chains } = toolChains?.group(message) ?? { first: new Map<string, string>(), chains: new Map<string, ToolCallPart[]>() };
   return (
     <div className={clsx("group/message flex flex-col gap-4", className)}>
       {blocks.map((block) => {
@@ -187,23 +187,20 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
         }
         if (block.kind === "tool") {
           // A call that updates an earlier one in this reply is drawn in that one's place.
-          if (first.get(block.part.id) !== block.part.id) return null;
-          return (
-            <ToolChain
-              key={block.id}
-              chain={chains.get(block.part.id) ?? [block.part]}
-              draw={(part) => {
-                const ToolBlock = (views[part.name] ?? views[block.part.name])!.Block!;
-                return <ToolBlock part={part} />;
-              }}
-            />
-          );
+          if ((first.get(block.part.id) ?? block.part.id) !== block.part.id) return null;
+          const draw = (part: ToolCallPart) => {
+            const ToolBlock = (views[part.name] ?? views[block.part.name])!.Block!;
+            return <ToolBlock part={part} />;
+          };
+          const Chain = toolChains?.Chain;
+          return Chain ? <Chain key={block.id} chain={chains.get(block.part.id) ?? [block.part]} draw={draw} /> : <Fragment key={block.id}>{draw(block.part)}</Fragment>;
         }
         const part = block.part;
         if (part.type === "text") return <Markdown key={part.id} partId={part.id} streaming={part.status === "streaming"}>{part.text}</Markdown>;
         const custom = renderPart?.(part);
         if (custom) return <div key={part.id}>{custom}</div>;
-        if (part.type === "widget") return <WidgetPartView key={part.id} part={part} />;
+        const extra = extensionPart?.(part);
+        if (extra) return <Fragment key={part.id}>{extra}</Fragment>;
         if (part.type === "custom" && part.text) return <Markdown key={part.id}>{part.text}</Markdown>;
         return null;
       })}

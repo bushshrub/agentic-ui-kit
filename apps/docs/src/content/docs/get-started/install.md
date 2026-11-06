@@ -15,6 +15,8 @@ Requires React 19. React is an optional peer dependency, so a server can use `ag
 | ---------------------------- | ------------------------------------------------------------------------------ |
 | `agentic-ui-kit`             | React components and hooks                                                     |
 | `agentic-ui-kit/core`        | Types, stream events, the message reducer, SSE helpers. No React, no DOM.      |
+| `agentic-ui-kit/visuals`     | Optional: inline visuals (model-drawn UI). See [Inline visuals](/inline-visuals/overview/). |
+| `agentic-ui-kit/visuals/core`| Tools, guides, checks and specs for inline visuals. No React.                  |
 | `agentic-ui-kit/styles.css`  | Precompiled styles, for apps without Tailwind                                   |
 | `agentic-ui-kit/tailwind.css`| The same styles as Tailwind v4 source, for apps that use Tailwind              |
 

@@ -3,7 +3,8 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { Message } from "@agentic-ui-kit/core";
 import { ChatTranscript } from "../views/chat-transcript";
 import { ChatView } from "../views/chat-view";
-import { ToolViewsProvider, defaultToolViews } from "./tools";
+import { ToolViewsProvider, defaultToolViews } from "../components/tools";
+import { VisualsProvider } from "./provider";
 import { intersectAllow, WidgetFrame, widgetCsp, widgetToolView } from "./widget-frame";
 
 afterEach(cleanup);
@@ -163,19 +164,29 @@ it("draws widget parts and calls of the tool the host maps to widgetToolView; a 
   Element.prototype.scrollTo ??= () => {};
   const prompt = { method: "ui/message", params: { role: "user", content: [{ type: "text", text: "more" }] } };
   const onSend = vi.fn();
-  const view = render(<ToolViewsProvider tools={views}><ChatView messages={[reply]} onSend={onSend} /></ToolViewsProvider>);
+  const view = render(<VisualsProvider><ToolViewsProvider tools={views}><ChatView messages={[reply]} onSend={onSend} /></ToolViewsProvider></VisualsProvider>);
   const frames = [...view.container.querySelectorAll("iframe")];
   expect(frames.map((f) => f.title)).toEqual(["week", "map"]);
   await fromWindow(frames[1]!.contentWindow, prompt);
   expect(onSend).toHaveBeenCalledWith("more");
   view.unmount();
 
-  const shared = render(<ChatTranscript messages={[reply]} />);
+  const shared = render(<VisualsProvider><ChatTranscript messages={[reply]} /></VisualsProvider>);
   const own = shared.container.querySelector("iframe")!.contentWindow!;
   const replies: unknown[] = [];
   vi.spyOn(own, "postMessage").mockImplementation((m: unknown) => void replies.push(m));
   await fromWindow(own, { id: 7, ...prompt });
   expect(replies).toEqual([expect.objectContaining({ id: 7, error: expect.objectContaining({ code: -32000 }) })]);
+});
+
+it("draws visuals only inside a VisualsProvider, with no tool views to set up", () => {
+  globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} } as unknown as typeof ResizeObserver;
+  Element.prototype.scrollTo ??= () => {};
+  const off = render(<ChatView messages={[reply]} onSend={vi.fn()} />);
+  expect(off.container.querySelectorAll("iframe")).toHaveLength(0);
+  off.unmount();
+  const on = render(<VisualsProvider><ChatView messages={[reply]} onSend={vi.fn()} /></VisualsProvider>);
+  expect([...on.container.querySelectorAll("iframe")].map((f) => f.title)).toEqual(["week", "map"]);
 });
 
 it("passes a widget's script errors to the host", async () => {
@@ -196,7 +207,7 @@ it("the frame's boot script parses", () => {
 });
 
 it("with a frameUrl, loads that page and sends it the document when it is ready", async () => {
-  const { widgetLoaderMessages } = await import("@agentic-ui-kit/core");
+  const { widgetLoaderMessages } = await import("@agentic-ui-kit/core/visuals");
   const { container } = render(<WidgetFrame html="<p>hi</p>" frameUrl="/widget-frame.html" />);
   const frame = frameOf(container);
   expect(frame.getAttribute("src")).toBe("/widget-frame.html");

@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChatView, htmlComponent, ToolViewsProvider, UiComponentsProvider, uiComponentSet, uiComponents, userMessage, useUiAction, type UiStateStore, UiTree } from "agentic-ui-kit";
+import { ChatView, userMessage } from "agentic-ui-kit";
+import { htmlComponent, UiComponentsProvider, uiComponentSet, uiComponents, useUiAction, type UiStateStore, UiTree, VisualsProvider } from "agentic-ui-kit/visuals";
 import type { Message } from "agentic-ui-kit/core";
 import { useMemo, useState } from "react";
 import { expect, fn, waitFor } from "storybook/test";
 import { laptopCompare, skiPacking, skiPackingTool, weekendPlan, type VisualScript } from "../examples/visual-replies";
 import { useReplay } from "../lib/replay";
-import { visualViews } from "../lib/visual-views";
 import { replyEvents } from "../lib/visual-reply";
 
 // What the host registers: its components, plus the sandboxed-HTML escape hatch.
@@ -46,11 +46,9 @@ function ScriptedChat({ script: name, onSend: send }: ScriptedArgs) {
   const messages = [ask, ...(reply ? [reply] : []), ...extra];
   return (
     <div className="h-dvh">
-      <UiComponentsProvider components={components} persist={persist}>
-        <ToolViewsProvider tools={visualViews}>
-          <ChatView messages={messages} busy={reply?.status === "streaming"} onSend={onSend} {...(script.allow && { widgets: { allow: script.allow } })} />
-        </ToolViewsProvider>
-      </UiComponentsProvider>
+      <VisualsProvider components={components} persist={persist} {...(script.allow && { host: { allow: script.allow } })}>
+        <ChatView messages={messages} busy={reply?.status === "streaming"} onSend={onSend} />
+      </VisualsProvider>
     </div>
   );
 }

@@ -23,6 +23,8 @@ Requires React 19. React is an optional peer dependency, so a server can use `ag
 | ---------------------------- | ------------------------------------------------------------------------------ |
 | `agentic-ui-kit`             | React components and hooks                                                     |
 | `agentic-ui-kit/core`        | Types, stream events, the message reducer, SSE helpers. No React, no DOM.      |
+| `agentic-ui-kit/visuals`     | Optional: inline visuals (model-drawn UI), turned on with `<VisualsProvider>`  |
+| `agentic-ui-kit/visuals/core`| Tools, guides, checks and specs for inline visuals. No React, for servers.     |
 | `agentic-ui-kit/styles.css`  | Precompiled styles, for apps without Tailwind                                   |
 | `agentic-ui-kit/tailwind.css`| The same styles as Tailwind v4 source, for apps that use Tailwind              |
 
@@ -189,10 +191,12 @@ chosen links in replies your way, e.g. a job link as a job row.
 
 The model can draw something interactive in its reply, and it fills in while the model writes. The kit is
 only the UI: your harness names the tools and writes the prompt; the kit suggests both and draws the result.
-Register the views under your tool names. Full guide: https://bushshrub.github.io/agentic-ui-kit/custom-harness/connecting-your-agent/
+Inline visuals are opt-in: import them from `agentic-ui-kit/visuals` (React) and `agentic-ui-kit/visuals/core`
+(servers), and wrap the chat in `<VisualsProvider>`. Upgrading from 0.8: see
+https://bushshrub.github.io/agentic-ui-kit/get-started/upgrading-to-0-9/. Full guide: https://bushshrub.github.io/agentic-ui-kit/custom-harness/connecting-your-agent/
 
 **Your components (recommended).** Register components with a JSON Schema for their props (with zod:
-`z.toJSONSchema`). Give the model `showUiTool(specs)` from `agentic-ui-kit/core`: it passes JSX as a string,
+`z.toJSONSchema`). Give the model `showUiTool(specs)` from `agentic-ui-kit/visuals/core`: it passes JSX as a string,
 which the chat draws element by element as it streams. Answer each call with
 `checkUiMarkupCode(markup, specs).feedback`, so the model learns what to fix (line, component, allowed props).
 
@@ -202,11 +206,10 @@ const components: UiComponent[] = [
   { name: "Stack", description: "Children in a column.", children: true, render: Stack },
 ];
 // server: tools: [showUiTool(components.map(({ render, ...spec }) => spec)), ...]
-<UiComponentsProvider components={components} persist={store}>
-  <ToolViewsProvider tools={{ ...defaultToolViews, show_ui: uiMarkupToolView() }}>
-    <ChatView {...chat} />
-  </ToolViewsProvider>
-</UiComponentsProvider>;
+// import { VisualsProvider } from "agentic-ui-kit/visuals"
+<VisualsProvider components={components} persist={store}>
+  <ChatView {...chat} />
+</VisualsProvider>;
 ```
 
 Inside a component, `useUiAction()` runs an action from its props (`uiActionSchema`: set a state key, send
@@ -215,21 +218,22 @@ widget's state across reloads. Also available: ` ```ui ` blocks in reply text (`
 `checkUiMarkup`) and JSON trees in a tool call (`renderUiTool`, `uiTreeToolView`, `checkUiTree`).
 
 **Sandboxed HTML.** For maps, charts and anything free-form: give the model `visualizeTool` and put
-`visualizeGuide` in its instructions, register `show_widget: widgetToolView()`, and answer calls with
+`visualizeGuide` in its instructions, and answer calls with
 `checkWidgetCode(code, allow).feedback`. Widgets render in a `WidgetFrame`: an iframe with
 `sandbox="allow-scripts"` only and a CSP that blocks every request, themed with your `--chat-*` variables.
 The same frame hosts MCP App UIs (MCP Apps spec 2026-01-26: `ui/initialize`, tool input and result,
 `tools/call`); the kit never fetches anything itself, your `readResource` does.
 
 ```tsx
-<ChatView
-  {...chat}
-  widgets={{
+<VisualsProvider
+  host={{
     allow: { resourceDomains: ["https://unpkg.com", "https://tile.openstreetmap.org"] }, // the most any widget may load
     onCallTool: (name, args) => mcp.callTool(name, args), // MCP App UIs; leave out to turn it off
     onWidgetError: ({ partId, message }) => report(partId, message), // script errors, to send back to the model
   }}
-/>
+>
+  <ChatView {...chat} />
+</VisualsProvider>
 ```
 
 A widget's `sendPrompt(text)` sends through `onSend`, and its links open in a new tab; set either callback to
@@ -288,7 +292,7 @@ The React package has four layers, each built only from the ones before it:
 | ---------- | --------------------------------------------------------------------------------------------- |
 | Primitives | `Button`, `IconButton`, `Menu`, `ContextMenu`, `Modal`, `Drawer`, `Panel`, `Tooltip`, `CodeBlock`, `ChatTheme` |
 | Hooks      | `useChat`, `sseTransport`, `AgentProvider`, `useAgentTool`, `useAgentContext`, `useSmoothText` |
-| Components | `Composer`, `ModelPicker`, `MessageList`, `ActivityGroup`, `ApprovalCard`, `Markdown`, `ChatHeader`, `ChatList`, `ContextPanel`, `WidgetFrame`, `UiTree` |
+| Components | `Composer`, `ModelPicker`, `MessageList`, `ActivityGroup`, `ApprovalCard`, `Markdown`, `ChatHeader`, `ChatList`, `ContextPanel` |
 | Views      | `ChatView`, `AppShell`, `Sidebar`                                                             |
 
 Use `ChatView` for the whole thing, or build your own layout from the components.
@@ -311,8 +315,8 @@ your brand and of the space it sits in.
 - Wording and locale: `ChatTheme labels`, see Theming. Icons: `ChatTheme icons`, Lucide by default.
 - Content: the `header`, `footer`, `notice`, `emptyState` and `disclaimer` slots, custom parts through
   `renderPart`, and tool views through `useChatTool`.
-- Inline visuals: which domains widgets may load and which of their abilities are on (`widgets`), and the
-  components the model may compose (`UiComponentsProvider`).
+- Inline visuals (`agentic-ui-kit/visuals`): which domains widgets may load and which of their abilities are
+  on (`VisualsProvider host`), and the components the model may compose (`VisualsProvider components`).
 
 **Fixed on purpose**
 

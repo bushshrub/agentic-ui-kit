@@ -3,7 +3,7 @@ import { clsx } from "clsx";
 import { Children, createContext, type ComponentProps, type ComponentType, isValidElement, memo, useContext, useMemo, useState, type ReactNode } from "react";
 import { defaultComponents, defaultRehypePlugins, Streamdown, type Components } from "streamdown";
 import { CodeBlock } from "../primitives/code-block";
-import { UiMarkupBlock, useUiMarkupLanguage } from "./ui-tree";
+import { useChatExtensions } from "./extensions";
 import { useSmoothText } from "../hooks/smooth-text";
 import { rehypeWordFade } from "./word-fade";
 
@@ -52,13 +52,14 @@ const BlockContext = createContext<{ id: string; streaming: boolean } | undefine
 function Code({ node, className, children }: { node?: unknown; className?: string | undefined; children?: ReactNode }) {
   const hast = node as HastNode | undefined;
   const language = /language-([\w+#-]+)/.exec(className ?? "")?.[1];
-  const ui = useUiMarkupLanguage();
+  const { codeBlocks } = useChatExtensions();
   const block = useContext(BlockContext);
   const multiline = hast?.position && hast.position.start.line !== hast.position.end.line;
   if (!language && !multiline) return <code data-chat-inline-code>{children}</code>;
   const code = textOf(hast).replace(/\n$/, "");
   // The block's start line stays put while it streams, so it keys the block's state.
-  if (block && ui && language === ui) return <UiMarkupBlock id={`${block.id}:${hast?.position?.start.line ?? 0}`} source={code} streaming={block.streaming} />;
+  const Custom = block && language && Object.hasOwn(codeBlocks ?? {}, language) ? codeBlocks![language] : undefined;
+  if (block && Custom) return <Custom id={`${block.id}:${hast?.position?.start.line ?? 0}`} code={code} streaming={block.streaming} />;
   return <CodeBlock variant="boxed" code={code} {...(language && { language })} />;
 }
 

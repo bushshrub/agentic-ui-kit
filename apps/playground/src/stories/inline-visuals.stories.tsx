@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChatTranscript, ChatView, ToolViewsProvider, userMessage, type WidgetAllow, WidgetFrame } from "agentic-ui-kit";
-import { parsePartialJson, visualizeTool, type Message, type Part } from "agentic-ui-kit/core";
+import { ChatTranscript, ChatView, userMessage } from "agentic-ui-kit";
+import { VisualsProvider, type WidgetAllow, WidgetFrame } from "agentic-ui-kit/visuals";
+import { parsePartialJson, type Message, type Part } from "agentic-ui-kit/core";
+import { visualizeTool } from "agentic-ui-kit/visuals/core";
 import { useEffect, useState } from "react";
 import { expect, fn, waitFor } from "storybook/test";
-import { visualViews } from "../lib/visual-views";
 import calendarHtml from "../widgets/calendar.html?raw";
 import mapHtml from "../widgets/map.html?raw";
 import workoutHtml from "../widgets/workout.html?raw";
@@ -68,7 +69,7 @@ interface WidgetArgs {
   demo: keyof typeof demos;
   /** Show the finished widget at once instead of streaming its markup in chunks. */
   instant: boolean;
-  /** Load widgets from a page the host serves (`widgets.frameUrl`, here /widget-frame.html) instead of srcdoc. */
+  /** Load widgets from a page the host serves (`host.frameUrl`, here /widget-frame.html) instead of srcdoc. */
   hostFrame: boolean;
   /** A shared, read-only transcript with the html as a `widget` part: the widget works but sendPrompt does nothing. */
   shared: boolean;
@@ -97,7 +98,9 @@ function VisualChat({ demo: name, instant, hostFrame, shared, onSend }: WidgetAr
     };
     return (
       <div className="h-dvh">
-        <ChatTranscript messages={[ask, reply]} />
+        <VisualsProvider>
+          <ChatTranscript messages={[ask, reply]} />
+        </VisualsProvider>
       </div>
     );
   }
@@ -114,14 +117,9 @@ function VisualChat({ demo: name, instant, hostFrame, shared, onSend }: WidgetAr
   };
   return (
     <div className="h-dvh">
-      <ToolViewsProvider tools={visualViews}>
-        <ChatView
-          messages={messages}
-          busy={streaming}
-          onSend={prompt}
-          widgets={{ ...(demo.allow && { allow: demo.allow }), ...(hostFrame && { frameUrl: "./widget-frame.html" }) }}
-        />
-      </ToolViewsProvider>
+      <VisualsProvider host={{ ...(demo.allow && { allow: demo.allow }), ...(hostFrame && { frameUrl: "./widget-frame.html" }) }}>
+        <ChatView messages={messages} busy={streaming} onSend={prompt} />
+      </VisualsProvider>
     </div>
   );
 }
@@ -169,7 +167,7 @@ export const WorkoutPlanner: Story = {
 };
 
 /**
- * Widgets loaded from a page the host serves (`widgets.frameUrl`, here the playground's /widget-frame.html,
+ * Widgets loaded from a page the host serves (`host.frameUrl`, here the playground's /widget-frame.html,
  * a copy of core's `widgetFrameLoader`) instead of srcdoc. For apps whose CSP blocks inline scripts: a
  * srcdoc frame inherits that CSP and its scripts would not run; this frame gets its own.
  */
@@ -232,9 +230,9 @@ export const UpdatedInPlace: StoryObj<{ startStep: number }> = {
         <button className="m-2 self-start rounded border border-chat-border px-2 py-1 text-sm text-chat-fg" onClick={() => setStep((step + 1) % 4)}>
           {steps[step]}
         </button>
-        <ToolViewsProvider tools={visualViews}>
+        <VisualsProvider>
           <ChatTranscript messages={messages} />
-        </ToolViewsProvider>
+        </VisualsProvider>
       </div>
     );
   },

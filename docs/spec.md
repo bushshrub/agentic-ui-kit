@@ -330,6 +330,11 @@ Each slice ends with tests passing and the states visible in the playground.
   like Panel's; Tooltip on a plain span/anchor (accept any element or document the Focusable wrapper).
 - Example (not a kit export): a host Map component in the component set (spec { center, zoom, markers },
   Leaflet render, lazy-loaded), as a Storybook example plus a short section in host-components.md.
+- Types under `moduleResolution: nodenext`: the shipped .d.ts use extensionless relative imports (TS2834,
+  ~110 errors in a strict consumer, already in 0.8.0). Bundler resolution is clean. Emit .js extensions
+  (rewrite in build.mjs or source imports) and add a packed-consumer typecheck to CI for both resolutions.
+- API reference: typedoc is single-entry, so agentic-ui-kit/visuals and visuals/core have no pages (adding
+  entries renamed every existing URL). Configure module naming so the old URLs stay and the visuals get pages.
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
 

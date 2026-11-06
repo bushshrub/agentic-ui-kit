@@ -1,6 +1,6 @@
 {
   "name": "agentic-ui-kit",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "React UI kit for LLM chat and agentic apps: streaming messages, tool calls, approvals, themable with CSS variables.",
   "license": "MIT",
   "type": "module",
@@ -22,6 +22,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./core": "./src/core.ts",
+    "./visuals": "./src/visuals/index.ts",
+    "./visuals/core": "./src/visuals/core.ts",
     "./tailwind.css": "./src/styles.css"
   },
   "publishConfig": {
@@ -33,6 +35,14 @@
       "./core": {
         "types": "./dist/types/react/src/core.d.ts",
         "import": "./dist/core.js"
+      },
+      "./visuals": {
+        "types": "./dist/types/react/src/visuals/index.d.ts",
+        "import": "./dist/visuals.js"
+      },
+      "./visuals/core": {
+        "types": "./dist/types/react/src/visuals/core.d.ts",
+        "import": "./dist/visuals-core.js"
       },
       "./styles.css": "./dist/styles.css",
       "./tailwind.css": "./dist/tailwind.css",

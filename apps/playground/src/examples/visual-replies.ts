@@ -1,7 +1,7 @@
 // Scripted replies that mix prose, sandboxed HTML (show_widget) and host components (render_ui), as a
 // model would write them. Pure data: the player in the stories streams any script the same way.
-import type { WidgetAllow } from "agentic-ui-kit";
-import { renderUiToolName, visualizeTool } from "agentic-ui-kit/core";
+import { renderUiToolName, visualizeTool } from "agentic-ui-kit/visuals/core";
+import type { WidgetAllow } from "agentic-ui-kit/visuals";
 import type { ReplyStep } from "../lib/visual-reply";
 import mapHtml from "../widgets/map.html?raw";
 

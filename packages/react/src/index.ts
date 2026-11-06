@@ -69,15 +69,11 @@ export {
   useChatTool,
 } from "./components/tools";
 export type { ToolView, ToolViews, ToolPromptProps, SearchResult, ChatTool } from "./components/tools";
+export { ChatExtensionsProvider, useChatExtensions, ChatInteractionProvider, useChatInteraction } from "./components/extensions";
+export type { ChatExtensions, CodeBlockRendererProps, ToolCallGroups, ChatInteraction } from "./components/extensions";
 export { AskUserPrompt, AskUserAnswers, askUserToolView } from "./components/ask-user";
 export { ToolPromptCard } from "./components/tool-prompt";
 export type { ToolPromptCardProps } from "./components/tool-prompt";
-export { WidgetFrame, WidgetHostProvider, useWidgetHost, WidgetPartView, widgetToolView, readVisualizeInput, widgetCsp, intersectAllow, openInNewTab, WIDGET_MAX_HEIGHT } from "./components/widget-frame";
-export type { WidgetFrameProps, WidgetToolInput, WidgetHost, WidgetAllow, WidgetResource } from "./components/widget-frame";
-export { UiComponentsProvider, UiTree, UiMarkupBlock, useUiMarkupLanguage, useUiAction, useUiState, htmlComponent, uiTreeToolView, uiMarkupToolView, readTreeInput } from "./components/ui-tree";
-export type { UiComponent, UiStateStore, UiTreeProps, UiToolViewOptions } from "./components/ui-tree";
-export { uiComponents, uiComponentSet, uiRenders } from "./components/ui-components";
-export type { UiComponentSetOptions } from "./components/ui-components";
 export { ApprovalCard } from "./components/approval-card";
 export type { ApprovalCardProps } from "./components/approval-card";
 export { TokenCounter, useCountUp, formatTokens } from "./components/token-counter";

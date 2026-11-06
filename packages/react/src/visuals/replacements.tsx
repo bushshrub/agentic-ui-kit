@@ -1,4 +1,5 @@
-import { replacedId, resolveReplaces, type Message, type ToolCallPart } from "@agentic-ui-kit/core";
+import { type Message, type ToolCallPart } from "@agentic-ui-kit/core";
+import { replacedId, resolveReplaces } from "@agentic-ui-kit/core/visuals";
 import { createContext, useContext, type ReactNode } from "react";
 import { Button } from "../primitives/button";
 import { useLabels } from "../primitives/labels";

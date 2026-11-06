@@ -1,16 +1,5 @@
-import {
-  isStateRef,
-  parseUiMarkup,
-  salvageJson,
-  uiMarkupLanguage,
-  matchesSchema,
-  uiActionSchema,
-  type RenderUiInput,
-  type ToolCallPart,
-  type UiAction,
-  type UiComponentSpec,
-  type UiNode,
-} from "@agentic-ui-kit/core";
+import { salvageJson, type ToolCallPart } from "@agentic-ui-kit/core";
+import { isStateRef, parseUiMarkup, uiMarkupLanguage, matchesSchema, uiActionSchema, type RenderUiInput, type UiAction, type UiComponentSpec, type UiNode } from "@agentic-ui-kit/core/visuals";
 import { Component, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { WidgetFrame, useWidgetHost } from "./widget-frame";
 

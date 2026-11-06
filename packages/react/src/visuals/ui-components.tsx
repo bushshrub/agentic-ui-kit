@@ -2,7 +2,7 @@
 // inputs. Nothing here is about a domain; the model composes these into itineraries, comparisons,
 // dashboards, checklists. The specs the model sees live in core (`uiSpecs`), so a server can import them;
 // the drawings here are separate, so a host can keep a spec and plug in its own render.
-import { uiSpecSet, type UiSpecName, type UiSpecSelection } from "@agentic-ui-kit/core";
+import { uiSpecSet, type UiSpecName, type UiSpecSelection } from "@agentic-ui-kit/core/visuals";
 import type { ComponentType, ReactNode } from "react";
 import { Button } from "../primitives/button";
 import { useUiAction, useUiState, type UiComponent } from "./ui-tree";

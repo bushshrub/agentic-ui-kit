@@ -1,15 +1,13 @@
 import type { Message, Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
-import { useMemo, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 import { MessageList } from "../components/message-list";
-import { openInNewTab, WidgetHostProvider, type WidgetHost } from "../components/widget-frame";
+import { ChatInteractionProvider } from "../components/extensions";
 import { densityVars, type Density } from "./chat-view";
 
 export interface ChatTranscriptProps {
   messages: Message[];
   renderPart?: (part: Part) => ReactNode;
-  /** What widgets may load and how their links open. Widgets here cannot send messages or call tools. */
-  widgets?: Omit<WidgetHost, "onPrompt" | "onCallTool">;
   /** Above the conversation, e.g. a ChatHeader with the title and who shared it. */
   header?: ReactNode;
   /** Atop the conversation, scrolling with it: who shared it and what it is. E.g. a ChatNotice. */
@@ -24,6 +22,8 @@ export interface ChatTranscriptProps {
   className?: string;
 }
 
+const readOnly = { readOnly: true };
+
 /**
  * A conversation to read, not to continue: a shared chat, an export, a log. Same messages as ChatView,
  * with no composer, approvals, retry, edit or feedback. Copy stays.
@@ -31,7 +31,6 @@ export interface ChatTranscriptProps {
 export function ChatTranscript({
   messages,
   renderPart,
-  widgets,
   header,
   notice,
   footer,
@@ -46,16 +45,11 @@ export function ChatTranscript({
     ...(contentWidth && { "--chat-content-width": contentWidth }),
     ...(contentPadding && { "--chat-content-padding": contentPadding }),
   } as CSSProperties;
-  const host = useMemo<WidgetHost>(() => {
-    const { allow, readResource, frameUrl } = { ...widgets };
-    const onOpenLink = widgets && "onOpenLink" in widgets ? widgets.onOpenLink : openInNewTab;
-    return { ...(allow && { allow }), ...(onOpenLink && { onOpenLink }), ...(readResource && { readResource }), ...(frameUrl && { frameUrl }) };
-  }, [widgets]);
   return (
     <div data-chat-density={density} style={style} className={clsx("chat-view flex h-full min-h-0 flex-col bg-chat-bg text-chat-fg", className)}>
       {header}
       <div className="chat-view-body flex min-h-0 flex-1 flex-col">
-        <WidgetHostProvider host={host}>
+        <ChatInteractionProvider value={readOnly}>
         <MessageList
           messages={messages}
           start={start}
@@ -69,7 +63,7 @@ export function ChatTranscript({
             ),
           })}
         />
-        </WidgetHostProvider>
+        </ChatInteractionProvider>
       </div>
     </div>
   );

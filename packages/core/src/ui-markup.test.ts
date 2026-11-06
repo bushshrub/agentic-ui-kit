@@ -107,7 +107,7 @@ it("suggests a UI tool and answers its calls", () => {
 });
 
 it("the drawing tools take replaces, and replacedId reads it", async () => {
-  const { replacedId, visualizeTool } = await import("./index");
+  const { replacedId, visualizeTool } = await import("./visuals");
   expect(showUiTool([]).inputSchema.properties.replaces.type).toBe("string");
   expect(visualizeTool.inputSchema.properties.replaces.type).toBe("string");
   expect(replacedId({ replaces: "call_1" })).toBe("call_1");
@@ -116,7 +116,7 @@ it("the drawing tools take replaces, and replacedId reads it", async () => {
 });
 
 it("withCallId puts the id in the tool result; resolveReplaces falls back to titles", async () => {
-  const { withCallId, resolveReplaces } = await import("./index");
+  const { withCallId, resolveReplaces } = await import("./visuals");
   expect(withCallId("call_1", "Shown to the user.")).toBe("Drawn as call_1. Shown to the user.");
   const ids = new Set(["call_1"]);
   const titles = new Map([["gym_week", "call_1"]]);
