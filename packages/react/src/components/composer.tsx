@@ -5,6 +5,7 @@ import type React from "react";
 import { IconButton } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
 import { MenuTrigger, Popover } from "../primitives/menu";
+import { DictationControls, type DictationState } from "./dictation";
 
 export interface ComposerProps {
   onSubmit: (text: string) => void;
@@ -37,6 +38,11 @@ export interface ComposerProps {
   /** Holds sending back, e.g. while a file uploads. */
   submitDisabled?: boolean;
   isDisabled?: boolean;
+  /**
+   * Set while the user dictates (from `useDictation().state`): the words fill the box as they are heard,
+   * and a level meter, cancel and accept replace `trailing` and send.
+   */
+  dictation?: DictationState;
   autoFocus?: boolean;
   className?: string;
 }
@@ -62,6 +68,7 @@ export function Composer({
   allowEmpty = false,
   submitDisabled = false,
   isDisabled = false,
+  dictation,
   autoFocus,
   className,
 }: ComposerProps) {
@@ -96,8 +103,23 @@ export function Composer({
     return () => observer.disconnect();
   }, [fit]);
 
+  const [finishing, setFinishing] = useState(false);
+  const joined = (words: string | undefined) => (words ? (text.trim() ? `${text.replace(/\s+$/, "")} ${words}` : words) : text);
+  const acceptDictation = async () => {
+    if (!dictation || finishing) return;
+    const heard = dictation.transcript;
+    setFinishing(true);
+    try {
+      const words = await dictation.onAccept();
+      setText(joined(typeof words === "string" ? words : heard));
+    } finally {
+      setFinishing(false);
+      area.current?.focus();
+    }
+  };
+
   const [dragging, setDragging] = useState(false);
-  const canSend = !busy && !isDisabled && !submitDisabled && (allowEmpty || text.trim().length > 0);
+  const canSend = !dictation && !busy && !isDisabled && !submitDisabled && (allowEmpty || text.trim().length > 0);
   const submit = () => {
     if (!canSend) return;
     onSubmit(text);
@@ -140,7 +162,9 @@ export function Composer({
   };
 
   const compact = variant === "compact";
-  const action = busy ? (
+  const action = dictation ? (
+    <DictationControls dictation={dictation} onAccept={() => void acceptDictation()} finishing={finishing} />
+  ) : busy ? (
     <IconButton label={labels.stop} variant="primary" onPress={onStop} className="rounded-[var(--chat-send-radius,var(--chat-radius-md))]! [&_svg]:size-3.5 [&_svg]:fill-current">
       {icons.stop}
     </IconButton>
@@ -174,11 +198,12 @@ export function Composer({
         <textarea
           ref={area}
           rows={1}
-          value={text}
+          value={dictation ? joined(dictation.transcript) : text}
+          readOnly={!!dictation}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={onKeyDown}
           onPaste={onPaste}
-          placeholder={placeholder ?? labels.replyPlaceholder}
+          placeholder={dictation ? (finishing ? labels.transcribing : labels.listening) : (placeholder ?? labels.replyPlaceholder)}
           aria-label={labels.message}
           disabled={isDisabled}
           autoFocus={autoFocus}
@@ -191,13 +216,13 @@ export function Composer({
         />
         {compact ? (
           <div className="flex shrink-0 items-center gap-1">
-            {trailing}
+            {!dictation && trailing}
             {action}
           </div>
         ) : (
           <div className="flex items-center gap-1">
             <div className="flex min-w-0 flex-1 items-center gap-1">{leading}</div>
-            {trailing}
+            {!dictation && trailing}
             {action}
           </div>
         )}

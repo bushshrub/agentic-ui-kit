@@ -318,6 +318,9 @@ Each slice ends with tests passing and the states visible in the playground.
 12. Later: search, projects with instructions, share links, light theme, voice.
 
 ## Queued
+- Storybook order (user, next after dictation): the feature demos and the claude.ai-like / chatgpt.com-like
+  examples first, then the components, and the primitive UI at the bottom. It is messy now, and the
+  examples are hidden low down.
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
 - Approval card wording: it reuses the finished-call label, so it reads "Allow Ran a command?". It needs a

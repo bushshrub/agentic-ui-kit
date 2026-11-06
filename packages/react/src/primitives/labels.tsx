@@ -92,6 +92,16 @@ export interface ChatLabels {
   stop: string;
   /** Send button. */
   send: string;
+  /** Composer placeholder while dictating. */
+  listening: string;
+  /** Composer placeholder while the last words are transcribed. */
+  transcribing: string;
+  /** The mic button. */
+  dictate: string;
+  /** Dictation's cancel button. */
+  dictationCancel: string;
+  /** Dictation's accept button. */
+  dictationAccept: string;
   /** The `+` button of the composer. */
   addFiles: string;
 
@@ -262,6 +272,11 @@ export const defaultLabels: ChatLabels = {
   message: "Message",
   stop: "Stop",
   send: "Send",
+  listening: "Listening…",
+  transcribing: "Transcribing…",
+  dictate: "Dictate",
+  dictationCancel: "Cancel dictation",
+  dictationAccept: "Use dictation",
   addFiles: "Add files and more",
 
   attachments: "Attachments",

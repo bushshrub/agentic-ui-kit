@@ -82,6 +82,8 @@ export type { ContextPanelProps } from "./components/context-panel";
 
 // Components: input
 export { Composer, AttachButton } from "./components/composer";
+export { DictationButton, DictationControls, VoiceMeter, encodeWav, useDictation } from "./components/dictation";
+export type { Dictation, DictationButtonProps, DictationState, UseDictationOptions, VoiceMeterProps } from "./components/dictation";
 export { EffortSlider, EffortButton } from "./components/effort-slider";
 export type { EffortSliderProps, EffortButtonProps } from "./components/effort-slider";
 export type { ComposerProps, AttachButtonProps } from "./components/composer";

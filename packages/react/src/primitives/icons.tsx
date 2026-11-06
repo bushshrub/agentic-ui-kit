@@ -29,6 +29,7 @@ import {
   Trash2,
   Volume2,
   X,
+  Mic,
 } from "lucide-react";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { Caret } from "./caret";
@@ -59,6 +60,12 @@ export interface ChatIcons {
   stop: ReactNode;
   /** Open the attach menu in the composer. */
   attach: ReactNode;
+  /** Start dictation in the composer. */
+  mic: ReactNode;
+  /** Cancel dictation. */
+  dictationCancel: ReactNode;
+  /** Accept dictation: put the transcript in the box. */
+  dictationAccept: ReactNode;
   /** Jump to the newest message. */
   scrollToBottom: ReactNode;
   /** Prefix of the token counter. */
@@ -130,6 +137,9 @@ export const defaultIcons: ChatIcons = {
   send: <ArrowUp />,
   stop: <Square />,
   attach: <Plus />,
+  mic: <Mic />,
+  dictationCancel: <X />,
+  dictationAccept: <Check />,
   scrollToBottom: <ArrowDown />,
   tokens: <ArrowDown />,
   sidebar: <PanelLeft />,
