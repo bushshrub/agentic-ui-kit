@@ -1,0 +1,85 @@
+<style>
+  .cal { --hour: 42px; border: 1px solid var(--chat-border); border-radius: var(--chat-radius-lg); overflow: hidden; }
+  .head, .body { display: grid; grid-template-columns: 44px repeat(5, 1fr); }
+  .head div { padding: 8px 6px; font-size: var(--chat-ui-font-size-sm); color: var(--chat-muted); border-bottom: 1px solid var(--chat-border); }
+  .head .today { color: var(--chat-fg); font-weight: 600; }
+  .hours div { height: var(--hour); font-size: 11px; color: var(--chat-subtle); text-align: right; padding-right: 6px; transform: translateY(-6px); }
+  .day { position: relative; border-left: 1px solid var(--chat-divider);
+    background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--hour) - 1px), var(--chat-divider) calc(var(--hour) - 1px) var(--hour)); }
+  /* Existing events stay quiet; what the assistant proposes carries the accent and a tag. */
+  .ev { position: absolute; left: 3px; right: 3px; padding: 4px 6px; border-radius: var(--chat-radius-sm); font-size: 12px; line-height: 1.3;
+    cursor: pointer; overflow: hidden; color: var(--chat-muted); background: var(--chat-surface); border: 1px solid var(--chat-border); }
+  .ev:hover { background: var(--chat-hover); }
+  .ev .t { color: var(--chat-subtle); font-size: 11px; }
+  .ev.new { --c: var(--chat-accent); color: var(--chat-fg); font-weight: 500; z-index: 1;
+    background: color-mix(in srgb, var(--c) 28%, var(--chat-bg)); border: 1.5px solid var(--c); box-shadow: 0 2px 10px color-mix(in srgb, var(--c) 35%, transparent); }
+  .ev.new:hover { background: color-mix(in srgb, var(--c) 40%, var(--chat-bg)); }
+  .ev.new .t { color: var(--chat-muted); font-weight: 400; }
+  .ev.clash { --c: var(--chat-danger); }
+  .tag { float: right; margin-left: 4px; padding: 0 5px; border-radius: 999px; font-size: 10px; font-weight: 600; line-height: 16px;
+    background: var(--c); color: var(--chat-accent-fg); }
+  .legend { display: flex; gap: 14px; align-items: center; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .panel { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--chat-border); border-radius: var(--chat-radius-md); display: none; }
+  .panel.on { display: block; }
+  .panel h4 { margin: 0 0 2px; font-weight: 600; }
+  .panel .meta { color: var(--chat-muted); font-size: var(--chat-ui-font-size-sm); margin-bottom: 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .row button, .bar button { padding: 5px 10px; border-radius: var(--chat-radius-md); border: 1px solid var(--chat-border-strong); background: var(--chat-surface); cursor: pointer; }
+  .row button:hover, .bar button:hover { background: var(--chat-hover); }
+  .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--chat-muted); }
+  .bar b { color: var(--chat-fg); font-weight: 600; }
+  .bar .primary { background: var(--chat-accent); color: var(--chat-accent-fg); border-color: transparent; }
+</style>
+<div class="bar"><span class="legend"><b>Week of Nov 9</b>
+  <span><i style="background: var(--chat-accent)"></i>Proposed (3)</span>
+  <span><i style="background: var(--chat-danger)"></i>Clashes (1)</span>
+  <span><i style="background: var(--chat-surface); border: 1px solid var(--chat-border-strong)"></i>Already booked</span></span>
+  <button class="primary" id="addAll">Add the 3 new events</button></div>
+<div class="cal"><div class="head" id="head"></div><div class="body" id="body"></div></div>
+<div class="panel" id="panel"></div>
+<script>
+  const days = ["Mon 9", "Tue 10", "Wed 11", "Thu 12", "Fri 13"];
+  const start = 8, end = 19;
+  const ev = [
+    { d: 0, s: 9, e: 10, t: "Standup + planning", c: "var(--chat-check)" },
+    { d: 0, s: 13, e: 14.5, t: "Design review", c: "var(--chat-check)" },
+    { d: 1, s: 10, e: 11, t: "Dentist", c: "var(--chat-warning)" },
+    { d: 1, s: 15, e: 16, t: "Gym: strength", c: "var(--chat-accent)", isNew: true },
+    { d: 2, s: 9, e: 12, t: "Focus: Q4 report", c: "var(--chat-check)" },
+    { d: 3, s: 12.5, e: 13.5, t: "Lunch with Sam", c: "var(--chat-warning)" },
+    { d: 3, s: 17, e: 18, t: "Gym: intervals", c: "var(--chat-accent)", isNew: true },
+    { d: 4, s: 10, e: 11.5, t: "1:1 with Priya", c: "var(--chat-check)" },
+    { d: 4, s: 11, e: 12, t: "Gym: mobility", c: "var(--chat-accent)", isNew: true, clash: true },
+  ];
+  const fmt = (h) => `${Math.floor(h)}:${h % 1 ? "30" : "00"}`;
+  const head = document.getElementById("head"), body = document.getElementById("body"), panel = document.getElementById("panel");
+  head.innerHTML = `<div></div>` + days.map((d, i) => `<div class="${i === 2 ? "today" : ""}">${d}</div>`).join("");
+  body.innerHTML = `<div class="hours">${Array.from({ length: end - start }, (_, i) => `<div>${start + i}</div>`).join("")}</div>`;
+  days.forEach((_, d) => {
+    const col = document.createElement("div");
+    col.className = "day";
+    col.style.height = `calc(var(--hour) * ${end - start})`;
+    ev.filter((x) => x.d === d).forEach((x) => {
+      const el = document.createElement("div");
+      el.className = "ev" + (x.isNew ? " new" : "") + (x.clash ? " clash" : "");
+      el.style.setProperty("--c", x.c);
+      el.style.top = `calc(var(--hour) * ${x.s - start})`;
+      el.style.height = `calc(var(--hour) * ${x.e - x.s} - 2px)`;
+      const tag = x.clash ? `<span class="tag">Clash</span>` : x.isNew ? `<span class="tag">New</span>` : "";
+      el.innerHTML = `${tag}${x.t}<div class="t">${fmt(x.s)}–${fmt(x.e)}</div>`;
+      el.onclick = () => show(x);
+      col.append(el);
+    });
+    body.append(col);
+  });
+  function show(x) {
+    panel.className = "panel on";
+    const moves = x.isNew ? ["Earlier that day", "Next day, same time", "Drop it"] : ["Ask to reschedule"];
+    panel.innerHTML = `<h4>${x.t}${x.clash ? " · clashes with 1:1 with Priya" : ""}</h4>
+      <div class="meta">${days[x.d]} · ${fmt(x.s)}–${fmt(x.e)}${x.isNew ? " · proposed" : ""}</div>
+      <div class="row">${moves.map((m) => `<button>${m}</button>`).join("")}</div>`;
+    panel.querySelectorAll("button").forEach((b) => (b.onclick = () => sendPrompt(`${x.t} on ${days[x.d]} at ${fmt(x.s)}: ${b.textContent.toLowerCase()}.`)));
+  }
+  document.getElementById("addAll").onclick = () => sendPrompt("Add the 3 gym sessions to my calendar, but move the Friday one so it doesn't clash.");
+</script>

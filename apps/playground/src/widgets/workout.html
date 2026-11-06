@@ -1,0 +1,108 @@
+<style>
+  .wp { display: grid; gap: 12px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; }
+  .controls label { display: flex; gap: 8px; align-items: center; color: var(--chat-muted); }
+  .seg { display: inline-flex; padding: 2px; border-radius: var(--chat-radius-md); background: var(--chat-surface); }
+  .seg button { border: 0; background: transparent; padding: 4px 10px; border-radius: calc(var(--chat-radius-md) - 2px); cursor: pointer; color: var(--chat-muted); }
+  .seg button.on { background: var(--chat-selected); color: var(--chat-fg); }
+  input[type=range] { accent-color: var(--chat-accent); width: 120px; }
+  .days { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+  .card { border: 1px solid var(--chat-border); border-radius: var(--chat-radius-md); padding: 10px 12px; }
+  .card h4 { margin: 0; font-weight: 600; display: flex; justify-content: space-between; align-items: baseline; }
+  .card h4 span { color: var(--chat-muted); font-weight: 400; font-size: var(--chat-ui-font-size-sm); }
+  .card ul { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }
+  .card li { display: flex; gap: 8px; align-items: center; }
+  .card li.done { color: var(--chat-subtle); text-decoration: line-through; }
+  .card li input { accent-color: var(--chat-check); margin: 0; }
+  .card li em { margin-left: auto; font-style: normal; color: var(--chat-muted); font-size: var(--chat-ui-font-size-sm); }
+  .go { width: 100%; padding: 5px; border-radius: var(--chat-radius-sm); border: 1px solid var(--chat-border-strong); background: var(--chat-surface); cursor: pointer; }
+  .go:hover { background: var(--chat-hover); }
+  .timer { display: none; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; padding: 12px; border-radius: var(--chat-radius-lg);
+    background: var(--chat-surface); }
+  .timer.on { display: grid; }
+  .ring { --p: 0; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font: 600 15px var(--chat-font-mono);
+    background: radial-gradient(closest-side, var(--chat-surface) 79%, transparent 80% 100%), conic-gradient(var(--chat-accent) calc(var(--p) * 1%), var(--chat-border) 0); }
+  .now b { display: block; font-size: 1.05em; }
+  .now span { color: var(--chat-muted); font-size: var(--chat-ui-font-size-sm); }
+  .tbtn { display: flex; gap: 6px; }
+  .tbtn button { padding: 5px 10px; border-radius: var(--chat-radius-md); border: 1px solid var(--chat-border-strong); background: var(--chat-raised); cursor: pointer; }
+  .foot { display: flex; justify-content: space-between; align-items: center; color: var(--chat-muted); }
+  .save { padding: 6px 12px; border-radius: var(--chat-radius-md); border: 0; background: var(--chat-accent); color: var(--chat-accent-fg); cursor: pointer; }
+</style>
+<div class="wp">
+  <div class="controls">
+    <label>Days a week <span class="seg" id="days"></span></label>
+    <label>Goal <span class="seg" id="goal"></span></label>
+    <label>Minutes <input type="range" id="mins" min="20" max="75" step="5" value="45"><b id="minsOut">45</b></label>
+  </div>
+  <div class="timer" id="timer">
+    <div class="ring" id="ring">0:40</div>
+    <div class="now"><b id="nowName">Squat</b><span id="nowNext">Next: rest</span></div>
+    <div class="tbtn"><button id="pause">Pause</button><button id="skip">Skip</button><button id="stopT">Stop</button></div>
+  </div>
+  <div class="days" id="plan"></div>
+  <div class="foot"><span id="sum"></span><button class="save" id="save">Save this plan</button></div>
+</div>
+<script>
+  const lib = {
+    Strength: [["Squat", "4×6"], ["Bench press", "4×6"], ["Romanian deadlift", "3×8"], ["Row", "3×8"], ["Overhead press", "3×8"], ["Pull-up", "3×max"], ["Lunge", "3×10"], ["Plank", "3×45s"]],
+    Endurance: [["Easy run", "25 min"], ["Intervals", "6×2 min"], ["Bike", "30 min"], ["Rower", "4×500 m"], ["Burpees", "3×12"], ["Jump rope", "5×1 min"]],
+    Mobility: [["Hip flow", "8 min"], ["Thoracic rotations", "2×10"], ["Couch stretch", "2×1 min"], ["Cat-cow", "2×10"], ["Deep squat hold", "3×45s"], ["Shoulder CARs", "2×5"]],
+  };
+  const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const state = { days: 3, goal: "Strength", mins: 45, done: {} };
+  const seg = (id, opts, key) => {
+    const el = document.getElementById(id);
+    el.innerHTML = opts.map((o) => `<button data-v="${o}">${o}</button>`).join("");
+    el.onclick = (e) => { const v = e.target.dataset.v; if (!v) return; state[key] = isNaN(v) ? v : +v; render(); };
+  };
+  seg("days", [2, 3, 4, 5], "days");
+  seg("goal", Object.keys(lib), "goal");
+  document.getElementById("mins").oninput = (e) => { state.mins = +e.target.value; render(); };
+  const spread = (n) => ({ 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4] })[n];
+  function plan() {
+    const per = Math.max(2, Math.round(state.mins / 12));
+    const pool = lib[state.goal];
+    return spread(state.days).map((d, i) => ({ day: names[d], items: Array.from({ length: per }, (_, k) => pool[(i * 2 + k) % pool.length]) }));
+  }
+  function render() {
+    document.querySelectorAll(".seg button").forEach((b) => b.classList.toggle("on", b.dataset.v == state.days || b.dataset.v === state.goal));
+    document.getElementById("minsOut").textContent = state.mins;
+    const p = plan();
+    document.getElementById("plan").innerHTML = p.map((d, i) => `<div class="card"><h4>${d.day}<span>${state.mins} min</span></h4><ul>${d.items
+      .map(([n, r], k) => { const id = `${d.day}-${k}`; return `<li class="${state.done[id] ? "done" : ""}"><input type="checkbox" data-id="${id}" ${state.done[id] ? "checked" : ""}>${n}<em>${r}</em></li>`; })
+      .join("")}</ul><button class="go" data-i="${i}">Start ${d.day}'s session</button></div>`).join("");
+    const total = p.reduce((a, d) => a + d.items.length, 0), done = Object.values(state.done).filter(Boolean).length;
+    document.getElementById("sum").textContent = `${state.days} × ${state.mins} min of ${state.goal.toLowerCase()} · ${done}/${total} done this week`;
+  }
+  document.getElementById("plan").onclick = (e) => {
+    if (e.target.dataset.id) { state.done[e.target.dataset.id] = e.target.checked; render(); }
+    if (e.target.dataset.i) startSession(plan()[+e.target.dataset.i]);
+  };
+  let tick, steps, at, left, paused;
+  function startSession(day) {
+    steps = day.items.flatMap(([n]) => [{ n, s: 40 }, { n: "Rest", s: 20 }]).slice(0, -1);
+    at = 0; left = steps[0].s; paused = false;
+    document.getElementById("timer").classList.add("on");
+    clearInterval(tick); tick = setInterval(step, 1000); show();
+  }
+  function step() {
+    if (paused) return;
+    if (--left <= 0) { if (++at >= steps.length) return stop(); left = steps[at].s; }
+    show();
+  }
+  function show() {
+    const s = steps[at], ring = document.getElementById("ring");
+    ring.textContent = `0:${String(left).padStart(2, "0")}`;
+    ring.style.setProperty("--p", 100 - (left / s.s) * 100);
+    document.getElementById("nowName").textContent = s.n;
+    document.getElementById("nowNext").textContent = steps[at + 1] ? `Next: ${steps[at + 1].n}` : "Last one";
+  }
+  function stop() { clearInterval(tick); document.getElementById("timer").classList.remove("on"); }
+  document.getElementById("pause").onclick = (e) => { paused = !paused; e.target.textContent = paused ? "Resume" : "Pause"; };
+  document.getElementById("skip").onclick = () => { left = 1; step(); };
+  document.getElementById("stopT").onclick = stop;
+  document.getElementById("save").onclick = () =>
+    sendPrompt(`Save this plan: ${state.days} days a week, ${state.goal.toLowerCase()}, ${state.mins} minutes. ${plan().map((d) => `${d.day}: ${d.items.map((x) => x[0]).join(", ")}`).join("; ")}.`);
+  render();
+</script>

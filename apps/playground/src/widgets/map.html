@@ -1,0 +1,65 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  .trip { display: grid; grid-template-columns: 15rem 1fr; gap: 12px; height: 380px; }
+  .stops { display: flex; flex-direction: column; gap: 6px; overflow: auto; }
+  .stop { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; text-align: left; padding: 8px 10px;
+    border: 1px solid var(--chat-border); border-radius: var(--chat-radius-md); background: transparent; cursor: pointer; }
+  .stop:hover, .stop.on { background: var(--chat-hover); border-color: var(--chat-border-strong); }
+  .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600;
+    background: var(--chat-accent); color: var(--chat-accent-fg); }
+  .name { font-weight: 500; }
+  .meta { color: var(--chat-muted); font-size: var(--chat-ui-font-size-sm); }
+  #map { border-radius: var(--chat-radius-lg); border: 1px solid var(--chat-border); }
+  .pin { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 600 12px var(--chat-font-sans);
+    background: var(--chat-accent); color: var(--chat-accent-fg); border: 2px solid var(--chat-bg); box-shadow: 0 1px 4px #0006; }
+  .ask { margin-top: 10px; display: flex; gap: 8px; align-items: center; color: var(--chat-muted); }
+  .ask button { padding: 6px 10px; border-radius: var(--chat-radius-md); border: 1px solid var(--chat-border-strong);
+    background: var(--chat-surface); cursor: pointer; }
+  .ask button:hover { background: var(--chat-hover); }
+  .tiles-dark { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.6); }
+  .leaflet-control-attribution { background: color-mix(in srgb, var(--chat-bg) 75%, transparent) !important; color: var(--chat-muted) !important; }
+  .leaflet-control-attribution a { color: var(--chat-muted) !important; }
+  .leaflet-container { background: var(--chat-surface); font-family: var(--chat-font-sans); }
+</style>
+<div class="trip">
+  <div class="stops" id="stops"></div>
+  <div id="map"></div>
+</div>
+<div class="ask"><span id="picked">Pick a stop to ask about it.</span><button id="askBtn" hidden>Ask about this stop</button></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const stops = [
+    { name: "Pastéis de Belém", time: "9:00", note: "Custard tarts, go early", at: [38.6975, -9.2032] },
+    { name: "Jerónimos Monastery", time: "9:45", note: "Book the cloister ticket", at: [38.6979, -9.2068] },
+    { name: "LX Factory", time: "12:00", note: "Lunch and the bookshop", at: [38.7034, -9.1786] },
+    { name: "Miradouro de Santa Catarina", time: "15:30", note: "View over the river", at: [38.7093, -9.1474] },
+    { name: "Alfama", time: "18:00", note: "Walk up, fado at night", at: [38.7114, -9.1300] },
+  ];
+  const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
+  const map = L.map("map", { zoomControl: false, attributionControl: true }).setView([38.705, -9.17], 13);
+  // OpenStreetMap's own tiles: no API key. In dark themes they are dimmed and inverted to fit.
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors", maxZoom: 19, className: dark ? "tiles-dark" : "",
+  }).addTo(map);
+  L.polyline(stops.map((s) => s.at), { color: getComputedStyle(document.documentElement).getPropertyValue("--chat-accent"), weight: 3, dashArray: "6 6" }).addTo(map);
+  const list = document.getElementById("stops");
+  let current = -1;
+  const pick = (i) => {
+    current = i;
+    map.flyTo(stops[i].at, 15, { duration: 0.6 });
+    list.querySelectorAll(".stop").forEach((el, k) => el.classList.toggle("on", k === i));
+    document.getElementById("picked").textContent = `${stops[i].time} · ${stops[i].name}`;
+    document.getElementById("askBtn").hidden = false;
+  };
+  stops.forEach((s, i) => {
+    L.marker(s.at, { icon: L.divIcon({ className: "", html: `<div class="pin">${i + 1}</div>`, iconSize: [26, 26] }) })
+      .addTo(map).on("click", () => pick(i));
+    const b = document.createElement("button");
+    b.className = "stop";
+    b.innerHTML = `<span class="n">${i + 1}</span><span><div class="name">${s.name}</div><div class="meta">${s.time} · ${s.note}</div></span>`;
+    b.onclick = () => pick(i);
+    list.append(b);
+  });
+  map.fitBounds(stops.map((s) => s.at), { padding: [30, 30] });
+  document.getElementById("askBtn").onclick = () => sendPrompt(`Tell me more about ${stops[current].name}: what should I not miss?`);
+</script>

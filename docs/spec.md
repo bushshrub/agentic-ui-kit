@@ -270,6 +270,9 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
+- Inline visuals: prototype in the playground ("Prototypes/Inline visuals": map, calendar, workout planner;
+  apps/playground/src/lib/widget-frame.tsx). Design guide for model-written widgets must say: set apart what
+  you added or changed from what was already there (accent + a "New" tag; existing data quiet).
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").
