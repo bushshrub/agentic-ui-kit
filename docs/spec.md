@@ -311,6 +311,8 @@ Each slice ends with tests passing and the states visible in the playground.
 - Build inline visuals: both kinds in "Visualize (inline visuals)" above.
 - Storybook: one reply that combines several visuals (not one story per widget), built generically. Then an
   end-to-end run with a real model (qwen3.8-flash-next on the gateway, Responses API) to see if it is viable.
+- Storybook against a real model: a gitignored .env in this repo (endpoint, key, model) so stories can talk to
+  a live model; keys never committed.
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").
