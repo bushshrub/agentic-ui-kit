@@ -1,5 +1,5 @@
 import type { Message } from "@agentic-ui-kit/core";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ChatTranscript } from "./chat-transcript";
@@ -36,7 +36,7 @@ it("shows the conversation and the footer, with nothing to type in or act on but
   expect(screen.getByRole("link", { name: "Continue this chat" })).toBeTruthy();
   expect(screen.queryByRole("textbox")).toBeNull();
   const buttons = screen.queryAllByRole("button").map((b) => b.getAttribute("aria-label") ?? b.textContent);
-  expect(buttons.filter((b) => b !== "Copy")).toEqual([]);
+  expect(buttons.filter((b) => b !== "Copy" && b !== "Show more")).toEqual([]);
 });
 
 // StrictMode runs the mount effects twice; the second run must not count as a new message and jump down.
@@ -46,4 +46,24 @@ it("starts at the top, where ChatView starts at the bottom", () => {
   cleanup();
   render(<StrictMode><ChatView messages={messages} onSend={vi.fn()} /></StrictMode>);
   expect(scrolls).toBeGreaterThan(0);
+});
+
+it("puts the notice above the first message", () => {
+  render(<ChatTranscript messages={messages} notice={<p>Shared by Alex.</p>} />);
+  const log = screen.getByRole("log");
+  expect(log.firstElementChild?.textContent).toBe("Shared by Alex.");
+});
+
+it("folds a long user message behind Show more", () => {
+  const tall = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight");
+  Object.defineProperty(HTMLElement.prototype, "scrollHeight", { configurable: true, get: () => 900 });
+  try {
+    render(<ChatTranscript messages={messages} />);
+    const more = screen.getAllByRole("button", { name: "Show more" })[0]!;
+    expect(more.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(more);
+    expect(screen.getAllByRole("button", { name: "Show less" })[0]!.getAttribute("aria-expanded")).toBe("true");
+  } finally {
+    if (tall) Object.defineProperty(HTMLElement.prototype, "scrollHeight", tall);
+  }
 });

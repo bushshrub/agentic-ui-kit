@@ -85,6 +85,8 @@ export { MessageList } from "./components/message-list";
 export type { MessageListProps } from "./components/message-list";
 export { ChatHeader, ChatTitleMenu } from "./components/chat-header";
 export type { ChatHeaderProps, ChatTitleMenuProps } from "./components/chat-header";
+export { ChatNotice } from "./components/chat-notice";
+export type { ChatNoticeProps } from "./components/chat-notice";
 export { ChatList } from "./components/chat-list";
 export type { ChatListProps, ChatListSection, ChatListItem, ChatSummary, ProjectSummary } from "./components/chat-list";
 

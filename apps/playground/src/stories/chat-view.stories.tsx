@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AttachmentRow, Badge, Button, ChatHeader, ChatTranscript, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
+import { AttachmentRow, Button, ChatNotice, ChatTranscript, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
+import type { Message } from "agentic-ui-kit/core";
 import { useState } from "react";
 import { attachMenu, DemoChat, fakeUpload, history, models } from "../lib/demo-chat";
 
@@ -15,16 +16,50 @@ export const InProgress: StoryObj = {
   ),
 };
 
-/** A shared chat, read only: no composer, retry, edit or feedback; Copy stays. Starts at the top. */
+const longAsk: Message = {
+  id: "shared-u0",
+  parentId: null,
+  role: "user",
+  status: "done",
+  createdAt: "2026-11-05T09:00:00Z",
+  parts: [
+    {
+      type: "text",
+      id: "shared-u0-t",
+      status: "done",
+      text: [
+        "CI got slow again and I want a plan before I touch anything. What I know so far:",
+        "- every run installs all dependencies from scratch, there is no cache at all",
+        "- the e2e job starts a fresh browser download each time, which is about 90 MB",
+        "- the typecheck and test jobs run one after the other even though they don't depend on each other",
+        "- we build the docs site on every push, even when only the app changed",
+        "- the Docker image for integration tests is rebuilt from the base every time",
+        "- runners are the small ones; a bigger runner might be cheaper overall if it halves the time",
+        "- a few flaky tests retry three times, which hides how slow they are",
+        "Can we make CI faster?",
+      ].join("\n"),
+    },
+  ],
+};
+
+/**
+ * A shared chat, read only, like claude.ai's shared links: a notice on top, then the conversation; long
+ * messages fold behind "Show more". No composer, retry, edit or feedback; Copy stays. Starts at the top.
+ */
 export const Shared: StoryObj = {
   render: () => (
     <div className="h-dvh">
       <ChatTranscript
-        messages={history}
-        header={<ChatHeader title="Speeding up CI" actions={<Badge>Shared</Badge>} />}
+        messages={[longAsk, ...history.slice(1).map((m, i) => (i === 0 ? { ...m, parentId: longAsk.id } : m))]}
+        notice={
+          <ChatNotice actions={<Button variant="subtle" size="sm">Report</Button>}>
+            <strong className="font-medium">Shared by Alex.</strong> This is a copy of a chat between the assistant and
+            Alex. Content may include unverified or unsafe content. The shared snapshot may leave out attachments and
+            data not shown here.
+          </ChatNotice>
+        }
         footer={
-          <div className="flex items-center justify-between gap-3 rounded-chat-md border border-chat-border bg-chat-surface px-4 py-3 font-chat-sans text-sm">
-            <span className="text-chat-muted">Shared by Alex · a snapshot from Nov 5</span>
+          <div className="flex justify-center">
             <Button variant="primary">Continue this chat</Button>
           </div>
         }

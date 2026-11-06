@@ -13,6 +13,8 @@ export interface MessageListProps {
   renderPart?: (part: Part) => ReactNode;
   /** Under the last message, inside the scroll area, e.g. the docked composer. Stays in view at the bottom. */
   footer?: ReactNode;
+  /** Above the first message, inside the column; scrolls with the conversation. E.g. a ChatNotice. */
+  header?: ReactNode;
   /** Where reading starts: "bottom" (default, a live chat) or "top" (a transcript read from the start). */
   start?: "bottom" | "top";
   className?: string;
@@ -25,7 +27,7 @@ const STICK_SLOP = 48;
  * The scrolling conversation. It follows a streaming reply while the reader is at the bottom and leaves
  * them alone once they scroll up, with a button to jump back. Sending a message always jumps down.
  */
-export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart, footer, start = "bottom", className }: MessageListProps) {
+export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart, header, footer, start = "bottom", className }: MessageListProps) {
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const stuck = useRef(start === "bottom");
@@ -80,6 +82,7 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart,
             aria-label="Conversation"
             className="mx-auto flex w-full max-w-[calc(var(--chat-content-width)+2*var(--chat-gutter,var(--chat-content-padding)))] flex-1 flex-col gap-6 px-[var(--chat-gutter,var(--chat-content-padding))] pt-6 pb-4"
           >
+            {header}
             {messages.map((m) =>
               m.role === "user" ? (
                 <UserMessage key={m.id} message={m} {...(onEdit && { onEdit: () => onEdit(m.id) })} />

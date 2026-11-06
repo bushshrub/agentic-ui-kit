@@ -9,6 +9,8 @@ export interface ChatTranscriptProps {
   renderPart?: (part: Part) => ReactNode;
   /** Above the conversation, e.g. a ChatHeader with the title and who shared it. */
   header?: ReactNode;
+  /** Atop the conversation, scrolling with it: who shared it and what it is. E.g. a ChatNotice. */
+  notice?: ReactNode;
   /** Pinned under the last message, e.g. "Continue this chat" or "Shared snapshot, may be out of date". */
   footer?: ReactNode;
   /** Where reading starts. Default "top", the start of the conversation. */
@@ -27,6 +29,7 @@ export function ChatTranscript({
   messages,
   renderPart,
   header,
+  notice,
   footer,
   start = "top",
   density = "full",
@@ -46,6 +49,7 @@ export function ChatTranscript({
         <MessageList
           messages={messages}
           start={start}
+          {...(notice && { header: notice })}
           {...(renderPart && { renderPart })}
           {...(footer && {
             footer: (

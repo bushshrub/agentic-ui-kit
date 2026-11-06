@@ -1,7 +1,7 @@
 import { toBlocks, type Message, type Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { Check, Copy, Pencil, RefreshCw, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "../primitives/button";
 import { ActivityGroup } from "./activity-group";
 import { AttachmentCard, PastedTextDialog } from "./attachments";
@@ -72,11 +72,7 @@ export function UserMessage({ message, onRetry, onEdit, actions, className }: Us
         </ul>
       )}
       <PastedTextDialog text={viewing} onClose={() => setViewing(undefined)} />
-      {text && (
-        <div className="max-w-[85%] rounded-chat-lg bg-chat-bubble px-4 py-2.5 font-chat-sans text-[0.9375rem] leading-relaxed whitespace-pre-wrap text-chat-fg">
-          {text}
-        </div>
-      )}
+      {text && <UserBubble text={text} />}
       <div className="mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/message:opacity-100 group-focus-within/message:opacity-100 [@media(hover:none)]:opacity-100">
         <span className={timeClass}>{formatRelativeTime(message.createdAt)}</span>
         {onRetry && (
@@ -92,6 +88,46 @@ export function UserMessage({ message, onRetry, onEdit, actions, className }: Us
         <CopyButton text={text} />
         {actions}
       </div>
+    </div>
+  );
+}
+
+/** Taller than this (px), a user message folds to this height with "Show more", like a long paste. */
+const FOLD_HEIGHT = 240;
+
+function UserBubble({ text }: { text: string }) {
+  const body = useRef<HTMLDivElement>(null);
+  const [long, setLong] = useState(false);
+  const [open, setOpen] = useState(false);
+  useLayoutEffect(() => {
+    const el = body.current;
+    if (!el) return;
+    const measure = () => setLong(el.scrollHeight > FOLD_HEIGHT + 24);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [text]);
+  const folded = long && !open;
+  return (
+    <div className="max-w-[85%] rounded-chat-lg bg-chat-bubble px-4 py-2.5 font-chat-sans text-[0.9375rem] leading-relaxed text-chat-fg">
+      <div
+        ref={body}
+        style={folded ? { maxHeight: FOLD_HEIGHT } : undefined}
+        className={clsx("whitespace-pre-wrap", folded && "overflow-hidden mask-b-from-60% mask-b-to-100%")}
+      >
+        {text}
+      </div>
+      {long && (
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          className="mt-1.5 cursor-pointer rounded-chat-sm text-sm text-chat-muted outline-none hover:text-chat-fg focus-visible:ring-2 focus-visible:ring-chat-focus"
+        >
+          {open ? "Show less" : "Show more"}
+        </button>
+      )}
     </div>
   );
 }
