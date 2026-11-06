@@ -318,6 +318,19 @@ Each slice ends with tests passing and the states visible in the playground.
 12. Later: search, projects with instructions, share links, light theme, voice.
 
 ## Queued
+
+- jaa-v2 app shell gaps (reply to jaa-v2 with what ships and the version; code in ~/slop/jaa-v2 branch
+  worktree-agent-a67fe6e30eb58a8fb, web/src/components/{Layout,Sidebar,SidebarApps}.tsx):
+  1. AppShell window-scroll mode (sticky sidebar, the page scrolls the window).
+  2. Resizable sidebar: resizable={min,max} + onWidthChange (or persistKey); no width transition while dragging.
+  3. Controlled collapsed / onCollapsedChange.
+  4. SidebarItem: trailing slot (row actions), secondary text, title/tooltip for truncated labels, data-* passthrough.
+  5. Collapsed rail: show icon-only headerActions (or a rail slot).
+  6. SidebarToggle ⌘B shortcut and "(⌘ B)" in its label; SidebarItem icon size via a --chat-* var.
+  7. Menu: a check mark on the selected item in a selectionMode menu.
+  8. Document that SidebarItem href needs react-aria's RouterProvider for client-side nav (or a router adapter).
+- Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
+  for the local wrapper components; theming.md should mention claude-light.
 - Slopbot friction (on 0.5.1), worst first:
   1. Modal size: className loses to the panel's own w-full/max-w-2xl (no class merging), so every override
      needs `!`. Add `size` (sm/md/lg/xl/full) and `placement` ("center" | "top"), or merge classes.
@@ -336,7 +349,6 @@ Each slice ends with tests passing and the states visible in the playground.
 - Bug (llm-chat-ui): ChatTranscript with start="top" opens ~115px down when it has a notice and a widget that
   grows after mount; it should stay at scrollTop 0 until the reader scrolls.
 - CopyField (llm-chat-ui): read-only URL + Copy button with a "Copied" state, for share dialogs.
-- Export the relative-time helper ("5 minutes ago") the messages use, with its labels (llm-chat-ui).
 - ContextMeter (llm-chat-ui): a 14-16px progress ring for the composer toolbar beside ModelPicker, filled to
   used/limit (ContextPanel's count), accent then warning/danger; tooltip "Context: 13.8k / 200k (7%)" with an
   override or extra line; click/Enter opens ContextPanel in a Popover above it; aria label; optional loading.
