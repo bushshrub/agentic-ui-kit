@@ -329,8 +329,12 @@ Each slice ends with tests passing and the states visible in the playground.
   6. SidebarToggle ⌘B shortcut and "(⌘ B)" in its label; SidebarItem icon size via a --chat-* var.
   7. Menu: a check mark on the selected item in a selectionMode menu.
   8. Document that SidebarItem href needs react-aria's RouterProvider for client-side nav (or a router adapter).
+  9. Button/IconButton (and Modal, Drawer, Popover): merge className with tailwind-merge so caller classes win.
+  10. Button: justify-center, so a full-width Button centers its text.
+  11. A tooltip on a disabled Button (RAC disabled buttons get no hover/focus): a supported way, e.g. `disabledReason`.
+  12. Nice to have: SegmentedControl clearable, isDisabled, size.
 - Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
-  for the local wrapper components; theming.md should mention claude-light.
+  for the local wrapper components.
 - Slopbot friction (on 0.5.1), worst first:
   1. Modal size: className loses to the panel's own w-full/max-w-2xl (no class merging), so every override
      needs `!`. Add `size` (sm/md/lg/xl/full) and `placement` ("center" | "top"), or merge classes.
