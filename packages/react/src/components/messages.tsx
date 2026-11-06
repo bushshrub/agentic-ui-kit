@@ -48,6 +48,19 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+/**
+ * The action row under each message. The kit's buttons show when you pass their handler (retry, edit,
+ * feedback, read aloud); copy and the time show unless turned off; `extra` adds your own after them.
+ */
+export interface MessageActions {
+  /** Your buttons after the kit's, per message, e.g. Share or a "…" menu. Use `IconButton size="sm"`. */
+  extra?: (message: Message) => ReactNode;
+  /** The copy button. Default true. */
+  copy?: boolean;
+  /** The relative time. Default true. */
+  time?: boolean;
+}
+
 const timeClass = "px-1 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle";
 
 export interface UserMessageProps {
@@ -56,11 +69,15 @@ export interface UserMessageProps {
   onEdit?: () => void;
   /** Extra buttons in the action row. */
   actions?: ReactNode;
+  /** Hide the copy button. */
+  copy?: boolean;
+  /** Hide the time. */
+  time?: boolean;
   className?: string;
 }
 
 /** The user's turn: a bubble on the right, with time, retry, edit and copy under it on hover. */
-export function UserMessage({ message, onRetry, onEdit, actions, className }: UserMessageProps) {
+export function UserMessage({ message, onRetry, onEdit, actions, copy = true, time = true, className }: UserMessageProps) {
   const icons = useIcons();
   const labels = useLabels();
   const text = messageText(message);
@@ -80,7 +97,7 @@ export function UserMessage({ message, onRetry, onEdit, actions, className }: Us
       <PastedTextDialog text={viewing} onClose={() => setViewing(undefined)} />
       {text && <UserBubble text={text} />}
       <div className="mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/message:opacity-100 group-focus-within/message:opacity-100 [@media(hover:none)]:opacity-100">
-        <span className={timeClass}>{formatRelativeTime(message.createdAt, undefined, labels)}</span>
+        {time && <span className={timeClass}>{formatRelativeTime(message.createdAt, undefined, labels)}</span>}
         {onRetry && (
           <IconButton label={labels.retry} size="sm" onPress={onRetry}>
             {icons.retry}
@@ -91,7 +108,7 @@ export function UserMessage({ message, onRetry, onEdit, actions, className }: Us
             {icons.edit}
           </IconButton>
         )}
-        <CopyButton text={text} />
+        {copy && <CopyButton text={text} />}
         {actions}
       </div>
     </div>
@@ -150,6 +167,10 @@ export interface AssistantMessageProps {
   renderPart?: (part: Part) => ReactNode;
   /** Extra buttons in the action row. */
   actions?: ReactNode;
+  /** Hide the copy button. */
+  copy?: boolean;
+  /** Hide the time. */
+  time?: boolean;
   className?: string;
 }
 
@@ -157,7 +178,7 @@ export interface AssistantMessageProps {
  * The assistant's turn: activity groups (each with its own token count), markdown, and other parts in
  * order. When done, copy / read aloud / feedback / retry and the time sit under it.
  */
-export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, renderPart, actions, className }: AssistantMessageProps) {
+export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, renderPart, actions, copy = true, time = true, className }: AssistantMessageProps) {
   const icons = useIcons();
   const labels = useLabels();
   const streaming = message.status === "streaming";
@@ -199,7 +220,7 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
         <div className="h-7" />
       ) : (
         <div className="-ml-1.5 flex h-7 items-center gap-0.5">
-          <CopyButton text={messageText(message)} />
+          {copy && <CopyButton text={messageText(message)} />}
           {onReadAloud && (
             <IconButton label={labels.readAloud} size="sm" onPress={onReadAloud}>
               {icons.speak}
@@ -221,7 +242,7 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
             </IconButton>
           )}
           {actions}
-          <span className={timeClass}>{formatRelativeTime(message.createdAt, undefined, labels)}</span>
+          {time && <span className={timeClass}>{formatRelativeTime(message.createdAt, undefined, labels)}</span>}
         </div>
       )}
     </div>

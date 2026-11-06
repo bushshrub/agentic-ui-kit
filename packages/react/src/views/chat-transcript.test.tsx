@@ -67,3 +67,19 @@ it("folds a long user message behind Show more", () => {
     if (tall) Object.defineProperty(HTMLElement.prototype, "scrollHeight", tall);
   }
 });
+
+it("ChatView adds the host's message actions and can hide copy", () => {
+  const onReadAloud = vi.fn();
+  render(
+    <ChatView
+      messages={messages}
+      onSend={() => {}}
+      onReadAloud={onReadAloud}
+      messageActions={{ copy: false, extra: (m) => (m.role === "assistant" ? <button>Share {m.id}</button> : null) }}
+    />,
+  );
+  expect(screen.getByRole("button", { name: "Share a1" })).toBeTruthy();
+  expect(screen.queryAllByRole("button", { name: /copy/i })).toHaveLength(0);
+  fireEvent.click(screen.getByRole("button", { name: /read aloud/i }));
+  expect(onReadAloud).toHaveBeenCalledWith("a1");
+});

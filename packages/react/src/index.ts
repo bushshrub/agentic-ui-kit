@@ -41,7 +41,7 @@ export { useSidebar, useMediaQuery, DRAWER_QUERY } from "./hooks/sidebar-state";
 
 // Components: a message
 export { UserMessage, AssistantMessage, formatRelativeTime, messageText } from "./components/messages";
-export type { UserMessageProps, AssistantMessageProps, Feedback } from "./components/messages";
+export type { UserMessageProps, AssistantMessageProps, Feedback, MessageActions } from "./components/messages";
 export { Markdown, MarkdownLinksProvider } from "./components/markdown";
 export type { MarkdownProps, RenderLink } from "./components/markdown";
 export { ActivityGroup } from "./components/activity-group";

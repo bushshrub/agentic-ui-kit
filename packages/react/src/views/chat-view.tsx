@@ -5,7 +5,7 @@ import { ApprovalCard } from "../components/approval-card";
 import type { PendingApproval } from "../hooks/use-chat";
 import { Composer, type ComposerProps } from "../components/composer";
 import { MessageList } from "../components/message-list";
-import type { Feedback } from "../components/messages";
+import type { Feedback, MessageActions } from "../components/messages";
 import { useLabels } from "../primitives/labels";
 import { openInNewTab, WidgetHostProvider, type WidgetHost } from "../components/widget-frame";
 
@@ -33,6 +33,10 @@ export interface ChatViewProps {
   onRetry?: (assistantId: string) => void;
   onEdit?: (userId: string) => void;
   onFeedback?: (assistantId: string, feedback: Feedback) => void;
+  /** Read aloud button on assistant messages. */
+  onReadAloud?: (assistantId: string) => void;
+  /** Add your own buttons to each message's action row, or hide copy and the time. */
+  messageActions?: MessageActions;
   renderPart?: (part: Part) => ReactNode;
   /**
    * What widgets (sandboxed visuals) may do: the domains they may load, and their callbacks. A widget's
@@ -71,6 +75,8 @@ export function ChatView({
   onRetry,
   onEdit,
   onFeedback,
+  onReadAloud,
+  messageActions,
   renderPart,
   widgets,
   header,
@@ -121,6 +127,8 @@ export function ChatView({
           {...(onRetry && { onRetry })}
           {...(onEdit && { onEdit })}
           {...(onFeedback && { onFeedback })}
+          {...(onReadAloud && { onReadAloud })}
+          {...(messageActions && { actions: messageActions })}
           {...(renderPart && { renderPart })}
           footer={
             <div className={clsx("bg-linear-to-t from-chat-bg from-70% to-transparent px-(--chat-gutter)", short ? "pt-2" : "pt-4")}>

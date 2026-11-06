@@ -4,13 +4,17 @@ import { useIcons } from "../primitives/icons";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
-import { AssistantMessage, UserMessage, type Feedback } from "./messages";
+import { AssistantMessage, UserMessage, type Feedback, type MessageActions } from "./messages";
 
 export interface MessageListProps {
   messages: Message[];
   onRetry?: (assistantId: string) => void;
   onEdit?: (userId: string) => void;
   onFeedback?: (assistantId: string, feedback: Feedback) => void;
+  /** Read aloud button on assistant messages. */
+  onReadAloud?: (assistantId: string) => void;
+  /** Add your own buttons to each message's action row, or hide copy and the time. */
+  actions?: MessageActions;
   renderPart?: (part: Part) => ReactNode;
   /** Under the last message, inside the scroll area, e.g. the docked composer. Stays in view at the bottom. */
   footer?: ReactNode;
@@ -28,7 +32,7 @@ const STICK_SLOP = 48;
  * The scrolling conversation. It follows a streaming reply while the reader is at the bottom and leaves
  * them alone once they scroll up, with a button to jump back. Sending a message always jumps down.
  */
-export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart, header, footer, start = "bottom", className }: MessageListProps) {
+export function MessageList({ messages, onRetry, onEdit, onFeedback, onReadAloud, actions, renderPart, header, footer, start = "bottom", className }: MessageListProps) {
   const icons = useIcons();
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -88,13 +92,15 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart,
             {header}
             {messages.map((m) =>
               m.role === "user" ? (
-                <UserMessage key={m.id} message={m} {...(onEdit && { onEdit: () => onEdit(m.id) })} />
+                <UserMessage key={m.id} message={m} {...(onEdit && { onEdit: () => onEdit(m.id) })} {...(actions?.extra && { actions: actions.extra(m) })} {...(actions?.copy === false && { copy: false })} {...(actions?.time === false && { time: false })} />
               ) : (
                 <AssistantMessage
                   key={m.id}
                   message={m}
                   {...(onRetry && { onRetry: () => onRetry(m.id) })}
                   {...(onFeedback && { onFeedback: (f: Feedback) => onFeedback(m.id, f) })}
+                  {...(onReadAloud && { onReadAloud: () => onReadAloud(m.id) })}
+                  {...(actions?.extra && { actions: actions.extra(m) })} {...(actions?.copy === false && { copy: false })} {...(actions?.time === false && { time: false })}
                   {...(renderPart && { renderPart })}
                 />
               ),
