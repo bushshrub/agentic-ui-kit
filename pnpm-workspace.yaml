@@ -18,3 +18,4 @@ minimumReleaseAgeExclude:
   - '@agentclientprotocol/claude-agent-acp@0.101.0'
   - '@storybook/addon-vitest@10.6.6'
   - '@storybook/addon-docs@10.6.6'
+  - '@storybook/addon-themes@10.6.6'

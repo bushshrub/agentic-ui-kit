@@ -163,6 +163,40 @@
     /* Activity rows: thinking, tool summaries, search results, the context panel headings. */
     --chat-activity-font-size: 0.9375rem;
   }
+
+  /* The light companion of the default: `<ChatTheme theme="claude-light">` or data-chat-theme on any element. */
+  [data-chat-theme="claude-light"] {
+    color-scheme: light;
+
+    --chat-bg: #faf9f5;
+    --chat-sidebar: #f4f3ee;
+    --chat-surface: #ffffff;
+    --chat-raised: #ffffff;
+    --chat-hover: #efeee8;
+    --chat-selected: #e6e4dc;
+    --chat-bubble: #f0eee6;
+    --chat-popover: #ffffff;
+    --chat-popover-border: #e3e1d8;
+    --chat-popover-hover: #f0eee6;
+    --chat-border: #e6e4dc;
+    --chat-border-strong: #cfcdc3;
+    --chat-divider: #eeece5;
+    --chat-code-bg: #f5f4ef;
+    --chat-code-border: #e6e4dc;
+    --chat-inline-code: #eeece5;
+    --chat-fg: #141413;
+    --chat-muted: #5e5d59;
+    --chat-subtle: #8a8983;
+    --chat-accent: #c6613f;
+    --chat-accent-fg: #ffffff;
+    --chat-check: #2c6fd4;
+    --chat-warning: #9a6400;
+    --chat-warning-bg: #fbf0d9;
+    --chat-danger: #c2412c;
+    --chat-focus: #2c6fd4;
+    --chat-backdrop: rgb(0 0 0 / 0.3);
+    --chat-shadow-popover: 0 8px 24px rgb(0 0 0 / 0.12);
+  }
 }
 
 /*

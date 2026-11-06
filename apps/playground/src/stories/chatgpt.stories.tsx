@@ -160,18 +160,16 @@ function Chat({ start, onSend, onThinkingChange }: Pick<Handlers, "onSend" | "on
 const chatIds = ["new", "ci", "midterm", "dram", "caffeinate", "parametric"] as const;
 
 interface AppArgs extends Handlers {
-  /** chatgpt: dark. chatgpt-light: white page, black send button. */
-  theme: "chatgpt" | "chatgpt-light";
   /** The open chat; "new" is the empty chat. */
   chat: (typeof chatIds)[number];
   /** Start with the sidebar folded to its icon rail. */
   collapsed: boolean;
 }
 
-function App({ theme, chat, collapsed, onNewChat, onSelectChat, ...handlers }: AppArgs) {
+function App({ dark, chat, collapsed, onNewChat, onSelectChat, ...handlers }: AppArgs & { dark: boolean }) {
   const [active, setActive] = useState<string | undefined>(chat === "new" ? undefined : chat);
   return (
-    <ChatTheme theme={theme} className="h-dvh">
+    <ChatTheme theme={dark ? "chatgpt" : "chatgpt-light"} className="h-dvh">
       <AppShell
         defaultCollapsed={collapsed}
         sidebar={
@@ -204,17 +202,16 @@ function App({ theme, chat, collapsed, onNewChat, onSelectChat, ...handlers }: A
   );
 }
 
-/** chatgpt.com built from the kit: its sidebar items, a pill composer with Think and dictation, the model-free header. Theme, chat and sidebar are Controls. */
+/** chatgpt.com built from the kit: its sidebar items, a pill composer with Think and dictation, the model-free header. Chat and sidebar are Controls; light and dark follow the toolbar's theme. */
 const meta = {
   title: "Examples/ChatGPT", tags: ["!autodocs"],
   parameters: { layout: "fullscreen" },
   // Keyed so the controls apply again when changed.
-  render: (args) => <App key={`${args.chat}-${args.collapsed}`} {...args} />,
+  render: (args, { globals }) => <App key={`${args.chat}-${args.collapsed}`} dark={globals.theme !== "light"} {...args} />,
   argTypes: {
-    theme: { control: "inline-radio", options: ["chatgpt", "chatgpt-light"] },
     chat: { control: "select", options: chatIds },
   },
-  args: { theme: "chatgpt", chat: "new", collapsed: false, onNewChat: fn(), onSelectChat: fn(), onSend: fn(), onThinkingChange: fn() },
+  args: { chat: "new", collapsed: false, onNewChat: fn(), onSelectChat: fn(), onSend: fn(), onThinkingChange: fn() },
 } satisfies Meta<AppArgs>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -230,7 +227,7 @@ export const Dark: Story = {
 };
 
 /** The light theme: white page, black send button. */
-export const Light: Story = { args: { theme: "chatgpt-light" } };
+export const Light: Story = { globals: { theme: "light" } };
 
 /** A conversation in progress: the pill composer docks under the messages. */
 export const Conversation: Story = { args: { chat: "ci" } };

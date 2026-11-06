@@ -168,12 +168,14 @@ export const JobBoardHost: StoryObj<JobBoardArgs> = {
 export const JobBoardInlineHost: StoryObj = { name: "Job board inline", render: () => <JobBoardInline /> };
 export const ConsoleDark: StoryObj = { name: "Console", render: () => <Console /> };
 
-export const DashboardPanes: StoryObj<{ layout: Layout; dark: boolean; panes: number }> = {
+/** Light and dark follow the toolbar's theme. */
+export const DashboardPanes: StoryObj<{ layout: Layout; panes: number }> = {
   name: "Agent dashboard",
-  args: { layout: "grid", dark: false, panes: 4 },
+  args: { layout: "grid", panes: 4 },
+  globals: { theme: "light" },
   argTypes: {
     layout: { control: "inline-radio", options: ["grid", "columns", "rows"] },
     panes: { control: { type: "range", min: 1, max: 4 } },
   },
-  render: (args) => <Dashboard {...args} />,
+  render: (args, { globals }) => <Dashboard {...args} dark={globals.theme === "dark"} />,
 };

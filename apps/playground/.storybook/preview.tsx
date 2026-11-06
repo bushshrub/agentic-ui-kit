@@ -1,3 +1,4 @@
+import { withThemeByDataAttribute } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react-vite";
 import { themes } from "storybook/theming";
 import "../src/playground.css";
@@ -36,7 +37,10 @@ const preview: Preview = {
       },
     },
   },
+  // Light and dark from Storybook's theme toolbar. Stories on the kit's default theme follow it through
+  // <html data-chat-theme>; stories with their own themes read `globals.theme` ("light" | "dark").
   decorators: [
+    withThemeByDataAttribute({ themes: { dark: "claude-dark", light: "claude-light" }, defaultTheme: "dark", attributeName: "data-chat-theme" }),
     (Story, { parameters }) => (
       <div className={`min-h-full bg-chat-bg font-chat-sans text-chat-fg ${parameters.layout === "fullscreen" ? "" : "p-8"}`}>
         <Story />
