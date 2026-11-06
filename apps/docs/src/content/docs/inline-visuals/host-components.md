@@ -5,8 +5,23 @@ sidebar:
   order: 3
 ---
 
-Register components with a JSON Schema for their props (with zod: `z.toJSONSchema`) and
-give the model `renderUiTool(specs)`, which describes them. Its `render_ui` calls are trees of your components;
+Register components with a JSON Schema for their props (with zod: `z.toJSONSchema`). The model can use them
+two ways:
+
+- **As JSX in a tool call** (recommended): give the model `showUiTool(specs)` and register
+  `uiMarkupToolView()` under its name. The model passes JSX as a string; the chat draws it element by
+  element as the argument streams:
+
+  ```text
+  <State tab="stills" />
+  <Card title="Pixel 9 Pro" tag="New"><Metric label="Zoom" value="5x" /></Card>
+  ```
+
+  Strings go in quotes, everything else in braces (`items={[{"label": "Tent"}]}`), and state reads as
+  `value={$state.tab}`. JavaScript is not run.
+- **As a ` ```ui ` block in the reply**: put `uiMarkupGuide(specs)` in the system prompt; inside
+  `UiComponentsProvider` the chat draws those blocks the same way.
+- **As a JSON tree in a tool call**: give the model `renderUiTool(specs)`, which describes them. Its `render_ui` calls are trees of your components;
 a node with an unknown component or props that don't fit renders nothing.
 
 ```tsx
