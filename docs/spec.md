@@ -318,6 +318,19 @@ Each slice ends with tests passing and the states visible in the playground.
 12. Later: search, projects with instructions, share links, light theme, voice.
 
 ## Queued
+- Storybook used properly (user, now): stories take `component` + `args` so Controls edit them, callbacks are
+  `fn()` so Actions logs them, and the key flows have `play` functions (Interactions), run as tests.
+- Slopbot friction (on 0.5.1), worst first:
+  1. Modal size: className loses to the panel's own w-full/max-w-2xl (no class merging), so every override
+     needs `!`. Add `size` (sm/md/lg/xl/full) and `placement` ("center" | "top"), or merge classes.
+  2. SidebarItem is a bare <li>: outside the nav slot it gets a list bullet. list-none, or a SidebarList export.
+  3. SidebarItem: a `badge` that always shows (`shortcut` only shows on hover); now "Inbox (3)".
+  4. ChatList items: `detail` (e.g. relative time) and `muted` (an "off" channel).
+  5. Message authors: `author { name, avatarUrl? }` on messages, user turns too, with optional grouping of
+     one author's consecutive messages (Discord transcripts: many people plus the bot).
+  6. ChatView without a composer: `composer={false}` / `readOnly`.
+  7. Export a PopoverTrigger/DialogTrigger so apps don't import react-aria for the kit Popover.
+  8. AttachmentCard without a mime type: infer it from the URL, or take `kind: "image" | "file"`.
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
 - Approval card wording: it reuses the finished-call label, so it reads "Allow Ran a command?". It needs a
