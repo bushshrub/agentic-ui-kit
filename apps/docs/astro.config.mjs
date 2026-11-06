@@ -3,6 +3,9 @@ import { defineConfig } from 'astro/config';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlight from '@astrojs/starlight';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
+import starlightTypeDoc from 'starlight-typedoc';
+
+const repoRoot = new URL('../../', import.meta.url).pathname;
 
 const base = '/agentic-ui-kit';
 
@@ -72,6 +75,12 @@ export default defineConfig({
         },
       },
       plugins: [
+        starlightTypeDoc({
+          entryPoints: [`${repoRoot}packages/react`, `${repoRoot}packages/core`],
+          output: 'reference/api',
+          sidebar: { label: 'API reference', collapsed: true },
+          typeDoc: { plugin: [new URL('./scripts/typedoc-module-names.mjs', import.meta.url).pathname], entryPointStrategy: 'packages', packageOptions: { entryPoints: ['src/index.ts'], tsconfig: 'tsconfig.json' }, excludeExternals: true, excludePrivate: true, excludeInternal: true, readme: new URL('./scripts/api-readme.md', import.meta.url).pathname },
+        }),
         starlightSidebarTopics([
           {
             label: 'Guides',
@@ -86,7 +95,20 @@ export default defineConfig({
           {
             label: 'Reference',
             link: '/reference/whats-in-the-kit/',
-            items: [{ label: 'Reference', items: [{ autogenerate: { directory: 'reference' } }] }],
+            items: [
+              {
+                label: 'Reference',
+                items: [
+                  'reference/whats-in-the-kit',
+                  'reference/what-you-can-change',
+                  'reference/development',
+                  { label: 'API reference', slug: 'reference/api/readme' },
+                  { label: 'Packages', slug: 'reference/api/packages' },
+                  { label: 'agentic-ui-kit (React)', collapsed: true, items: [{ autogenerate: { directory: 'reference/api/agentic-ui-kit', collapsed: true } }] },
+                  { label: 'agentic-ui-kit/core', collapsed: true, items: [{ autogenerate: { directory: 'reference/api/@agentic-ui-kit/core', collapsed: true } }] },
+                ],
+              },
+            ],
           },
         ]),
       ],

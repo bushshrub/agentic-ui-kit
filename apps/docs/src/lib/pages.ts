@@ -40,7 +40,8 @@ export function markdownPath(id: string): string {
 export function absoluteLinks(markdown: string, site: URL | undefined): string {
   const origin = (site ?? new URL('https://bushshrub.github.io')).origin;
   return markdown.replace(/\]\(\/(?!\/)([^)\s#]*)(#[^)\s]*)?\)/g, (_match, path: string, hash = '') => {
-    let target = path;
+    // Generated API pages already link with the base in front.
+    let target = path.startsWith(`${BASE.slice(1)}/`) ? path.slice(BASE.length) : path;
     if (target === '') target = 'index.md';
     else if (target.endsWith('/')) target = `${target.slice(0, -1)}.md`;
     return `](${origin}${BASE}/${target}${hash})`;
