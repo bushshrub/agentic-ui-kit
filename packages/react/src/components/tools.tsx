@@ -4,6 +4,7 @@ import { createContext, useContext, useMemo, type ComponentType, type ReactNode 
 import { useAgentSnapshot, useAgentTool, type AgentTool } from "../hooks/agent";
 import { CodeBlock } from "../primitives/code-block";
 import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
+import { visualizeToolName, visualizeView } from "./widget-frame";
 
 /**
  * How one kind of tool call shows up in an activity group. Registered by tool name; hosts add their own and
@@ -27,6 +28,11 @@ export interface ToolView {
    * answers to a question or a chart.
    */
   Block?: ComponentType<{ part: ToolCallPart }>;
+  /**
+   * A card under the activity group the call sits in, while the call keeps its row: job cards, a diff with
+   * Apply/Undo. Reads the part's `data` (display data the model does not see) or its result.
+   */
+  Card?: ComponentType<{ part: ToolCallPart }>;
 }
 
 export type ToolViews = Record<string, ToolView>;
@@ -182,6 +188,7 @@ export const defaultToolViews: ToolViews = {
   web_search: webSearchTool,
   memory: memoryTool,
   memory_view: memoryTool,
+  [visualizeToolName]: visualizeView,
 };
 
 function hostOf(url: string): string {

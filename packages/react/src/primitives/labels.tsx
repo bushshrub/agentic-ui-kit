@@ -196,6 +196,12 @@ export interface ChatLabels {
   recommended: string;
   /** Submenu item and list name. */
   moreModels: string;
+
+  // Inline visuals
+  /** Accessible name of a widget without a title. */
+  widget: string;
+  /** Loading line while a widget streams and the model gave none. */
+  drawingWidget: string;
 }
 
 const plural = (count: number, one: string, many: (n: number) => string) => (count === 1 ? one : many(count));
@@ -298,6 +304,9 @@ export const defaultLabels: ChatLabels = {
   effortNote: "Higher effort means more thorough responses, but takes longer and uses your limits faster.",
   recommended: "Recommended",
   moreModels: "More models",
+
+  widget: "Widget",
+  drawingWidget: "Drawing",
 };
 
 const LabelsContext = createContext<ChatLabels>(defaultLabels);

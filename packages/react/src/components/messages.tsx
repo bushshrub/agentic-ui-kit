@@ -1,13 +1,14 @@
 import { toBlocks, type Message, type Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { useIcons } from "../primitives/icons";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "../primitives/button";
 import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
 import { ActivityGroup } from "./activity-group";
 import { AttachmentCard, PastedTextDialog } from "./attachments";
 import { Markdown } from "./markdown";
 import { useToolViews } from "./tools";
+import { WidgetPartView } from "./widget-frame";
 
 /** "just now", "5 minutes ago", "21 hours ago", "yesterday", then a date. */
 export function formatRelativeTime(iso: string, now = Date.now(), labels: ChatLabels = defaultLabels): string {
@@ -145,7 +146,7 @@ export interface AssistantMessageProps {
   onRetry?: () => void;
   onFeedback?: (feedback: Feedback) => void;
   onReadAloud?: () => void;
-  /** Renders parts the kit does not draw itself (custom parts, widgets until WidgetFrame lands). */
+  /** Renders parts the kit does not draw itself (custom parts), or replaces its own look (widgets). */
   renderPart?: (part: Part) => ReactNode;
   /** Extra buttons in the action row. */
   actions?: ReactNode;
@@ -166,7 +167,18 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
     <div className={clsx("group/message flex flex-col gap-4", className)}>
       {blocks.map((block) => {
         if (block.kind === "activity") {
-          return <ActivityGroup key={block.id} parts={block.parts} />;
+          const cards = block.parts.filter((p) => p.type === "tool_call" && views[p.name]?.Card);
+          if (!cards.length) return <ActivityGroup key={block.id} parts={block.parts} />;
+          return (
+            <Fragment key={block.id}>
+              <ActivityGroup parts={block.parts} />
+              {cards.map((p) => {
+                if (p.type !== "tool_call") return null;
+                const Card = views[p.name]!.Card!;
+                return <Card key={p.id} part={p} />;
+              })}
+            </Fragment>
+          );
         }
         if (block.kind === "tool") {
           const ToolBlock = views[block.part.name]!.Block!;
@@ -176,6 +188,7 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
         if (part.type === "text") return <Markdown key={part.id} streaming={part.status === "streaming"}>{part.text}</Markdown>;
         const custom = renderPart?.(part);
         if (custom) return <div key={part.id}>{custom}</div>;
+        if (part.type === "widget") return <WidgetPartView key={part.id} part={part} />;
         if (part.type === "custom" && part.text) return <Markdown key={part.id}>{part.text}</Markdown>;
         return null;
       })}

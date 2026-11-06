@@ -5,3 +5,5 @@ export { toBlocks, isActivityPart } from "./blocks";
 export type { Block, ActivityPart } from "./blocks";
 export { readEventStream, formatEvent } from "./sse";
 export { parsePartialJson } from "./partial-json";
+export { visualizeTool, visualizeGuide } from "./visualize";
+export type { VisualizeInput } from "./visualize";

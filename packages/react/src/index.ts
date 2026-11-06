@@ -60,6 +60,8 @@ export {
   useChatTool,
 } from "./components/tools";
 export type { ToolView, ToolViews, SearchResult, ChatTool } from "./components/tools";
+export { WidgetFrame, WidgetHostProvider, useWidgetHost, WidgetPartView, widgetCsp, intersectAllow, openInNewTab, WIDGET_MAX_HEIGHT } from "./components/widget-frame";
+export type { WidgetFrameProps, WidgetHost, WidgetAllow, WidgetResource } from "./components/widget-frame";
 export { ApprovalCard } from "./components/approval-card";
 export type { ApprovalCardProps } from "./components/approval-card";
 export { TokenCounter, useCountUp, formatTokens } from "./components/token-counter";

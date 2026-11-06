@@ -1,12 +1,13 @@
 import type { Message, Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
-import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { ApprovalCard } from "../components/approval-card";
 import type { PendingApproval } from "../hooks/use-chat";
 import { Composer, type ComposerProps } from "../components/composer";
 import { MessageList } from "../components/message-list";
 import type { Feedback } from "../components/messages";
 import { useLabels } from "../primitives/labels";
+import { openInNewTab, WidgetHostProvider, type WidgetHost } from "../components/widget-frame";
 
 export type Density = "full" | "panel" | "inline";
 
@@ -33,6 +34,12 @@ export interface ChatViewProps {
   onEdit?: (userId: string) => void;
   onFeedback?: (assistantId: string, feedback: Feedback) => void;
   renderPart?: (part: Part) => ReactNode;
+  /**
+   * What widgets (sandboxed visuals) may do: the domains they may load, and their callbacks. A widget's
+   * sendPrompt sends through `onSend` and its links open in a new tab unless set here; set a callback to
+   * `undefined` to turn it off.
+   */
+  widgets?: WidgetHost;
   /** Usually a `<ChatHeader>`. */
   header?: ReactNode;
   /** Passed to the composer: toolbar slots, placeholder, controlled text. */
@@ -65,6 +72,7 @@ export function ChatView({
   onEdit,
   onFeedback,
   renderPart,
+  widgets,
   header,
   composer,
   emptyState,
@@ -79,6 +87,10 @@ export function ChatView({
     ...(contentWidth && { "--chat-content-width": contentWidth }),
     ...(contentPadding && { "--chat-content-padding": contentPadding }),
   } as CSSProperties;
+  const host = useMemo<WidgetHost>(
+    () => ({ onPrompt: onSend, onOpenLink: openInNewTab, ...widgets }),
+    [onSend, widgets],
+  );
   const empty = messages.length === 0;
   const [body, short] = useShortPane();
   const labels = useLabels();
@@ -103,6 +115,7 @@ export function ChatView({
           <div className="w-full max-w-(--chat-content-width)">{emptyState ? emptyState(box("centered")) : box("centered")}</div>
         </div>
       ) : (
+        <WidgetHostProvider host={host}>
         <MessageList
           messages={messages}
           {...(onRetry && { onRetry })}
@@ -121,6 +134,7 @@ export function ChatView({
             </div>
           }
         />
+        </WidgetHostProvider>
       )}
       </div>
     </div>

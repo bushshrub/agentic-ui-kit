@@ -1,18 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChatView, userMessage } from "agentic-ui-kit";
-import type { Message, Part } from "agentic-ui-kit/core";
+import { ChatTranscript, ChatView, userMessage, type WidgetAllow } from "agentic-ui-kit";
+import { parsePartialJson, visualizeTool, type Message, type Part } from "agentic-ui-kit/core";
 import { useEffect, useState } from "react";
-import { WidgetFrame, type WidgetAllow } from "../lib/widget-frame";
 import calendarHtml from "../widgets/calendar.html?raw";
 import mapHtml from "../widgets/map.html?raw";
 import workoutHtml from "../widgets/workout.html?raw";
 
-const meta: Meta = { title: "Prototypes/Inline visuals", parameters: { layout: "fullscreen" } };
+const meta: Meta = { title: "Inline visuals/Sandboxed HTML", parameters: { layout: "fullscreen" } };
 export default meta;
 
 /**
  * Model-written HTML in a sandboxed frame, like claude.ai's visualize tool. Each widget below is what a model
- * would send as `widget_code`. Buttons inside call sendPrompt(text), which posts a message as the user.
+ * would send as `widget_code` to the `show_widget` tool (the kit's visualize preset). Buttons inside call
+ * sendPrompt(text), which posts a message as the user.
  */
 interface Demo {
   ask: string;
@@ -51,11 +51,15 @@ const demos = {
   },
 } satisfies Record<string, Demo>;
 
+/** The model's reply: a show_widget call whose input streams in, as the kit's reducer would build it. */
 function assistant(parent: string, demo: Demo, html: string, streaming: boolean): Message {
-  const parts: Part[] = [
-    { type: "text", id: "intro", text: demo.intro, status: "done" },
-    { type: "widget", id: "w", title: demo.title, html, status: streaming ? "streaming" : "done" },
-  ];
+  const input = { title: demo.title, loading_messages: demo.loading, widget_code: html };
+  // While streaming, the raw JSON is cut mid-string, as it arrives from the model.
+  const inputJson = streaming ? JSON.stringify(input).slice(0, -2) : JSON.stringify(input);
+  const call: Part = streaming
+    ? { type: "tool_call", id: "w", name: visualizeTool.name, status: "input", inputJson, partialInput: parsePartialJson(inputJson) }
+    : { type: "tool_call", id: "w", name: visualizeTool.name, status: "done", inputJson, input, result: "shown" };
+  const parts: Part[] = [{ type: "text", id: "intro", text: demo.intro, status: "done" }, call];
   if (!streaming && demo.outro) parts.push({ type: "text", id: "outro", text: demo.outro, status: "done" });
   return { id: "a1", parentId: parent, role: "assistant", status: streaming ? "streaming" : "done", createdAt: new Date().toISOString(), parts };
 }
@@ -86,18 +90,7 @@ function VisualChat({ demo, instant = false, readOnly = false }: { demo: Demo; i
         messages={messages}
         busy={streaming}
         onSend={prompt}
-        renderPart={(part) =>
-          part.type === "widget" ? (
-            <WidgetFrame
-              html={part.html ?? ""}
-              streaming={part.status === "streaming"}
-              title={part.title}
-              loadingMessages={demo.loading}
-              allow={demo.allow}
-              {...(!readOnly && { onPrompt: prompt })}
-            />
-          ) : null
-        }
+        widgets={{ ...(demo.allow && { allow: demo.allow }), ...(readOnly && { onPrompt: undefined }) }}
       />
     </div>
   );
@@ -114,3 +107,25 @@ export const WorkoutPlanner: StoryObj = { render: () => <VisualChat demo={demos.
 
 /** The same planner, shown at once instead of streamed. */
 export const WorkoutPlannerInstant: StoryObj = { render: () => <VisualChat demo={demos.workout} instant /> };
+
+/**
+ * A `widget` part (html sent as part deltas instead of a tool call) in a shared, read-only transcript: the
+ * widget works, but "Add the 3 new events" does nothing, since a transcript passes no onPrompt.
+ */
+export const SharedTranscript: StoryObj = {
+  render: () => {
+    const ask = userMessage(demos.calendar.ask, null);
+    const reply: Message = {
+      id: "a1", parentId: ask.id, role: "assistant", status: "done", createdAt: new Date().toISOString(),
+      parts: [
+        { type: "text", id: "intro", text: demos.calendar.intro, status: "done" },
+        { type: "widget", id: "w", title: demos.calendar.title, html: demos.calendar.html, status: "done" },
+      ],
+    };
+    return (
+      <div className="h-dvh">
+        <ChatTranscript messages={[ask, reply]} />
+      </div>
+    );
+  },
+};
