@@ -333,6 +333,15 @@ Each slice ends with tests passing and the states visible in the playground.
   10. Button: justify-center, so a full-width Button centers its text.
   11. A tooltip on a disabled Button (RAC disabled buttons get no hover/focus): a supported way, e.g. `disabledReason`.
   12. Nice to have: SegmentedControl clearable, isDisabled, size.
+- jaa-v2 chat gaps for 0.7.0 (code: ~/slop/jaa-v2 branch worktree-agent-aadd144d8a8f5b55e, web/src/api/chat_stream.ts,
+  web/src/pages/Chat.tsx):
+  1. Resume a run already going: useChat({ resume }) calling transport.resume?(conversationId) -> AsyncIterable<StreamEvent>.
+  2. useChat survives the StrictMode double mount (abort only on a real unmount).
+  3. Markdown block overrides (ul/li passthrough or renderList), so a list of job links can render as cards and keep
+     the fade, highlighting and KaTeX.
+  4. ModelInfo.icon?: ReactNode in the ModelPicker menu.
+  5. Docs: part.start with a finished status counts as finished; without input, inputJson is only parsed by
+     part.end (or run.end).
 - Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
   for the local wrapper components.
 - Slopbot friction (on 0.5.1), worst first:
