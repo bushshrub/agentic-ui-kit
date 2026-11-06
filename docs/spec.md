@@ -319,6 +319,12 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
+- From jaa-v2 (on 0.7.0, low priority):
+  1. SidebarUser wraps `menu` in its own Popover, so the account menu can't take width="trigger". A
+     popoverProps/width passthrough.
+  2. ChatList is hidden on the collapsed rail; recent chats are unreachable. A rail icon that opens the list in
+     a popover.
+
 - From burger (dashboard on 0.7.0, branch feat/agentic-ui-kit in ~/slop/burger):
   1. Panel has no body padding; hosts add their own. A `padded` option or a default card padding.
   2. Docs: "bring your own messages". Burger's server replays the full ACP history per session over its own
@@ -330,8 +336,6 @@ Each slice ends with tests passing and the states visible in the playground.
 - Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
   for the local wrapper components.
 - Slopbot friction (on 0.5.1), worst first:
-  5. Message authors: `author { name, avatarUrl? }` on messages, user turns too, with optional grouping of
-     one author's consecutive messages (Discord transcripts: many people plus the bot).
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
 
@@ -351,6 +355,7 @@ Each slice ends with tests passing and the states visible in the playground.
   (List items as plain strings, `{"$state":"tab"}` without outer braces, unknown variants), so the checks
   apply as is. Latency is the model's reasoning (2.9-4.9k reasoning tokens before the first text on the
   bigger asks), not the format.
+- Decided against (user): message authors / grouping (slopbot item 5).
 - From slopbot (after 0.3.0):
   - Core without React: `agentic-ui-kit/core` pulls in React and Streamdown (161 packages in a bot image).
     Publish core on its own, or make React/Streamdown optional peers.
