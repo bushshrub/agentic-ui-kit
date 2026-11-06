@@ -141,11 +141,11 @@ export function Composer({
 
   const compact = variant === "compact";
   const action = busy ? (
-    <IconButton label={labels.stop} variant="primary" onPress={onStop} className="rounded-chat-md [&_svg]:size-3.5 [&_svg]:fill-current">
+    <IconButton label={labels.stop} variant="primary" onPress={onStop} className="rounded-[var(--chat-send-radius,var(--chat-radius-md))]! [&_svg]:size-3.5 [&_svg]:fill-current">
       {icons.stop}
     </IconButton>
   ) : (
-    <IconButton label={labels.send} variant="primary" onPress={submit} isDisabled={!canSend} className="rounded-chat-md">
+    <IconButton label={labels.send} variant="primary" onPress={submit} isDisabled={!canSend} className="rounded-[var(--chat-send-radius,var(--chat-radius-md))]!">
       {icons.send}
     </IconButton>
   );
@@ -153,7 +153,7 @@ export function Composer({
   return (
     <div
       className={clsx(
-        "flex flex-col rounded-[1.25rem] border border-chat-border bg-chat-surface font-chat-sans shadow-chat-popover",
+        "flex flex-col rounded-[var(--chat-composer-radius,1.25rem)] border border-chat-border bg-chat-surface font-chat-sans shadow-chat-popover",
         "focus-within:border-chat-border-strong",
         dragging && "border-chat-accent! border-dashed",
         compact ? "gap-1 p-2" : "gap-2 p-3",

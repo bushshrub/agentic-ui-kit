@@ -144,6 +144,7 @@
     --chat-radius-md: 10px;
     --chat-radius-lg: 16px;
     --chat-radius-popover: 12px;
+    /* --chat-composer-radius (unset, 1.25rem): the chat box. --chat-send-radius (unset, --chat-radius-md): send/stop. */
     --chat-shadow-popover: 0 8px 24px rgb(0 0 0 / 0.5);
 
     /* Message column. Hosts and users adjust these; ChatView reads them. */

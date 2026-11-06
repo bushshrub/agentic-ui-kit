@@ -19,6 +19,8 @@ or on any element to theme part of it:
   --chat-accent: #c4552d;
   --chat-font-sans: "IBM Plex Sans", sans-serif;
   --chat-radius-md: 10px;
+  --chat-composer-radius: 1.25rem; /* the chat box; 28px makes a pill */
+  --chat-send-radius: 10px; /* send and stop; 9999px makes them round */
   color-scheme: light;
 }
 ```

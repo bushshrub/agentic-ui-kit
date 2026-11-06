@@ -1,68 +1,93 @@
 ---
 title: Build chatgpt.com's web chat
-description: The same components themed like chatgpt.com, with CSS variables only.
+description: The same components as the claude.ai example, arranged and themed like chatgpt.com.
 sidebar:
   order: 2
 ---
 
-![The same app themed like chatgpt.com: sans messages, a blue bubble, rounder corners](/images/example-chatgpt.jpg)
+![chatgpt.com built from the kit: black page, pill composer with Think and dictation](/images/example-chatgpt.jpg)
 
-[Try it live in Storybook](/storybook/?path=/story/views-app--chat-gpt-style)
+[Try it live in Storybook](/storybook/?path=/story/examples-chatgpt--conversation) (also
+[the new-chat screen](/storybook/?path=/story/examples-chatgpt--dark) and [light](/storybook/?path=/story/examples-chatgpt--light))
 
-Start from [the claude.ai example](/examples/claude-ai/): same `AppShell`, `Sidebar`, `ChatList` and
-`ChatView`. The difference is only the theme. Every color, font, radius and size is a `--chat-*` variable,
-so a different look is a block of CSS, not a fork of the components.
+The components are the same as in [the claude.ai example](/examples/claude-ai/): `AppShell`, `Sidebar`,
+`ChatList`, `ChatView`. What makes it chatgpt.com is how you fill their slots, plus a theme. The whole
+example is `apps/playground/src/stories/chatgpt.stories.tsx`.
+
+## Layout: fill the slots differently
+
+- **Sidebar:** a bold sans brand, Search in `headerActions`, then New chat, Images, Scheduled, Library,
+  Plugins and Explore as `SidebarItem`s. `ChatList` gets two plain sections, Projects and Recents, with
+  no badges.
+- **Header:** no chat title. The model menu sits at the left (here a `Button` reading "ChatGPT ⌄"), and
+  Upgrade plus a temporary-chat button go in `actions`.
+- **Composer:** `variant: "compact"` makes it one row. `+` goes in `leading`, and a Think toggle and a mic
+  go in `trailing`.
+- **Empty state:** the greeting "What are you working on?" with no icon.
 
 ```tsx
-import { ChatTheme } from "agentic-ui-kit";
-
-<ChatTheme theme="chatgpt" className="h-dvh">
-  <App />
-</ChatTheme>;
+<ChatView
+  messages={chat.messages}
+  busy={chat.busy}
+  onSend={(text) => chat.send(text)}
+  onStop={chat.stop}
+  header={
+    <ChatHeader
+      leading={<><SidebarToggle drawerOnly /><Button variant="ghost">ChatGPT <ChevronDown /></Button></>}
+      title=""
+      actions={<Button variant="subtle" size="sm">Upgrade to Go</Button>}
+    />
+  }
+  composer={{
+    variant: "compact",
+    placeholder: chat.messages.length ? "Ask ChatGPT" : "Ask anything",
+    leading: <IconButton label="Add files and more"><Plus /></IconButton>,
+    trailing: (
+      <>
+        <Button variant="ghost" size="sm" onPress={() => setThink(!think)}><Atom /> Think</Button>
+        <IconButton label="Dictate"><Mic /></IconButton>
+      </>
+    ),
+  }}
+  emptyState={(composer) => <EmptyState greeting="What are you working on?">{composer}</EmptyState>}
+  disclaimer="ChatGPT can make mistakes. Check important info."
+/>
 ```
+
+## Theme: variables only
+
+`<ChatTheme theme="chatgpt">` with this CSS. The look comes from restraint: a black page, one neutral sans
+for everything, few borders, a pill composer, and a round send button.
 
 ```css
 [data-chat-theme="chatgpt"] {
   color-scheme: dark;
-  --chat-bg: #212121;
-  --chat-sidebar: #181818;
-  --chat-surface: #303030;
-  --chat-raised: #303030;
-  --chat-hover: #2a2a2a;
-  --chat-selected: #2f2f2f;
-  --chat-bubble: #2e3f8f; /* the blue user bubble */
-  --chat-popover: #353535;
-  --chat-popover-border: #414141;
-  --chat-popover-hover: #424242;
-  --chat-border: #343434;
-  --chat-border-strong: #4a4a4a;
-  --chat-divider: #2c2c2c;
-  --chat-code-bg: #181818;
-  --chat-code-border: #2c2c2c;
-  --chat-inline-code: #3a3a3a;
-  --chat-fg: #ffffff;
-  --chat-muted: #afafaf;
-  --chat-subtle: #8f8f8f;
-  --chat-accent: #4c66e6; /* send button, highlights */
+  --chat-bg: #000000;
+  --chat-sidebar: #0d0d0d;
+  --chat-surface: #212121; /* the composer */
+  --chat-raised: #2a2a2a;
+  --chat-hover: #1c1c1c;
+  --chat-selected: #222222;
+  --chat-bubble: #2b3a8c;
+  --chat-border: #262626;
+  --chat-border-strong: #3a3a3a;
+  --chat-fg: #ececec;
+  --chat-muted: #b4b4b4;
+  --chat-subtle: #8e8e8e;
+  --chat-accent: #4d6bfe; /* the send button */
   --chat-accent-fg: #ffffff;
-  --chat-check: #4ec27a;
-  --chat-focus: #7a8ff0;
-  /* One sans for everything: interface, messages, the brand. */
   --chat-font-sans: ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
   --chat-font-serif: var(--chat-font-sans);
   --chat-font-message: var(--chat-font-sans);
   --chat-message-font-size: 1rem;
-  --chat-message-line-height: 1.75;
   --chat-bubble-font-size: 1rem;
-  /* Rounder: the bubble and composer are near-pills. */
-  --chat-radius-md: 14px;
-  --chat-radius-lg: 26px;
-  --chat-radius-popover: 16px;
+  --chat-composer-radius: 28px; /* pill */
+  --chat-send-radius: 9999px; /* round */
+  --chat-shadow-popover: none;
 }
 ```
 
-Wording is a theme too: pass `labels` to `ChatTheme` (e.g. the composer placeholder "Ask anything") and
-`icons` to swap the icon set. See [Theming](/get-started/theming/) for every variable.
+The rest of the colors (popovers, code blocks, dividers) are in `apps/playground/src/themes.css`. So is
+`chatgpt-light`, which uses a white page and a black send button:
 
-What the kit keeps fixed is layout and behavior: where things sit, how streaming, tool rows and approvals
-work. That is on purpose, so an app looks finished without restyling components.
+![The light theme of the same example](/images/example-chatgpt-light.jpg)

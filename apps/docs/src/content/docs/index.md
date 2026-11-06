@@ -12,7 +12,7 @@ tool-call rows; approvals; tools that change the page around the chat. Themed en
 can take on your app's look.
 
 The defaults are styled after claude.ai. The examples show how to build
-[claude.ai's web chat](/examples/claude-ai/) and, with a different theme only,
+[claude.ai's web chat](/examples/claude-ai/) and, with the same components arranged and themed differently,
 [chatgpt.com's](/examples/chatgpt-com/).
 
 :::caution[This is AI-written slop. You probably shouldn't use it.]

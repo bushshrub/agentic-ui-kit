@@ -146,41 +146,89 @@
 }
 
 /*
- * chatgpt: the same components and layout, themed like chatgpt.com: near-black page, system sans for
- * everything (messages too), a blue user bubble and send button, rounder corners. Variables only.
+ * chatgpt: chatgpt.com dark. Black page, near-black sidebar, one system sans for everything, a pill composer
+ * with a round blue send button, a blue user bubble. The layout lives in the ChatGPT example story.
  */
 [data-chat-theme="chatgpt"] {
   color-scheme: dark;
-  --chat-bg: #212121;
-  --chat-sidebar: #181818;
-  --chat-surface: #303030;
-  --chat-raised: #303030;
-  --chat-hover: #2a2a2a;
-  --chat-selected: #2f2f2f;
-  --chat-bubble: #2e3f8f;
-  --chat-popover: #353535;
-  --chat-popover-border: #414141;
-  --chat-popover-hover: #424242;
-  --chat-border: #343434;
-  --chat-border-strong: #4a4a4a;
-  --chat-divider: #2c2c2c;
-  --chat-code-bg: #181818;
-  --chat-code-border: #2c2c2c;
-  --chat-inline-code: #3a3a3a;
-  --chat-fg: #ffffff;
-  --chat-muted: #afafaf;
-  --chat-subtle: #8f8f8f;
-  --chat-accent: #4c66e6;
+  --chat-bg: #000000;
+  --chat-sidebar: #0d0d0d;
+  --chat-surface: #212121;
+  --chat-raised: #2a2a2a;
+  --chat-hover: #1c1c1c;
+  --chat-selected: #222222;
+  --chat-bubble: #2b3a8c;
+  --chat-popover: #2a2a2a;
+  --chat-popover-border: #383838;
+  --chat-popover-hover: #3a3a3a;
+  --chat-border: #262626;
+  --chat-border-strong: #3a3a3a;
+  --chat-divider: #1f1f1f;
+  --chat-code-bg: #0f0f0f;
+  --chat-code-border: #262626;
+  --chat-inline-code: #2a2a2a;
+  --chat-fg: #ececec;
+  --chat-muted: #b4b4b4;
+  --chat-subtle: #8e8e8e;
+  --chat-accent: #4d6bfe;
   --chat-accent-fg: #ffffff;
   --chat-check: #4ec27a;
   --chat-focus: #7a8ff0;
   --chat-font-sans: ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
-  --chat-font-serif: var(--chat-font-sans); /* the brand and anything else serif */
+  --chat-font-serif: var(--chat-font-sans);
   --chat-font-message: var(--chat-font-sans);
   --chat-message-font-size: 1rem;
-  --chat-message-line-height: 1.75;
+  --chat-message-line-height: 1.65;
   --chat-bubble-font-size: 1rem;
-  --chat-radius-md: 14px;
-  --chat-radius-lg: 26px;
+  --chat-radius-md: 12px;
+  --chat-radius-lg: 22px;
   --chat-radius-popover: 16px;
+  --chat-composer-radius: 28px;
+  --chat-send-radius: 9999px;
+  --chat-shadow-popover: none;
+}
+
+/* chatgpt-light: chatgpt.com light. The dark theme's sizes and shapes; white page, black send button. */
+[data-chat-theme="chatgpt-light"] {
+  color-scheme: light;
+  --chat-bg: #ffffff;
+  --chat-sidebar: #f9f9f9;
+  --chat-surface: #ffffff;
+  --chat-raised: #ffffff;
+  --chat-hover: #efefef;
+  --chat-selected: #e8e8e8;
+  --chat-bubble: #f1f1f1;
+  --chat-popover: #ffffff;
+  --chat-popover-border: #e5e5e5;
+  --chat-popover-hover: #f3f3f3;
+  --chat-border: #e3e3e3;
+  --chat-border-strong: #cfcfcf;
+  --chat-divider: #ededed;
+  --chat-code-bg: #f9f9f9;
+  --chat-code-border: #ececec;
+  --chat-inline-code: #ececec;
+  --chat-fg: #0d0d0d;
+  --chat-muted: #5d5d5d;
+  --chat-subtle: #8f8f8f;
+  --chat-accent: #0d0d0d;
+  --chat-accent-fg: #ffffff;
+  --chat-check: #10a37f;
+  --chat-focus: #5b5bd6;
+  --chat-font-sans: ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  --chat-font-serif: var(--chat-font-sans);
+  --chat-font-message: var(--chat-font-sans);
+  --chat-message-font-size: 1rem;
+  --chat-message-line-height: 1.65;
+  --chat-bubble-font-size: 1rem;
+  --chat-radius-md: 12px;
+  --chat-radius-lg: 22px;
+  --chat-radius-popover: 16px;
+  --chat-composer-radius: 28px;
+  --chat-send-radius: 9999px;
+  --chat-shadow-popover: 0 4px 16px rgb(0 0 0 / 0.06);
+}
+
+/* chatgpt.com's greeting is smaller than the kit's. */
+[data-chat-theme^="chatgpt"] .chat-empty-greeting {
+  font-size: 1.75rem;
 }

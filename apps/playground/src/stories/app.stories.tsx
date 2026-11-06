@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
-  ChatTheme,
   AppShell,
   Badge,
   ChatList,
@@ -122,15 +121,3 @@ export const Phone: StoryObj = { render: () => <App />, globals: { viewport: { v
 
 export const Tablet: StoryObj = { render: () => <App />, globals: { viewport: { value: "tabletPortrait" } } };
 
-/**
- * The same app themed like chatgpt.com, with `--chat-*` variables only (see `[data-chat-theme="chatgpt"]` in
- * themes.css): system sans for messages, a blue bubble and send button, rounder corners.
- */
-export const ChatGPTStyle: StoryObj = {
-  name: "ChatGPT style",
-  render: () => (
-    <ChatTheme theme="chatgpt" className="h-dvh">
-      <App />
-    </ChatTheme>
-  ),
-};
