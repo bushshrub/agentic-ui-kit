@@ -133,7 +133,10 @@ export interface SearchResult {
   favicon?: string;
 }
 
-/** A web search. Input `{ query }`; result `{ results: SearchResult[] }` or `SearchResult[]`. */
+/**
+ * A web search. Input `{ query }`; results (`{ results: SearchResult[] }` or `SearchResult[]`) from the
+ * part's display `data`, else its `result`.
+ */
 export const webSearchTool: ToolView = {
   label: (_, labels) => labels.searchedWebLabel,
   subtitle: (part) => stringOf(recordOf(part.input).query) ?? part.subtitle,
@@ -141,7 +144,8 @@ export const webSearchTool: ToolView = {
   Detail: function WebSearchDetail({ part }) {
     const labels = useLabels();
     const icons = useIcons();
-    const results = (Array.isArray(part.result) ? part.result : recordOf(part.result).results) as
+    const shown = part.data ?? part.result;
+    const results = (Array.isArray(shown) ? shown : recordOf(shown).results) as
       | SearchResult[]
       | undefined;
     if (part.error) return <p className="text-(length:--chat-ui-font-size) leading-5 text-chat-danger">{part.error}</p>;
@@ -171,6 +175,27 @@ export const webSearchTool: ToolView = {
   },
 };
 
+/** Reads a web page. Input `{ url }`; the row shows the page's host, the detail links to it. */
+export const webFetchTool: ToolView = {
+  label: (_, labels) => labels.readPageLabel,
+  subtitle: (part) => {
+    const url = stringOf(recordOf(part.input).url);
+    return url ? hostOf(url) : part.subtitle;
+  },
+  summary: (n, labels) => labels.readPages(n),
+  Detail: function WebFetchDetail({ part }) {
+    const url = stringOf(recordOf(part.input).url);
+    const title = stringOf(recordOf(part.data).title);
+    if (part.error) return <p className="text-(length:--chat-ui-font-size) leading-5 text-chat-danger">{part.error}</p>;
+    if (!url) return null;
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="block truncate text-(length:--chat-ui-font-size) leading-5 text-chat-fg hover:underline">
+        {title ?? url}
+      </a>
+    );
+  },
+};
+
 /** Memory lookups, e.g. Anthropic's memory tool. Input `{ path }`. */
 export const memoryTool: ToolView = {
   label: (_, labels) => labels.recalledMemoryLabel,
@@ -185,6 +210,7 @@ export const defaultToolViews: ToolViews = {
   bash: commandTool,
   shell: commandTool,
   web_search: webSearchTool,
+  web_fetch: webFetchTool,
   memory: memoryTool,
   memory_view: memoryTool,
 };

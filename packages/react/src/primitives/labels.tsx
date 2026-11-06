@@ -30,6 +30,8 @@ export interface ChatLabels {
   ranCommands: (count: number) => string;
   /** Row label of the web search tool. */
   searchedWebLabel: string;
+  readPageLabel: string;
+  readPages: (count: number) => string;
   /** Heading phrase for web searches, lowercase. */
   searchedWeb: (count: number) => string;
   /** Row label of the memory tool. */
@@ -221,6 +223,8 @@ export const defaultLabels: ChatLabels = {
   ranCommandLabel: "Ran a command",
   ranCommands: (count) => plural(count, "ran a command", (n) => `ran ${n} commands`),
   searchedWebLabel: "Searched the web",
+  readPageLabel: "Read page",
+  readPages: (count) => plural(count, "read a page", (n) => `read ${n} pages`),
   searchedWeb: (count) => plural(count, "searched the web", (n) => `searched the web ${n} times`),
   recalledMemoryLabel: "Recalled memory",
   recalledMemory: () => "recalled memory",
