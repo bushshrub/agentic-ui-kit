@@ -268,9 +268,7 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
-- Write down what is opinionated (fixed on purpose) and what is meant to be changed, in the README and here.
-  Opinionated, keep: animations and their timings (streaming word fade, folds), the claude.ai layout. Too
-  much customizability is a cost; add knobs only for real gaps.
+- Update README "What you can change, and what is fixed" when labels, icons and text sizes land.
 - Swappable icons, Lucide by default: `ChatTheme icons={{ copy: <MyCopy />, ... }}`, the same pattern as
   labels (flat keys, merged over the parent's, defaults exported). After the labels work lands.
 - No hardcoded text sizes: a small scale of variables (UI text, small UI text, the user bubble; message and
