@@ -1,6 +1,6 @@
 import type { Message } from "@agentic-ui-kit/core";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { StrictMode } from "react";
+import { StrictMode, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ChatTranscript } from "./chat-transcript";
 import { ChatView } from "./chat-view";
@@ -82,4 +82,18 @@ it("ChatView adds the host's message actions and can hide copy", () => {
   expect(screen.queryAllByRole("button", { name: /copy/i })).toHaveLength(0);
   fireEvent.click(screen.getByRole("button", { name: /read aloud/i }));
   expect(onReadAloud).toHaveBeenCalledWith("a1");
+});
+
+it("renderComposer puts the host's buttons outside the composer box, empty and docked", () => {
+  const outside = (composer: ReactNode, where: string) => (
+    <div>
+      <button>Outside {where}</button>
+      {composer}
+    </div>
+  );
+  const { rerender } = render(<ChatView messages={[]} onSend={() => {}} renderComposer={outside} />);
+  expect(screen.getByRole("button", { name: "Outside empty" })).toBeTruthy();
+  rerender(<ChatView messages={messages} onSend={() => {}} renderComposer={outside} />);
+  expect(screen.getByRole("button", { name: "Outside docked" })).toBeTruthy();
+  expect(screen.getByRole("textbox")).toBeTruthy();
 });

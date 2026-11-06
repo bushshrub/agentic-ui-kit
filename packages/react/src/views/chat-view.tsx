@@ -55,6 +55,11 @@ export interface ChatViewProps {
   emptyState?: (composer: ReactNode) => ReactNode;
   /** Small print under the composer. */
   disclaimer?: ReactNode;
+  /**
+   * Wraps the composer, on the empty screen and docked under the chat, to put things outside its box:
+   * buttons above or beside it, a row of chips under it. `where` says which of the two it is.
+   */
+  renderComposer?: (composer: ReactNode, where: "empty" | "docked") => ReactNode;
   /** "full": a page. "panel": a docked side panel. "inline": a small area inside a form. */
   density?: Density;
   /** Width of the message column, e.g. "48rem". Users can change it in settings. */
@@ -83,6 +88,7 @@ export function ChatView({
   composer,
   emptyState,
   disclaimer,
+  renderComposer,
   density = "full",
   contentWidth,
   contentPadding,
@@ -101,16 +107,17 @@ export function ChatView({
   const [body, short] = useShortPane();
   const labels = useLabels();
   const pending = onApprove && approvals?.[0];
-  const box = (variant: ComposerProps["variant"]) => (
-    <Composer
+  const box = (variant: ComposerProps["variant"]) => {
+    const element = <Composer
       variant={density === "inline" || (short && !empty) ? "compact" : variant}
       busy={busy}
       onSubmit={onSend}
       {...(onStop && { onStop })}
       {...composer}
       {...(pending && { placeholder: labels.replyDirectly })}
-    />
-  );
+    />;
+    return renderComposer ? renderComposer(element, variant === "centered" ? "empty" : "docked") : element;
+  };
 
   return (
     <div data-chat-density={density} style={style} className={clsx("chat-view flex h-full min-h-0 flex-col bg-chat-bg text-chat-fg", className)}>
