@@ -48,6 +48,11 @@ export interface ToolCallPart {
    */
   partialInput?: unknown;
   result?: unknown;
+  /**
+   * Display data for the page, not for the model: what a tool view's Card or Block draws (job rows, a diff)
+   * when the model-visible `result` is short. Set by the backend with `data` on part.update / part.end.
+   */
+  data?: unknown;
   error?: string;
   title?: string;
   subtitle?: string;

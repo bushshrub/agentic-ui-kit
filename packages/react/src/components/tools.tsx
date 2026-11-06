@@ -5,6 +5,8 @@ import { useAgentSnapshot, useAgentTool, type AgentTool } from "../hooks/agent";
 import { CodeBlock } from "../primitives/code-block";
 import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
 import { visualizeToolName, visualizeView } from "./widget-frame";
+import { renderUiView } from "./ui-tree";
+import { renderUiToolName } from "@agentic-ui-kit/core";
 
 /**
  * How one kind of tool call shows up in an activity group. Registered by tool name; hosts add their own and
@@ -189,6 +191,7 @@ export const defaultToolViews: ToolViews = {
   memory: memoryTool,
   memory_view: memoryTool,
   [visualizeToolName]: visualizeView,
+  [renderUiToolName]: renderUiView,
 };
 
 function hostOf(url: string): string {

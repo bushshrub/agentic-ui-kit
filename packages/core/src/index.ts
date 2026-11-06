@@ -7,3 +7,5 @@ export { readEventStream, formatEvent } from "./sse";
 export { parsePartialJson } from "./partial-json";
 export { visualizeTool, visualizeGuide } from "./visualize";
 export type { VisualizeInput } from "./visualize";
+export { matchesSchema, isStateRef, renderUiTool, renderUiToolName, uiActionSchema } from "./ui-tree";
+export type { UiNode, UiAction, RenderUiInput, UiComponentSpec } from "./ui-tree";

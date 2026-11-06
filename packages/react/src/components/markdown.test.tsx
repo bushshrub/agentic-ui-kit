@@ -1,6 +1,6 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { Markdown } from "./markdown";
+import { Markdown, MarkdownLinksProvider } from "./markdown";
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame", "performance"] });
@@ -29,4 +29,14 @@ it("renders history without word spans", () => {
   const { container } = render(<Markdown>{text}</Markdown>);
   expect(container.querySelector(".chat-word")).toBeNull();
   expect(container.textContent).toBe(text);
+});
+
+it("lets the host draw some links its own way", () => {
+  const { container } = render(
+    <MarkdownLinksProvider renderLink={({ href }) => (href.includes("/jobs/") ? <span data-job={href}>job row</span> : undefined)}>
+      <Markdown>{"See [Engineer](https://jobs.example/jobs/7) and [docs](https://example.com)."}</Markdown>
+    </MarkdownLinksProvider>,
+  );
+  expect(container.querySelector("[data-job]")?.textContent).toBe("job row");
+  expect(container.querySelector("a")?.getAttribute("href")).toBe("https://example.com/");
 });

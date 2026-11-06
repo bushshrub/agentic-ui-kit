@@ -1,6 +1,6 @@
 import { createMathPlugin } from "@streamdown/math";
 import { clsx } from "clsx";
-import { memo, useState, type ReactNode } from "react";
+import { createContext, memo, useContext, useMemo, useState, type ReactNode } from "react";
 import { defaultRehypePlugins, Streamdown, type Components } from "streamdown";
 import { CodeBlock } from "../primitives/code-block";
 import { useSmoothText } from "../hooks/smooth-text";
@@ -38,6 +38,18 @@ const components: Components = {
   },
 };
 
+/**
+ * Draws some links in message markdown your way, e.g. a job link as a job row. Return undefined to keep the
+ * kit's link. Set with `MarkdownLinksProvider`.
+ */
+export type RenderLink = (link: { href: string; children: ReactNode }) => ReactNode | undefined;
+
+const LinksContext = createContext<RenderLink | undefined>(undefined);
+
+export function MarkdownLinksProvider({ renderLink, children }: { renderLink: RenderLink; children: ReactNode }) {
+  return <LinksContext.Provider value={renderLink}>{children}</LinksContext.Provider>;
+}
+
 export interface MarkdownProps {
   children: string;
   /** While true, text is paced and new words fade in; unfinished markdown is completed for display. */
@@ -69,13 +81,27 @@ const MarkdownBody = memo(function MarkdownBody({
   animating: boolean;
   fade: boolean;
 }): ReactNode {
+  const renderLink = useContext(LinksContext);
+  const withLinks = useMemo<Components>(
+    () =>
+      renderLink
+        ? {
+            ...components,
+            a: ({ href, children }) => {
+              const custom = href ? renderLink({ href, children }) : undefined;
+              return custom !== undefined ? <>{custom}</> : <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+            },
+          }
+        : components,
+    [renderLink],
+  );
   return (
     <Streamdown
       prefix={PREFIX}
       mode={animating || fade ? "streaming" : "static"}
       {...(fade && { rehypePlugins: fadePlugins })}
       plugins={{ math }}
-      components={components}
+      components={withLinks}
       controls={false}
       lineNumbers={false}
       linkSafety={{ enabled: false }}

@@ -157,3 +157,12 @@ describe("streamed tool input", () => {
     expect(invalid).toMatchObject({ status: "error", error: expect.stringContaining("not valid JSON") });
   });
 });
+
+it("keeps a tool call's display data apart from its result", () => {
+  const message = reduceEvents([
+    { type: "run.start", runId: "r", seq: 0, messageId: "m", parentId: null, createdAt: "t" },
+    { type: "part.start", runId: "r", seq: 1, messageId: "m", part: { type: "tool_call", id: "c", name: "find_jobs", status: "running", inputJson: "{}" } },
+    { type: "part.end", runId: "r", seq: 2, messageId: "m", partId: "c", result: "3 jobs found", data: { jobs: [{ id: 1 }] } },
+  ] as StreamEvent[])!;
+  expect(message.parts[0]).toMatchObject({ result: "3 jobs found", data: { jobs: [{ id: 1 }] } });
+});

@@ -42,8 +42,8 @@ export { useSidebar, useMediaQuery, DRAWER_QUERY } from "./hooks/sidebar-state";
 // Components: a message
 export { UserMessage, AssistantMessage, formatRelativeTime, messageText } from "./components/messages";
 export type { UserMessageProps, AssistantMessageProps, Feedback } from "./components/messages";
-export { Markdown } from "./components/markdown";
-export type { MarkdownProps } from "./components/markdown";
+export { Markdown, MarkdownLinksProvider } from "./components/markdown";
+export type { MarkdownProps, RenderLink } from "./components/markdown";
 export { ActivityGroup } from "./components/activity-group";
 export type { ActivityGroupProps } from "./components/activity-group";
 export {
@@ -62,6 +62,8 @@ export {
 export type { ToolView, ToolViews, SearchResult, ChatTool } from "./components/tools";
 export { WidgetFrame, WidgetHostProvider, useWidgetHost, WidgetPartView, widgetCsp, intersectAllow, openInNewTab, WIDGET_MAX_HEIGHT } from "./components/widget-frame";
 export type { WidgetFrameProps, WidgetHost, WidgetAllow, WidgetResource } from "./components/widget-frame";
+export { UiComponentsProvider, UiTree, useUiAction, useUiState, htmlComponent } from "./components/ui-tree";
+export type { UiComponent, UiStateStore, UiTreeProps } from "./components/ui-tree";
 export { ApprovalCard } from "./components/approval-card";
 export type { ApprovalCardProps } from "./components/approval-card";
 export { TokenCounter, useCountUp, formatTokens } from "./components/token-counter";
