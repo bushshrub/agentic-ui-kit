@@ -67,6 +67,7 @@
   --chat-warning-bg: #3a2a14;
   --chat-danger: #f06a5e;
   --chat-focus: #7ea6ff;
+  --chat-font-serif: var(--chat-font-sans); /* the brand and anything else serif */
   --chat-font-message: var(--chat-font-sans);
   --chat-message-font-size: 0.9375rem;
   --chat-radius-lg: 14px;
@@ -75,6 +76,7 @@
 /* dashboard: flat, Inter 14px, square-ish, bordered. */
 [data-chat-theme="dashboard-light"],
 [data-chat-theme="dashboard-dark"] {
+  --chat-font-serif: var(--chat-font-sans); /* the brand and anything else serif */
   --chat-font-message: var(--chat-font-sans);
   --chat-message-font-size: 0.875rem;
   --chat-message-line-height: 1.55;
@@ -141,4 +143,44 @@
   --chat-danger: #f06a5e;
   --chat-focus: #78a7ff;
   --chat-shadow-popover: 4px 4px 0 #202329;
+}
+
+/*
+ * chatgpt: the same components and layout, themed like chatgpt.com: near-black page, system sans for
+ * everything (messages too), a blue user bubble and send button, rounder corners. Variables only.
+ */
+[data-chat-theme="chatgpt"] {
+  color-scheme: dark;
+  --chat-bg: #212121;
+  --chat-sidebar: #181818;
+  --chat-surface: #303030;
+  --chat-raised: #303030;
+  --chat-hover: #2a2a2a;
+  --chat-selected: #2f2f2f;
+  --chat-bubble: #2e3f8f;
+  --chat-popover: #353535;
+  --chat-popover-border: #414141;
+  --chat-popover-hover: #424242;
+  --chat-border: #343434;
+  --chat-border-strong: #4a4a4a;
+  --chat-divider: #2c2c2c;
+  --chat-code-bg: #181818;
+  --chat-code-border: #2c2c2c;
+  --chat-inline-code: #3a3a3a;
+  --chat-fg: #ffffff;
+  --chat-muted: #afafaf;
+  --chat-subtle: #8f8f8f;
+  --chat-accent: #4c66e6;
+  --chat-accent-fg: #ffffff;
+  --chat-check: #4ec27a;
+  --chat-focus: #7a8ff0;
+  --chat-font-sans: ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  --chat-font-serif: var(--chat-font-sans); /* the brand and anything else serif */
+  --chat-font-message: var(--chat-font-sans);
+  --chat-message-font-size: 1rem;
+  --chat-message-line-height: 1.75;
+  --chat-bubble-font-size: 1rem;
+  --chat-radius-md: 14px;
+  --chat-radius-lg: 26px;
+  --chat-radius-popover: 16px;
 }

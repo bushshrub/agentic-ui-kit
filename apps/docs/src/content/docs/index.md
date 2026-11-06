@@ -11,6 +11,10 @@ React components for LLM chat and agentic apps: streaming replies with Markdown,
 tool-call rows; approvals; tools that change the page around the chat. Themed entirely with CSS variables, so it
 can take on your app's look.
 
+The defaults are styled after claude.ai. The examples show how to build
+[claude.ai's web chat](/examples/claude-ai/) and, with a different theme only,
+[chatgpt.com's](/examples/chatgpt-com/).
+
 :::caution[This is AI-written slop. You probably shouldn't use it.]
 It isn't reviewed or hardened, the API will change without notice, and it may stop being maintained at
 any time. If you still want to try it, pin an exact version, or fork it and treat the code as your own.

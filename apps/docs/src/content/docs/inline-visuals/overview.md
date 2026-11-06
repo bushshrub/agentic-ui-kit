@@ -5,6 +5,10 @@ sidebar:
   order: 1
 ---
 
+![One reply mixing host components (metrics, tabs, a checklist) with a sandboxed map](/images/visuals-combined.jpg)
+
+[Try it live in Storybook](/storybook/?path=/story/inline-visuals-replies--combined)
+
 The model can draw something interactive in its reply, and it fills in while the model writes:
 
 - **Your own components** in a ` ```ui ` block of JSX in the reply, or as a tree in a tool call. See

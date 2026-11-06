@@ -78,6 +78,7 @@ export default defineConfig({
             link: '/get-started/install/',
             items: [
               { label: 'Get started', items: [{ autogenerate: { directory: 'get-started' } }] },
+              { label: 'Examples', items: [{ autogenerate: { directory: 'examples' } }] },
               { label: 'Inline visuals', items: [{ autogenerate: { directory: 'inline-visuals' } }] },
               { label: 'Custom harness', items: [{ autogenerate: { directory: 'custom-harness' } }] },
             ],

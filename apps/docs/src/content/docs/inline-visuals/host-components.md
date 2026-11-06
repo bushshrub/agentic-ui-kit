@@ -5,6 +5,10 @@ sidebar:
   order: 3
 ---
 
+![A packing checklist drawn from the host app's components via show_ui](/images/show-ui.jpg)
+
+[Try it live in Storybook](/storybook/?path=/story/inline-visuals-replies--markup-tool)
+
 Register components with a JSON Schema for their props (with zod: `z.toJSONSchema`). The model can use them
 two ways:
 

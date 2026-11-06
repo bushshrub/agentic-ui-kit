@@ -5,6 +5,10 @@ sidebar:
   order: 2
 ---
 
+![A calendar widget the model wrote, running in the sandboxed frame](/images/widget-calendar.jpg)
+
+[Try it live in Storybook](/storybook/?path=/story/inline-visuals-sandboxed-html--calendar)
+
 Give the model `visualizeTool` and put `visualizeGuide` in its instructions (both from
 `agentic-ui-kit/core`). Its `show_widget` calls, and `widget` parts, render in a `WidgetFrame`: an iframe with
 `sandbox="allow-scripts"` only and a CSP that blocks every request, themed with your `--chat-*` variables.
