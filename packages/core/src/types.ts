@@ -140,6 +140,8 @@ export interface EffortLevel {
   recommended?: boolean;
   /** Short warning shown next to the level, e.g. "5.5x or more usage". */
   warning?: string;
+  /** One line on what the level is for, e.g. "For hard problems". Shown under the effort slider. */
+  description?: string;
 }
 
 export interface ModelInfo {

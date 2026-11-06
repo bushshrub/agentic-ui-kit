@@ -9,6 +9,7 @@ import {
   ChatList,
   ChatTheme,
   ChatView,
+  EffortButton,
   EmptyState,
   IconButton,
   Sidebar,
@@ -18,7 +19,7 @@ import {
   useChat,
   type ChatListSection,
 } from "agentic-ui-kit";
-import type { Message } from "agentic-ui-kit/core";
+import type { EffortLevel, Message } from "agentic-ui-kit/core";
 import { Ellipsis, Share, BookImage, Brain, GitBranch, Globe, Paperclip, PenTool, Telescope, TrendingUp, Atom, ChevronDown, CircleDashed, Clock, Compass, Images, Library, Mic, Plus, Puzzle, Search, SquarePen, Sparkle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { history } from "../lib/demo-chat";
@@ -69,10 +70,18 @@ const plusMenu = (
   </AttachButton>
 );
 
+/** Thinking levels, lowest first: the slider's stops. */
+const thinking: EffortLevel[] = [
+  { id: "instant", label: "Instant", description: "Answers right away, without thinking" },
+  { id: "medium", label: "Medium", description: "Thinks briefly; the everyday default" },
+  { id: "high", label: "High", description: "Thinks longer for harder questions" },
+  { id: "xhigh", label: "Extra High", description: "Thinks the longest, for the hardest problems", warning: "Slower" },
+];
+
 function Chat({ start }: { start: Message[] }) {
   const transport = useMemo(() => fixtureTransport(), []);
   const chat = useChat({ transport, initialMessages: start });
-  const [think, setThink] = useState(false);
+  const [think, setThink] = useState("instant");
   return (
     <ChatView
       messages={chat.messages}
@@ -125,9 +134,9 @@ function Chat({ start }: { start: Message[] }) {
         leading: plusMenu,
         trailing: (
           <>
-            <Button variant="ghost" size="sm" className={think ? "text-chat-accent" : "text-chat-muted"} onPress={() => setThink(!think)} aria-pressed={think}>
-              <Atom className="size-4" /> Think
-            </Button>
+            <EffortButton efforts={thinking} value={think} onChange={setThink} icon={<Atom className="size-4" />}>
+              {think === "instant" ? "Think" : thinking.find((t) => t.id === think)?.label}
+            </EffortButton>
             <IconButton label="Dictate">
               <Mic />
             </IconButton>

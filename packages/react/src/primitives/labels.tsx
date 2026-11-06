@@ -196,6 +196,9 @@ export interface ChatLabels {
   effortNote: string;
   /** Badge on the recommended effort. */
   recommended: string;
+  /** Ends of the effort slider. */
+  effortFaster: string;
+  effortSmarter: string;
   /** Submenu item and list name. */
   moreModels: string;
 
@@ -307,6 +310,8 @@ export const defaultLabels: ChatLabels = {
   effort: "Effort",
   effortNote: "Higher effort means more thorough responses, but takes longer and uses your limits faster.",
   recommended: "Recommended",
+  effortFaster: "Faster",
+  effortSmarter: "Smarter",
   moreModels: "More models",
 
   widget: "Widget",

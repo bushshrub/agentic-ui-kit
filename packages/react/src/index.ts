@@ -81,6 +81,8 @@ export type { ContextPanelProps } from "./components/context-panel";
 
 // Components: input
 export { Composer, AttachButton } from "./components/composer";
+export { EffortSlider, EffortButton } from "./components/effort-slider";
+export type { EffortSliderProps, EffortButtonProps } from "./components/effort-slider";
 export type { ComposerProps, AttachButtonProps } from "./components/composer";
 export { ModelPicker } from "./components/model-picker";
 export type { ModelPickerProps } from "./components/model-picker";

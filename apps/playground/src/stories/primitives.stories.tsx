@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   SegmentedControl,
+  EffortSlider,
   Badge,
   CodeBlock,
   ContextMenu,
@@ -462,4 +463,26 @@ export const CodeBlocks: StoryObj = {
       <CodeBlock variant="boxed" label="bash" code="pnpm install --frozen-lockfile" />
     </div>
   ),
+};
+
+/** Effort as a slider, one stop per level. Drag, click a spot, or use the arrow keys. */
+export const EffortSliderStory: StoryObj = {
+  name: "Effort slider",
+  render: function Render() {
+    const [effort, setEffort] = useState("medium");
+    return (
+      <div className="w-72 rounded-chat-popover border border-chat-popover-border bg-chat-popover p-3">
+        <EffortSlider
+          efforts={[
+            { id: "low", label: "Low", description: "Quick answers" },
+            { id: "medium", label: "Medium", description: "Balanced; the default", recommended: true },
+            { id: "high", label: "High", description: "More thorough, takes longer" },
+            { id: "max", label: "Max", description: "Most thorough", warning: "Slower" },
+          ]}
+          value={effort}
+          onChange={setEffort}
+        />
+      </div>
+    );
+  },
 };
