@@ -2,13 +2,14 @@ import { Badge, ChatHeader, ChatList, ChatTheme, IconButton, Panel, type ChatLis
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Hash, Maximize2, X } from "lucide-react";
 import { useState } from "react";
+import { expect, fn } from "storybook/test";
 import { DemoChat, history } from "../lib/demo-chat";
 
 /**
  * The kit inside each host, themed only through --chat-* (see src/themes.css). Each story is what that
  * app's page would look like with the chat dropped in.
  */
-const meta: Meta = { title: "Examples/In host apps", parameters: { layout: "fullscreen" } };
+const meta: Meta = { title: "Examples/In host apps", tags: ["!autodocs"], parameters: { layout: "fullscreen" } };
 export default meta;
 
 const jobSections: ChatListSection[] = [
@@ -23,15 +24,22 @@ const jobSections: ChatListSection[] = [
   },
 ];
 
+interface JobBoardArgs {
+  /** The docked assistant panel on the right (wide screens only). */
+  assistant: boolean;
+  onSelectChat: (id: string) => void;
+  onCloseAssistant: () => void;
+}
+
 /** Job board: warm light page, its own sidebar, the main chat, and the docked assistant panel on the right. */
-function JobBoard() {
+function JobBoard({ assistant, onSelectChat, onCloseAssistant }: JobBoardArgs) {
   const [active, setActive] = useState("dock");
-  const [dock, setDock] = useState(true);
+  const [dock, setDock] = useState(assistant);
   return (
     <ChatTheme theme="warm" className="flex h-dvh">
       <aside className="flex w-60 shrink-0 flex-col gap-3 border-r border-chat-border bg-chat-sidebar p-3 max-md:hidden">
         <div className="px-2 pt-1 text-[15px] font-semibold">Jobs</div>
-        <ChatList sections={jobSections} activeId={active} onSelect={setActive} />
+        <ChatList sections={jobSections} activeId={active} onSelect={(id) => (onSelectChat(id), setActive(id))} />
       </aside>
       <main className="min-w-0 flex-1">
         <DemoChat start={history} title="Merging the two chat views" greeting="Morning, Alex" />
@@ -51,7 +59,7 @@ function JobBoard() {
                     <IconButton label="Expand" size="sm">
                       <Maximize2 />
                     </IconButton>
-                    <IconButton label="Close assistant" size="sm" onPress={() => setDock(false)}>
+                    <IconButton label="Close assistant" size="sm" onPress={() => (onCloseAssistant(), setDock(false))}>
                       <X />
                     </IconButton>
                   </>
@@ -145,7 +153,18 @@ function Dashboard({ layout, dark, panes }: { layout: Layout; dark: boolean; pan
   );
 }
 
-export const JobBoardHost: StoryObj = { name: "Job board", render: () => <JobBoard /> };
+export const JobBoardHost: StoryObj<JobBoardArgs> = {
+  name: "Job board",
+  // Keyed so the control applies again when changed.
+  render: (args) => <JobBoard key={String(args.assistant)} {...args} />,
+  args: { assistant: true, onSelectChat: fn(), onCloseAssistant: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.type(canvas.getAllByRole("textbox")[0]!, "Which invoices are overdue?{Enter}");
+    await expect(await canvas.findByText("Which invoices are overdue?")).toBeVisible();
+    await userEvent.click(canvas.getByText("Invoice form helper"));
+    await expect(args.onSelectChat).toHaveBeenCalledWith("form");
+  },
+};
 export const JobBoardInlineHost: StoryObj = { name: "Job board inline", render: () => <JobBoardInline /> };
 export const ConsoleDark: StoryObj = { name: "Console", render: () => <Console /> };
 

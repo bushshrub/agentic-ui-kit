@@ -1,5 +1,6 @@
 import { ChatTheme, CodeBlock, Markdown, type ChatMotion } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
 import { useEffect, useState } from "react";
 
 /** ChatTheme's `codeThemes` (any bundled Shiki theme) and `motion` ("system" | "reduce" | "full"). */
@@ -53,7 +54,9 @@ interface Args {
   colorScheme: "light" | "dark";
 }
 
+/** ChatTheme's code themes and motion applied to a streaming reply and a code block. */
 export const CodeThemesAndMotion: StoryObj<Args> = {
+  name: "Code themes and motion",
   args: { light: "catppuccin-latte", dark: "dracula", background: "theme", motion: "system", colorScheme: "dark" },
   argTypes: {
     light: { control: "select", options: THEMES },
@@ -70,4 +73,8 @@ export const CodeThemesAndMotion: StoryObj<Args> = {
       </ChatTheme>
     </div>
   ),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Replay stream" }));
+    await expect(canvas.getByText(/pnpm install/)).toBeVisible();
+  },
 };

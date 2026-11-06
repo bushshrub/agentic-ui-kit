@@ -1,14 +1,16 @@
-import { Composer, DictationButton, useDictation, type DictationState } from "agentic-ui-kit";
+import { Composer, DictationButton, useDictation, type DictationState, VoiceMeter } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
-
-const meta: Meta = { title: "Features/Voice dictation" };
-export default meta;
+import { expect, fn, waitFor } from "storybook/test";
 
 const spoken = "Book a table for two at seven tonight, somewhere quiet near the office.".split(" ");
 
+interface DictationArgs {
+  onSubmit: (text: string) => void;
+}
+
 /** Dictation with a stand-in for the mic and the transcription model: words arrive as they are "heard". */
-function SimulatedDictation() {
+function SimulatedDictation({ onSubmit }: DictationArgs) {
   const [listening, setListening] = useState(false);
   const [levels, setLevels] = useState<number[]>([]);
   const [words, setWords] = useState(0);
@@ -32,15 +34,15 @@ function SimulatedDictation() {
         onAccept: () => new Promise<string>((done) => setTimeout(() => (stop(), done(spoken.join(" "))), 900)),
       }
     : undefined;
-  return <Composer onSubmit={() => {}} dictation={dictation} trailing={<DictationButton onPress={() => setListening(true)} />} />;
+  return <Composer onSubmit={onSubmit} dictation={dictation} trailing={<DictationButton onPress={() => setListening(true)} />} />;
 }
 
 /** The browser's own speech recognition (no transcription model plugged in). Needs a mic and Chrome or Safari. */
-function BrowserDictation() {
+function BrowserDictation({ onSubmit }: DictationArgs) {
   const dictation = useDictation({ onError: console.error });
   return (
     <Composer
-      onSubmit={() => {}}
+      onSubmit={onSubmit}
       placeholder={dictation.supported ? "Press the mic and talk" : "This browser has no speech recognition"}
       dictation={dictation.state}
       trailing={dictation.supported && <DictationButton onPress={dictation.start} />}
@@ -52,12 +54,23 @@ function BrowserDictation() {
  * Voice dictation, similar to claude.ai's: the words fill the box as they are heard, a dotted meter follows the
  * voice, ✕ drops the words and ✓ keeps them. Plug in a transcription model with `useDictation({ transcribe })`.
  */
-export const Dictation: StoryObj = {
-  name: "Composer",
-  render: () => (
-    <div className="flex w-[40rem] flex-col gap-6">
-      <SimulatedDictation />
-      <BrowserDictation />
-    </div>
-  ),
+const meta = {
+  title: "Features/Voice dictation",
+  component: SimulatedDictation,
+  subcomponents: { Composer, DictationButton, VoiceMeter },
+  args: { onSubmit: fn() },
+} satisfies Meta<typeof SimulatedDictation>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+/** Press the mic, then ✓ (the "model" takes a moment): the words land in the box. */
+export const Simulated: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Dictate" }));
+    await userEvent.click(await canvas.findByRole("button", { name: "Use dictation" }));
+    await waitFor(() => expect(canvas.getByRole("textbox")).toHaveValue(spoken.join(" ")));
+  },
 };
+
+/** The browser's own recognition. Needs a real mic. */
+export const Browser: Story = { tags: ["!test"], render: (args) => <BrowserDictation {...args} /> };

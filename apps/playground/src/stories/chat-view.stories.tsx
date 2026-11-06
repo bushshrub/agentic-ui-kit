@@ -1,20 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AttachmentRow, Button, ChatNotice, ChatTheme, ChatTranscript, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
+import {
+  AttachmentRow, Button, ChatHeader, ChatNotice, ChatTheme, ChatTitleMenu, ChatTranscript, ChatView, Composer, EmptyState, IconButton,
+  ModelPicker, SidebarToggle, useAttachments, useChat, type Density, type DraftAttachment,
+} from "agentic-ui-kit";
 import type { Message } from "agentic-ui-kit/core";
-import { useState, type CSSProperties } from "react";
-import { attachMenu, DemoChat, fakeUpload, history, models } from "../lib/demo-chat";
-
-const meta: Meta = { title: "Views/Chat view", parameters: { layout: "fullscreen" } };
-export default meta;
-
-/** A chat in progress. Send a message to get a recorded reply; stop it midway; retry any reply. */
-export const InProgress: StoryObj = {
-  render: () => (
-    <div className="h-dvh">
-      <DemoChat start={history} title="Speeding up CI" />
-    </div>
-  ),
-};
+import { Share, Sparkles } from "lucide-react";
+import { useMemo, useState, type CSSProperties } from "react";
+import { expect, fn } from "storybook/test";
+import { attachMenu, fakeUpload, history, models } from "../lib/demo-chat";
+import { fixtureTransport } from "../lib/fixture-transport";
 
 const longAsk: Message = {
   id: "shared-u0",
@@ -42,100 +36,196 @@ const longAsk: Message = {
   ],
 };
 
+interface ChatArgs {
+  /** "chat": the live view with a composer. "shared": a read-only snapshot, like claude.ai's shared links. */
+  view: "chat" | "shared";
+  /** Where it lives: the full page, a host app's side panel, or a small area inside a form. */
+  density: Density;
+  /** Start with the recorded conversation, or empty (greeting over the centered composer). */
+  conversation: boolean;
+  /** Shared view in a host's theme ("warm" from themes.css); the notice takes --chat-notice-bg and --chat-notice-border. */
+  hostTheme: boolean;
+  /** Send a message to get a recorded reply. */
+  onSend: (text: string) => void;
+  onStop: () => void;
+  onRetry: (messageId: string) => void;
+  onFeedback: (messageId: string, feedback: unknown) => void;
+  /** Header menu and Share. */
+  onShare: () => void;
+  onPin: () => void;
+  onRename: () => void;
+  onDelete: () => void;
+  /** Shared view: the notice's Report button and the footer's Continue this chat. */
+  onReport: () => void;
+  onContinue: () => void;
+}
+
 /**
- * A shared chat, read only, similar to claude.ai's shared links: a notice on top, then the conversation; long
- * messages fold behind "Show more". No composer, retry, edit or feedback; Copy stays. Starts at the top.
+ * A shared chat, read only: a notice on top, then the conversation; long messages fold behind "Show more".
+ * No composer, retry, edit or feedback; Copy stays. Starts at the top.
  */
-function SharedChat() {
+function SharedChat({ onReport, onContinue }: Pick<ChatArgs, "onReport" | "onContinue">) {
   return (
-      <ChatTranscript
-        messages={[longAsk, ...history.slice(1).map((m, i) => (i === 0 ? { ...m, parentId: longAsk.id } : m))]}
-        notice={
-          <ChatNotice actions={<Button variant="subtle" size="sm">Report</Button>}>
-            <strong className="font-medium">Shared by Alex.</strong> This is a copy of a chat between the assistant and
-            Alex. Content may include unverified or unsafe content. The shared snapshot may leave out attachments and
-            data not shown here.
-          </ChatNotice>
-        }
-        footer={
-          <div className="flex justify-center">
-            <Button variant="subtle" className="border border-chat-border-strong">Continue this chat</Button>
-          </div>
-        }
-      />
+    <ChatTranscript
+      messages={[longAsk, ...history.slice(1).map((m, i) => (i === 0 ? { ...m, parentId: longAsk.id } : m))]}
+      notice={
+        <ChatNotice actions={<Button variant="subtle" size="sm" onPress={onReport}>Report</Button>}>
+          <strong className="font-medium">Shared by Alex.</strong> This is a copy of a chat between the assistant and
+          Alex. Content may include unverified or unsafe content. The shared snapshot may leave out attachments and
+          data not shown here.
+        </ChatNotice>
+      }
+      footer={
+        <div className="flex justify-center">
+          <Button variant="subtle" className="border border-chat-border-strong" onPress={onContinue}>Continue this chat</Button>
+        </div>
+      }
+    />
   );
 }
 
-export const Shared: StoryObj = {
-  render: () => (
-    <div className="h-dvh">
-      <SharedChat />
-    </div>
-  ),
-};
+function LiveChat({ density, conversation, onSend, onStop, onRetry, onFeedback, onShare, onPin, onRename, onDelete }: ChatArgs) {
+  const transport = useMemo(() => fixtureTransport({}), []);
+  const [title, setTitle] = useState("Speeding up CI");
+  const chat = useChat({ transport, initialMessages: conversation ? history : [], onTitle: setTitle });
+  const [model, setModel] = useState(models[0]!.id);
+  const [effort, setEffort] = useState("medium");
+  const files = useAttachments({ upload: fakeUpload });
+  const picker = <ModelPicker models={models} model={model} onModelChange={setModel} effort={effort} onEffortChange={setEffort} />;
+  const started = chat.messages.length > 0;
+  return (
+    <ChatView
+      density={density}
+      messages={chat.messages}
+      busy={chat.busy}
+      onSend={(text) => {
+        onSend(text);
+        chat.send(text, { model, attachments: files.toParts() });
+        files.clear();
+      }}
+      onStop={() => (onStop(), chat.stop())}
+      onRetry={(id) => (onRetry(id), chat.retry(id, { model }))}
+      onFeedback={onFeedback}
+      header={
+        <ChatHeader
+          leading={<SidebarToggle drawerOnly />}
+          title={started ? title : ""}
+          menu={
+            started && (
+              <ChatTitleMenu
+                onPin={onPin}
+                onRename={onRename}
+                projects={[{ id: "p1", name: "website" }, { id: "p2", name: "job-board" }]}
+                onAddToProject={fn()}
+                onCreateProject={fn()}
+                onShare={onShare}
+                onDelete={onDelete}
+              />
+            )
+          }
+          actions={
+            density === "full" && started && (
+              <IconButton label="Share" onPress={onShare}>
+                <Share />
+              </IconButton>
+            )
+          }
+        />
+      }
+      composer={{
+        placeholder: started ? "Reply…" : "How can I help you today?",
+        leading: attachMenu(),
+        trailing: density === "inline" ? undefined : picker,
+        above: <AttachmentRow attachments={files.attachments} onRemove={files.remove} onEditText={files.updateText} />,
+        onFiles: files.addFiles,
+        onLongPaste: files.addText,
+        allowEmpty: files.attachments.length > 0,
+        submitDisabled: files.uploading,
+      }}
+      emptyState={(composer) =>
+        density === "full" ? (
+          <EmptyState greeting="Good evening, Alex" icon={<Sparkles />}>
+            {composer}
+          </EmptyState>
+        ) : (
+          composer
+        )
+      }
+      disclaimer={density === "full" && "AI can make mistakes. Please double-check responses."}
+    />
+  );
+}
 
-/**
- * The same shared chat in a host's theme ("warm" from themes.css). The notice takes its own colors from
- * --chat-notice-bg and --chat-notice-border; everything else follows the theme's --chat-* variables.
- */
-export const SharedInHostTheme: StoryObj = {
-  render: () => (
-    <ChatTheme theme="warm" className="block h-dvh">
-      <div className="h-full" style={{ "--chat-notice-bg": "#f3ece2", "--chat-notice-border": "#e2d6c5" } as CSSProperties}>
-        <SharedChat />
-      </div>
-    </ChatTheme>
-  ),
-};
-
-/** A new chat: greeting over the centered composer. */
-export const Empty: StoryObj = {
-  render: () => (
-    <div className="h-dvh">
-      <DemoChat start={[]} title="New chat" />
-    </div>
-  ),
-};
-
-/** Docked in a side panel of a host app (e.g. an assistant dock). */
-export const Panel: StoryObj = {
-  render: () => (
-    <div className="flex h-dvh">
-      <div className="flex-1 p-8 font-chat-sans text-sm text-chat-subtle">Host app content</div>
-      <div className="w-[26rem] border-l border-chat-border">
-        <DemoChat start={history} density="panel" title="CI speed" />
-      </div>
-    </div>
-  ),
-};
-
-/** A small area inside a form (e.g. a draft helper in an application form). */
-export const Inline: StoryObj = {
-  render: () => (
-    <div className="mx-auto max-w-xl p-8">
-      <p className="mb-2 font-chat-sans text-sm text-chat-muted">Cover letter assistant</p>
-      <div className="h-[28rem] overflow-hidden rounded-chat-lg border border-chat-border">
-        <DemoChat start={[]} density="inline" title="Draft" />
-      </div>
-    </div>
-  ),
-};
-
-export const Composers: StoryObj = {
-  render: function Render() {
-    const [model, setModel] = useState(models[0]!.id);
-    const [effort, setEffort] = useState("high");
-    const picker = <ModelPicker models={models} model={model} onModelChange={setModel} effort={effort} onEffortChange={setEffort} />;
+function ChatDemo(args: ChatArgs) {
+  const { view, density, hostTheme } = args;
+  // Keyed so a control that changes the starting state restarts the chat.
+  const key = `${view}-${density}-${args.conversation}`;
+  if (view === "shared") {
+    const shared = <div className="h-full" style={{ "--chat-notice-bg": "#f3ece2", "--chat-notice-border": "#e2d6c5" } as CSSProperties}><SharedChat {...args} /></div>;
+    return hostTheme ? <ChatTheme theme="warm" className="block h-dvh">{shared}</ChatTheme> : <div className="h-dvh">{shared}</div>;
+  }
+  if (density === "panel") {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-8 p-8">
-        <Composer variant="centered" placeholder="How can I help you today?" onSubmit={() => {}} leading={attachMenu()} trailing={picker} />
-        <Composer onSubmit={() => {}} leading={attachMenu()} trailing={picker} />
-        <Composer busy onSubmit={() => {}} onStop={() => {}} leading={attachMenu()} trailing={picker} value="Can we make CI foot faster" />
-        <Composer variant="compact" placeholder="Ask about this job…" onSubmit={() => {}} leading={attachMenu()} />
+      <div className="flex h-dvh">
+        <div className="flex-1 p-8 font-chat-sans text-sm text-chat-subtle">Host app content</div>
+        <div className="w-[26rem] border-l border-chat-border"><LiveChat key={key} {...args} /></div>
       </div>
     );
+  }
+  if (density === "inline") {
+    return (
+      <div className="mx-auto max-w-xl p-8">
+        <p className="mb-2 font-chat-sans text-sm text-chat-muted">Cover letter assistant</p>
+        <div className="h-[28rem] overflow-hidden rounded-chat-lg border border-chat-border"><LiveChat key={key} {...args} /></div>
+      </div>
+    );
+  }
+  return <div className="h-dvh"><LiveChat key={key} {...args} /></div>;
+}
+
+/** The chat view in the places it lives: full page, side panel, inline, and the shared read-only snapshot. */
+const meta = {
+  title: "Views/Chat view",
+  component: ChatDemo,
+  subcomponents: { ChatView, ChatTranscript, ChatHeader, ChatNotice },
+  parameters: { layout: "fullscreen" },
+  argTypes: {
+    view: { control: "inline-radio", options: ["chat", "shared"] },
+    density: { control: "inline-radio", options: ["full", "panel", "inline"], if: { arg: "view", eq: "chat" } },
+    conversation: { if: { arg: "view", eq: "chat" } },
+    hostTheme: { if: { arg: "view", eq: "shared" } },
+  },
+  args: {
+    view: "chat", density: "full", conversation: true, hostTheme: false,
+    onSend: fn(), onStop: fn(), onRetry: fn(), onFeedback: fn(), onShare: fn(), onPin: fn(), onRename: fn(), onDelete: fn(), onReport: fn(), onContinue: fn(),
+  },
+} satisfies Meta<typeof ChatDemo>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+/**
+ * A chat in progress. Send a message to get a recorded reply; stop it midway; retry any reply. Controls:
+ * `density` puts it in a side panel or inline in a form, `conversation` off shows the new-chat greeting.
+ */
+export const InProgress: Story = {
+  name: "Chat view",
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.type(canvas.getByRole("textbox"), "Thanks!{Enter}");
+    await expect(args.onSend).toHaveBeenCalledWith("Thanks!");
   },
 };
+
+/** A shared chat, read only; long messages fold behind "Show more". */
+export const Shared: Story = {
+  args: { view: "shared" },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Continue this chat" }));
+    await expect(args.onContinue).toHaveBeenCalled();
+  },
+};
+
+/** The same shared chat in a host's theme ("warm" from themes.css). */
+export const SharedInHostTheme: Story = { args: { view: "shared", hostTheme: true } };
 
 const pasted = `Lighthouses were never meant to be beautiful. They were built to warn ships off coastlines that had already sunk too many of them, and every design decision followed from that. A tower had to be tall enough for its light to clear the curve of the earth.`;
 
@@ -152,15 +242,16 @@ const drafts: DraftAttachment[] = [
 ];
 
 /** Pasted text, images and files in the composer; the shimmering ones are uploading. Paste long text or drop files to add more. */
-export const Attachments: StoryObj = {
-  render: function Render() {
+export const Attachments: StoryObj<{ onSubmit: (text: string) => void }> = {
+  args: { onSubmit: fn() },
+  render: function Render({ onSubmit }) {
     const [list, setList] = useState(drafts);
     const files = useAttachments({ upload: fakeUpload });
     const all = [...list, ...files.attachments];
     return (
       <div className="mx-auto max-w-3xl p-8">
         <Composer
-          onSubmit={() => {}}
+          onSubmit={onSubmit}
           leading={attachMenu()}
           above={
             <AttachmentRow

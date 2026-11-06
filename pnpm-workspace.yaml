@@ -16,3 +16,5 @@ minimumReleaseAgeExclude:
   - vite@8.3.6
   - '@storybook/addon-a11y@10.6.6'
   - '@agentclientprotocol/claude-agent-acp@0.101.0'
+  - '@storybook/addon-vitest@10.6.6'
+  - '@storybook/addon-docs@10.6.6'

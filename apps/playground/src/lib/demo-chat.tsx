@@ -89,9 +89,23 @@ export interface DemoChatProps {
   greeting?: string;
   disclaimer?: ReactNode;
   eventsPerSecond?: number;
+  /** Called on top of the demo's own behavior, e.g. `fn()` args so a story logs them to Actions. */
+  on?: DemoChatHandlers;
 }
 
-export function DemoChat({ start, density = "full", title: initialTitle, header, autoSend, greeting = "Good evening, Alex", disclaimer, eventsPerSecond }: DemoChatProps) {
+export interface DemoChatHandlers {
+  onSend?: (text: string) => void;
+  onStop?: () => void;
+  onRetry?: (messageId: string) => void;
+  onFeedback?: (messageId: string, feedback: "good" | "bad") => void;
+  onShare?: () => void;
+  onPin?: () => void;
+  onRename?: () => void;
+  onDelete?: () => void;
+  onModelChange?: (model: string) => void;
+}
+
+export function DemoChat({ start, density = "full", title: initialTitle, header, autoSend, greeting = "Good evening, Alex", disclaimer, eventsPerSecond, on = {} }: DemoChatProps) {
   const transport = useMemo(() => fixtureTransport(eventsPerSecond ? { eventsPerSecond } : {}), [eventsPerSecond]);
   const [title, setTitle] = useState(initialTitle);
   const chat = useChat({ transport, initialMessages: start, onTitle: setTitle });
@@ -108,7 +122,7 @@ export function DemoChat({ start, density = "full", title: initialTitle, header,
     chat.send(autoSend, options);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSend]);
-  const picker = <ModelPicker models={models} model={model} onModelChange={setModel} effort={effort} onEffortChange={setEffort} />;
+  const picker = <ModelPicker models={models} model={model} onModelChange={(id) => (setModel(id), on.onModelChange?.(id))} effort={effort} onEffortChange={setEffort} />;
 
   return (
     <ChatView
@@ -116,12 +130,13 @@ export function DemoChat({ start, density = "full", title: initialTitle, header,
       messages={chat.messages}
       busy={chat.busy}
       onSend={(text) => {
+        on.onSend?.(text);
         chat.send(text, { ...options, attachments: files.toParts() });
         files.clear();
       }}
-      onStop={chat.stop}
-      onRetry={(id) => chat.retry(id, options)}
-      onFeedback={() => {}}
+      onStop={() => (on.onStop?.(), chat.stop())}
+      onRetry={(id) => (on.onRetry?.(id), chat.retry(id, options))}
+      onFeedback={(id, feedback) => on.onFeedback?.(id, feedback)}
       header={
         header !== undefined ? header : <ChatHeader
             leading={<SidebarToggle drawerOnly />}
@@ -129,19 +144,19 @@ export function DemoChat({ start, density = "full", title: initialTitle, header,
             menu={
               chat.messages.length > 0 && (
               <ChatTitleMenu
-                onPin={() => {}}
-                onRename={() => {}}
+                onPin={() => on.onPin?.()}
+                onRename={() => on.onRename?.()}
                 projects={[{ id: "p1", name: "website" }, { id: "p2", name: "job-board" }]}
                 onAddToProject={() => {}}
                 onCreateProject={() => {}}
-                onShare={() => {}}
-                onDelete={() => {}}
+                onShare={() => on.onShare?.()}
+                onDelete={() => on.onDelete?.()}
               />
               )
             }
             actions={
               density === "full" && chat.messages.length > 0 && (
-                <IconButton label="Share">
+                <IconButton label="Share" onPress={() => on.onShare?.()}>
                   <Share />
                 </IconButton>
               )

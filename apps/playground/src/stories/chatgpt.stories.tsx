@@ -22,6 +22,7 @@ import {
 import type { EffortLevel, Message } from "agentic-ui-kit/core";
 import { Ellipsis, Share, BookImage, Brain, GitBranch, Globe, Paperclip, PenTool, Telescope, TrendingUp, Atom, ChevronDown, CircleDashed, Clock, Compass, Images, Library, Mic, Plus, Puzzle, Search, SquarePen, Sparkle } from "lucide-react";
 import { useMemo, useState } from "react";
+import { expect, fn } from "storybook/test";
 import { history } from "../lib/demo-chat";
 import { fixtureTransport } from "../lib/fixture-transport";
 
@@ -78,7 +79,14 @@ const thinking: EffortLevel[] = [
   { id: "xhigh", label: "Extra High", description: "Thinks the longest, for the hardest problems", warning: "Slower" },
 ];
 
-function Chat({ start }: { start: Message[] }) {
+interface Handlers {
+  onNewChat: () => void;
+  onSelectChat: (id: string) => void;
+  onSend: (text: string) => void;
+  onThinkingChange: (level: string) => void;
+}
+
+function Chat({ start, onSend, onThinkingChange }: Pick<Handlers, "onSend" | "onThinkingChange"> & { start: Message[] }) {
   const transport = useMemo(() => fixtureTransport(), []);
   const chat = useChat({ transport, initialMessages: start });
   const [think, setThink] = useState("instant");
@@ -86,7 +94,7 @@ function Chat({ start }: { start: Message[] }) {
     <ChatView
       messages={chat.messages}
       busy={chat.busy}
-      onSend={(text) => chat.send(text)}
+      onSend={(text) => (onSend(text), chat.send(text))}
       onStop={chat.stop}
       onRetry={(id) => chat.retry(id)}
       onFeedback={() => {}}
@@ -134,7 +142,7 @@ function Chat({ start }: { start: Message[] }) {
         leading: plusMenu,
         trailing: (
           <>
-            <EffortButton efforts={thinking} value={think} onChange={setThink} icon={<Atom className="size-4" />}>
+            <EffortButton efforts={thinking} value={think} onChange={(level) => (onThinkingChange(level), setThink(level))} icon={<Atom className="size-4" />}>
               {think === "instant" ? "Think" : thinking.find((t) => t.id === think)?.label}
             </EffortButton>
             <IconButton label="Dictate">
@@ -149,11 +157,23 @@ function Chat({ start }: { start: Message[] }) {
   );
 }
 
-function App({ theme, open }: { theme: string; open?: string }) {
-  const [active, setActive] = useState<string | undefined>(open);
+const chatIds = ["new", "ci", "midterm", "dram", "caffeinate", "parametric"] as const;
+
+interface AppArgs extends Handlers {
+  /** chatgpt: dark. chatgpt-light: white page, black send button. */
+  theme: "chatgpt" | "chatgpt-light";
+  /** The open chat; "new" is the empty chat. */
+  chat: (typeof chatIds)[number];
+  /** Start with the sidebar folded to its icon rail. */
+  collapsed: boolean;
+}
+
+function App({ theme, chat, collapsed, onNewChat, onSelectChat, ...handlers }: AppArgs) {
+  const [active, setActive] = useState<string | undefined>(chat === "new" ? undefined : chat);
   return (
     <ChatTheme theme={theme} className="h-dvh">
       <AppShell
+        defaultCollapsed={collapsed}
         sidebar={
           <Sidebar
             brand={<span className="font-semibold">ChatGPT</span>}
@@ -164,7 +184,7 @@ function App({ theme, open }: { theme: string; open?: string }) {
             }
             nav={
               <>
-                <SidebarItem icon={<SquarePen />} label="New chat" active={!active} onPress={() => setActive(undefined)} />
+                <SidebarItem icon={<SquarePen />} label="New chat" active={!active} onPress={() => (onNewChat(), setActive(undefined))} />
                 <SidebarItem icon={<Images />} label="Images" />
                 <SidebarItem icon={<Clock />} label="Scheduled" />
                 <SidebarItem icon={<Library />} label="Library" />
@@ -174,24 +194,43 @@ function App({ theme, open }: { theme: string; open?: string }) {
             }
             footer={<SidebarUser name="Alex" detail="Free" />}
           >
-            <ChatList sections={sections} {...(active && { activeId: active })} onSelect={setActive} />
+            <ChatList sections={sections} {...(active && { activeId: active })} onSelect={(id) => (onSelectChat(id), setActive(id))} />
           </Sidebar>
         }
       >
-        <Chat key={active ?? "new"} start={active ? history : []} />
+        <Chat key={active ?? "new"} start={active ? history : []} {...handlers} />
       </AppShell>
     </ChatTheme>
   );
 }
 
-const meta: Meta = { title: "Examples/ChatGPT", parameters: { layout: "fullscreen" } };
+/** chatgpt.com built from the kit: its sidebar items, a pill composer with Think and dictation, the model-free header. Theme, chat and sidebar are Controls. */
+const meta = {
+  title: "Examples/ChatGPT", tags: ["!autodocs"],
+  parameters: { layout: "fullscreen" },
+  // Keyed so the controls apply again when changed.
+  render: (args) => <App key={`${args.chat}-${args.collapsed}`} {...args} />,
+  argTypes: {
+    theme: { control: "inline-radio", options: ["chatgpt", "chatgpt-light"] },
+    chat: { control: "select", options: chatIds },
+  },
+  args: { theme: "chatgpt", chat: "new", collapsed: false, onNewChat: fn(), onSelectChat: fn(), onSend: fn(), onThinkingChange: fn() },
+} satisfies Meta<AppArgs>;
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-/** chatgpt.com built from the kit: its sidebar items, a pill composer with Think and dictation, the model-free header. */
-export const Dark: StoryObj = { render: () => <App theme="chatgpt" /> };
+export const Dark: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.type(canvas.getByRole("textbox"), "Why is my build slow?{Enter}");
+    await expect(args.onSend).toHaveBeenCalledWith("Why is my build slow?");
+    await expect(await canvas.findByText("Why is my build slow?")).toBeVisible();
+    await userEvent.click(canvas.getByText("DRAM allocation economics"));
+    await expect(args.onSelectChat).toHaveBeenCalledWith("dram");
+  },
+};
 
-/** The same, with the light theme: white page, black send button. */
-export const Light: StoryObj = { render: () => <App theme="chatgpt-light" /> };
+/** The light theme: white page, black send button. */
+export const Light: Story = { args: { theme: "chatgpt-light" } };
 
 /** A conversation in progress: the pill composer docks under the messages. */
-export const Conversation: StoryObj = { render: () => <App theme="chatgpt" open="ci" /> };
+export const Conversation: Story = { args: { chat: "ci" } };

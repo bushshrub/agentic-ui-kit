@@ -23,6 +23,7 @@ import {
 import type { Message, ModelInfo } from "agentic-ui-kit/core";
 import { AudioLines, Camera, Clock, Code, FolderClosed, Ghost, Globe, MessagesSquare, Mic, Paperclip, Plus, Search, Shapes, SlidersHorizontal, Telescope } from "lucide-react";
 import { useMemo, useState } from "react";
+import { expect, fn } from "storybook/test";
 import { efforts, history } from "../lib/demo-chat";
 import { fixtureTransport } from "../lib/fixture-transport";
 
@@ -126,16 +127,24 @@ const plusMenu = (
   </AttachButton>
 );
 
-function Chat({ start, title }: { start: Message[]; title: string }) {
+interface Handlers {
+  onNewChat: () => void;
+  onSelectChat: (id: string) => void;
+  onSend: (text: string) => void;
+  onShare: () => void;
+  onModelChange: (model: string) => void;
+}
+
+function Chat({ start, title, model: initialModel, onSend, onShare, onModelChange }: Pick<Handlers, "onSend" | "onShare" | "onModelChange"> & { start: Message[]; title: string; model: string }) {
   const transport = useMemo(() => fixtureTransport(), []);
   const chat = useChat({ transport, initialMessages: start });
-  const [model, setModel] = useState(models[0]!.id);
+  const [model, setModel] = useState(initialModel);
   const [effort, setEffort] = useState("low");
   return (
     <ChatView
       messages={chat.messages}
       busy={chat.busy}
-      onSend={(text) => chat.send(text, { model, effort })}
+      onSend={(text) => (onSend(text), chat.send(text, { model, effort }))}
       onStop={chat.stop}
       onRetry={(id) => chat.retry(id, { model, effort })}
       onFeedback={() => {}}
@@ -143,7 +152,7 @@ function Chat({ start, title }: { start: Message[]; title: string }) {
         <ChatHeader
           leading={<SidebarToggle drawerOnly />}
           title={chat.messages.length ? title : ""}
-          {...(chat.messages.length > 0 && { menu: <ChatTitleMenu onPin={() => {}} onRename={() => {}} onShare={() => {}} onDelete={() => {}} /> })}
+          {...(chat.messages.length > 0 && { menu: <ChatTitleMenu onPin={() => {}} onRename={() => {}} onShare={onShare} onDelete={() => {}} /> })}
           actions={
             <IconButton label="Incognito chat">
               <Ghost />
@@ -161,7 +170,7 @@ function Chat({ start, title }: { start: Message[]; title: string }) {
         ),
         trailing: (
           <>
-            <ModelPicker models={models} model={model} onModelChange={setModel} effort={effort} onEffortChange={setEffort} />
+            <ModelPicker models={models} model={model} onModelChange={(id) => (onModelChange(id), setModel(id))} effort={effort} onEffortChange={setEffort} />
             <IconButton label="Dictate">
               <Mic />
             </IconButton>
@@ -192,19 +201,30 @@ function ClaudeSpark() {
   );
 }
 
-const titles: Record<string, string> = { midpoint: "Using midpoint formula", graphs: "Graph algorithms in Python" };
+const chatIds = ["new", "power", "ci", "midterm", "midpoint", "graphs", "mcp", "router"] as const;
+const titles = new Map(sections.flatMap((s) => s.items.flatMap((i) => ("type" in i ? i.chats : [i]))).map((c) => [c.id, c.title]));
 
-function App({ open }: { open?: string }) {
-  const [active, setActive] = useState<string | undefined>(open);
+interface AppArgs extends Handlers {
+  /** The open chat; "new" is the empty chat. */
+  chat: (typeof chatIds)[number];
+  /** The model the picker starts on. */
+  model: string;
+  /** Start with the sidebar folded to its icon rail. */
+  collapsed: boolean;
+}
+
+function App({ chat, model, collapsed, onNewChat, onSelectChat, ...handlers }: AppArgs) {
+  const [active, setActive] = useState<string | undefined>(chat === "new" ? undefined : chat);
   return (
     <AppShell
+      defaultCollapsed={collapsed}
       sidebar={
         <Sidebar
           brand="Claude"
           headerActions={<AppSwitch />}
           nav={
             <>
-              <SidebarItem icon={<Plus />} label="New" active={!active} onPress={() => setActive(undefined)} />
+              <SidebarItem icon={<Plus />} label="New" active={!active} onPress={() => (onNewChat(), setActive(undefined))} />
               <SidebarItem icon={<Search />} label="Search" />
               <SidebarItem icon={<FolderClosed />} label="Projects" />
               <SidebarItem icon={<Shapes />} label="Artifacts" />
@@ -217,22 +237,42 @@ function App({ open }: { open?: string }) {
           <ChatList
             sections={sections}
             {...(active && { activeId: active })}
-            onSelect={setActive}
+            onSelect={(id) => (onSelectChat(id), setActive(id))}
             rowMenu={() => <ChatTitleMenu onPin={() => {}} onRename={() => {}} onShare={() => {}} onDelete={() => {}} />}
           />
         </Sidebar>
       }
     >
-      <Chat key={active ?? "new"} start={active ? history : []} title={(active && titles[active]) ?? "Speeding up CI"} />
+      <Chat key={active ?? "new"} start={active ? history : []} title={titles.get(active ?? "") ?? "Speeding up CI"} model={model} {...handlers} />
     </AppShell>
   );
 }
 
-const meta: Meta = { title: "Examples/Claude", parameters: { layout: "fullscreen" } };
+/** claude.ai built from the kit: sidebar with pinned projects, Chat / Cowork, model and effort. Chat, model and sidebar are Controls; what a host would handle logs to Actions. */
+const meta = {
+  title: "Examples/Claude", tags: ["!autodocs"],
+  parameters: { layout: "fullscreen" },
+  // Keyed so the controls apply again when changed.
+  render: (args) => <App key={`${args.chat}-${args.model}-${args.collapsed}`} {...args} />,
+  argTypes: {
+    chat: { control: "select", options: chatIds },
+    model: { control: "inline-radio", options: models.map((m) => m.id) },
+  },
+  args: { chat: "new", model: "opus", collapsed: false, onNewChat: fn(), onSelectChat: fn(), onSend: fn(), onShare: fn(), onModelChange: fn() },
+} satisfies Meta<AppArgs>;
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-/** claude.ai built from the kit, on its default theme: sidebar with pinned projects, Chat / Cowork, model and effort. */
-export const NewChat: StoryObj = { render: () => <App /> };
+/** On its default theme, the empty chat. */
+export const NewChat: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.type(canvas.getByRole("textbox"), "Explain the midpoint formula{Enter}");
+    await expect(args.onSend).toHaveBeenCalledWith("Explain the midpoint formula");
+    await expect(await canvas.findByText("Explain the midpoint formula")).toBeVisible();
+    await userEvent.click(canvas.getByText("Graph algorithms in Python"));
+    await expect(args.onSelectChat).toHaveBeenCalledWith("graphs");
+  },
+};
 
 /** A conversation in a project. */
-export const Conversation: StoryObj = { render: () => <App open="midpoint" /> };
+export const Conversation: Story = { args: { chat: "midpoint" } };

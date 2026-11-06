@@ -50,6 +50,7 @@ function Group({ activity, defaultExpanded, logo }: GroupArgs) {
 const meta = {
   title: "Components/ActivityGroup",
   component: Group,
+  subcomponents: { ActivityGroup },
   decorators: [(Story) => <div className="w-[52rem]"><Story /></div>],
   argTypes: { activity: { control: "select", options: Object.keys(activities) } },
   args: { activity: "command and search", defaultExpanded: false, logo: false },

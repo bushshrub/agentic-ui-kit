@@ -65,6 +65,7 @@ function Turn({ run, streaming, eventsPerSecond, onEdit, ...actions }: TurnArgs)
 const meta = {
   title: "Components/Messages",
   component: Turn,
+  subcomponents: { UserMessage, AssistantMessage },
   parameters: { layout: "padded" },
   argTypes: {
     run: { control: "inline-radio", options: Object.keys(runs) },

@@ -1,0 +1,41 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Introduction" />
+
+# agentic-ui-kit
+
+React building blocks for LLM chat: messages that stream, thinking and tool calls, approvals, a composer
+with models, effort, attachments and dictation, inline visuals the model draws, and the app shell around
+them. The defaults are similar to claude.ai; theming takes them anywhere else.
+
+```sh
+npm install agentic-ui-kit
+```
+
+## How this Storybook is laid out
+
+- **Examples**: whole apps built from the kit (similar to claude.ai and chatgpt.com, and inside host apps). Start here.
+- **Inline visuals** and **Features**: what the model can do in the chat (widgets, UI blocks, voice dictation).
+- **Views**: the chat view and the app shell, the pieces an app puts on a page.
+- **Components**: messages, the composer, the activity group, the chat list…
+- **Primitives**: buttons, menus, dialogs, code blocks: what the components are made of.
+
+Each component has a **Docs** page: what it is for, its stories, and its props from the TypeScript types.
+
+## Panels below a story
+
+- **Controls** change the story: which run to replay, streaming or finished, variants, themes.
+- **Actions** log the callbacks your app would handle (`onSend`, `onApprove`, `onFeedback`…) with their arguments.
+- **Interactions** replay the story's `play` function step by step: what a user does, and what must happen.
+  These also run as tests (`pnpm test` in apps/playground).
+- **Accessibility** checks the story with axe.
+
+## Guides
+
+The [docs site](https://bushshrub.github.io/agentic-ui-kit/) has the guides:
+[quick start](https://bushshrub.github.io/agentic-ui-kit/get-started/quick-start/),
+[the backend](https://bushshrub.github.io/agentic-ui-kit/get-started/backend/),
+[theming](https://bushshrub.github.io/agentic-ui-kit/get-started/theming/),
+[voice dictation](https://bushshrub.github.io/agentic-ui-kit/get-started/voice-dictation/),
+[inline visuals](https://bushshrub.github.io/agentic-ui-kit/inline-visuals/overview/) and
+[plugging in a harness](https://bushshrub.github.io/agentic-ui-kit/custom-harness/plugging-in-a-harness/).

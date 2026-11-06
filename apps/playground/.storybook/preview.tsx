@@ -1,14 +1,20 @@
 import type { Preview } from "@storybook/react-vite";
+import { themes } from "storybook/theming";
 import "../src/playground.css";
 
 const preview: Preview = {
+  // A Docs page per component: its description, the stories, and the props table.
+  tags: ["autodocs"],
   parameters: {
+    // Docs pages in the same dark as the kit's default theme.
+    docs: { theme: themes.dark },
     layout: "centered",
     backgrounds: { disable: true },
     // What the kit builds first (whole apps, then the features), then its layers top down to the primitives.
     options: {
       storySort: {
         order: [
+          "Introduction",
           "Examples", ["Claude", "ChatGPT", "Agent tools", "In host apps"],
           "Inline visuals", ["Replies", "Sandboxed HTML"],
           "Features",

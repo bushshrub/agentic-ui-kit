@@ -42,135 +42,158 @@ import {
   Search,
   Share,
   Sparkles,
-  ThumbsDown,
-  ThumbsUp,
   Trash2,
-  Volume2,
   Wand2,
 } from "lucide-react";
 import { ArrowUp, Check, LayoutGrid, List, Maximize2, X } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import type { Selection } from "react-aria-components";
+import { useState, type ComponentProps } from "react";
+import type { Key, Selection } from "react-aria-components";
+import { expect, fn, waitFor, within } from "storybook/test";
 
-const meta: Meta = { title: "Primitives" };
+/** Every story sets its own `component`, so the sheet has no component of its own. */
+const meta: Meta = { title: "Primitives", subcomponents: { Button, IconButton, SegmentedControl, Badge, Menu, MenuItem, Disclosure, Tooltip, ContextMenu, Modal, Drawer, Panel, CodeBlock, EffortSlider } };
 export default meta;
 
-/** One labeled row of the sheet. */
-function Row({ label, children }: { label: string; children: ReactNode }) {
+const icons = { none: undefined, plus: <Plus />, share: <Share />, check: <Check />, send: <ArrowUp /> };
+
+interface ButtonArgs {
+  variant: NonNullable<ComponentProps<typeof Button>["variant"]>;
+  size: NonNullable<ComponentProps<typeof Button>["size"]>;
+  children: string;
+  /** An icon before the label. */
+  icon: keyof typeof icons;
+  isDisabled: boolean;
+  onPress: () => void;
+}
+
+function ButtonDemo({ icon, children, ...props }: ButtonArgs) {
   return (
-    <>
-      <div className="pt-1.5 font-chat-sans text-(length:--chat-ui-font-size-sm) text-chat-subtle">{label}</div>
-      <div className="flex flex-wrap items-center gap-2">{children}</div>
-    </>
+    <Button {...props}>
+      {icons[icon]} {children}
+    </Button>
   );
 }
 
-/** Buttons, icon buttons, the segmented control and badges, in every variant, size and state. */
-export const Buttons: StoryObj = {
-  render: function Render() {
-    const [mode, setMode] = useState<"chat" | "cowork">("chat");
-    const [view, setView] = useState<"list" | "grid">("list");
-    return (
-      <div className="grid max-w-2xl grid-cols-[7rem_1fr] gap-x-6 gap-y-5">
-        <Row label="Variants">
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="subtle">Subtle</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="primary">Primary</Button>
-          <Button variant="danger">Delete</Button>
-        </Row>
-        <Row label="Sizes">
-          <Button variant="outline" size="sm">
-            Small
-          </Button>
-          <Button variant="outline">Medium</Button>
-          <Button variant="outline" size="lg">
-            Large
-          </Button>
-        </Row>
-        <Row label="With icon">
-          <Button>
-            <Plus /> New chat
-          </Button>
-          <Button variant="outline">
-            <Share /> Share
-          </Button>
-          <Button variant="primary">
-            <Check /> Save
-          </Button>
-        </Row>
-        <Row label="Disabled">
-          <Button variant="outline" isDisabled>
-            Outline
-          </Button>
-          <Button variant="primary" isDisabled>
-            Primary
-          </Button>
-        </Row>
-        <Row label="A dialog's actions">
-          <Button variant="outline">Cancel</Button>
-          <Button variant="danger">Delete chat</Button>
-        </Row>
-        <Row label="Icon buttons">
-          <div className="flex items-center gap-0.5">
-            <IconButton label="Copy" size="sm">
-              <Copy />
-            </IconButton>
-            <IconButton label="Read aloud" size="sm">
-              <Volume2 />
-            </IconButton>
-            <IconButton label="Good response" size="sm">
-              <ThumbsUp />
-            </IconButton>
-            <IconButton label="Bad response" size="sm">
-              <ThumbsDown />
-            </IconButton>
-            <IconButton label="Retry" size="sm">
-              <RefreshCw />
-            </IconButton>
-          </div>
-          <IconButton label="Attach" variant="outline">
-            <Plus />
-          </IconButton>
-          <IconButton label="Send" variant="primary">
-            <ArrowUp />
-          </IconButton>
-        </Row>
-        <Row label="Segmented (on the composer)">
-          <div className="flex items-center gap-3 rounded-chat-lg bg-chat-surface p-2">
-          <SegmentedControl label="Mode" value={mode} onChange={setMode} options={[{ id: "chat", label: "Chat" }, { id: "cowork", label: "Cowork" }]} />
-          <SegmentedControl
-            label="View"
-            value={view}
-            onChange={setView}
-            options={[
-              { id: "list", label: "List", icon: <List />, iconOnly: true },
-              { id: "grid", label: "Grid", icon: <LayoutGrid />, iconOnly: true },
-            ]}
-          />
-          </div>
-        </Row>
-        <Row label="Badges">
-          <Badge>Recommended</Badge>
-          <Badge tone="warning" icon={<AlertTriangle />}>
-            5.5× or more usage
-          </Badge>
-        </Row>
-      </div>
-    );
+/** Text button in every variant and size. The icon, if any, comes before the label. */
+export const Buttons: StoryObj<typeof ButtonDemo> = {
+  name: "Button",
+  render: (args) => <ButtonDemo {...args} />,
+  args: { variant: "outline", size: "md", children: "Save", icon: "none", isDisabled: false, onPress: fn() },
+  argTypes: {
+    variant: { control: "select", options: ["ghost", "subtle", "outline", "primary", "danger"] },
+    size: { control: "inline-radio", options: ["sm", "md", "lg"] },
+    icon: { control: "inline-radio", options: Object.keys(icons) },
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button"));
+    await expect(args.onPress).toHaveBeenCalledOnce();
   },
 };
 
-export const AttachMenu: StoryObj = {
-  render: function Render() {
-    const [toggles, setToggles] = useState<Selection>(new Set(["web"]));
-    return (
-      <MenuTrigger defaultOpen>
+interface IconButtonArgs {
+  /** Accessible name, also the tooltip. */
+  label: string;
+  variant: NonNullable<ComponentProps<typeof IconButton>["variant"]>;
+  size: "sm" | "md";
+  isDisabled: boolean;
+  onPress: () => void;
+}
+
+function IconButtonDemo({ label, ...props }: IconButtonArgs) {
+  return (
+    <IconButton label={label} {...props}>
+      <ArrowUp />
+    </IconButton>
+  );
+}
+
+/** A square button holding only an icon; hover for its label. */
+export const IconButtons: StoryObj<typeof IconButtonDemo> = {
+  name: "IconButton",
+  render: (args) => <IconButtonDemo {...args} />,
+  args: { label: "Send", variant: "primary", size: "md", isDisabled: false, onPress: fn() },
+  argTypes: {
+    variant: { control: "select", options: ["ghost", "subtle", "outline", "primary", "danger"] },
+    size: { control: "inline-radio", options: ["sm", "md"] },
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: args.label }));
+    await expect(args.onPress).toHaveBeenCalledOnce();
+  },
+};
+
+interface SegmentedArgs {
+  /** Text options, or icons only (then the labels are the accessible names). */
+  iconOnly: boolean;
+  onChange: (value: string) => void;
+}
+
+function SegmentedDemo({ iconOnly, onChange }: SegmentedArgs) {
+  const [value, setValue] = useState("a");
+  const options = iconOnly
+    ? [{ id: "a", label: "List", icon: <List />, iconOnly: true }, { id: "b", label: "Grid", icon: <LayoutGrid />, iconOnly: true }]
+    : [{ id: "a", label: "Chat" }, { id: "b", label: "Cowork" }];
+  return (
+    <div className="inline-flex rounded-chat-lg bg-chat-surface p-2">
+      <SegmentedControl
+        label="Mode"
+        value={value}
+        onChange={(v) => {
+          setValue(v);
+          onChange(v);
+        }}
+        options={options}
+      />
+    </div>
+  );
+}
+
+/** One of a few options on a track, like the Chat / Cowork switch. */
+export const Segmented: StoryObj<typeof SegmentedDemo> = {
+  name: "SegmentedControl",
+  render: (args) => <SegmentedDemo {...args} />,
+  args: { iconOnly: false, onChange: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getAllByRole("radio")[1]!);
+    await expect(args.onChange).toHaveBeenCalledWith("b");
+  },
+};
+
+interface BadgeArgs {
+  tone: "outline" | "warning";
+  children: string;
+  /** A warning icon before the text. */
+  icon: boolean;
+}
+
+function BadgeDemo({ icon, ...props }: BadgeArgs) {
+  return <Badge icon={icon ? <AlertTriangle /> : undefined} {...props} />;
+}
+
+/** A small tag: outlined ("Recommended") or amber ("5.5× or more usage"). */
+export const Badges: StoryObj<typeof BadgeDemo> = {
+  name: "Badge",
+  render: (args) => <BadgeDemo {...args} />,
+  args: { tone: "outline", children: "Recommended", icon: false },
+  argTypes: { tone: { control: "inline-radio", options: ["outline", "warning"] } },
+};
+
+interface MenuArgs {
+  /** Open on first render. */
+  defaultOpen: boolean;
+  onAction: (key: Key) => void;
+}
+
+function AttachMenuDemo({ defaultOpen, onAction }: MenuArgs) {
+  const [toggles, setToggles] = useState<Selection>(new Set(["web"]));
+  return (
+    <div className="h-[28rem] pt-[22rem]">
+      <MenuTrigger defaultOpen={defaultOpen}>
         <IconButton label="Add files and more">
           <Plus />
         </IconButton>
         <Popover placement="top start">
-          <Menu aria-label="Add">
+          <Menu aria-label="Add" onAction={(key) => onAction(key)}>
             <MenuItem id="upload" icon={<Paperclip />} shortcut="⌘U">
               Upload or add files
             </MenuItem>
@@ -242,17 +265,28 @@ export const AttachMenu: StoryObj = {
           </Menu>
         </Popover>
       </MenuTrigger>
-    );
+    </div>
+  );
+}
+
+/** The composer's "+" menu: actions, nested submenus, and two toggles that hold a selection. */
+export const AttachMenu: StoryObj<typeof AttachMenuDemo> = {
+  render: (args) => <AttachMenuDemo {...args} />,
+  args: { defaultOpen: true, onAction: fn() },
+  play: async ({ args, userEvent }) => {
+    const menu = within(document.body);
+    await userEvent.click(await menu.findByRole("menuitem", { name: /Upload or add files/ }));
+    await expect(args.onAction).toHaveBeenCalledWith("upload");
   },
 };
 
-export const MenuWithNote: StoryObj = {
-  render: () => (
-    <MenuTrigger defaultOpen>
+function NoteMenuDemo({ defaultOpen, onAction }: MenuArgs) {
+  return (
+    <MenuTrigger defaultOpen={defaultOpen}>
       <Button>Effort</Button>
       <Popover placement="bottom start" className="w-80">
         <MenuNote>Higher effort means more thorough responses, but takes longer and uses your limits faster.</MenuNote>
-        <Menu aria-label="Effort" selectionMode="single" defaultSelectedKeys={["medium"]}>
+        <Menu aria-label="Effort" selectionMode="single" defaultSelectedKeys={["medium"]} onSelectionChange={(keys) => onAction([...keys][0]!)}>
           <MenuItem id="low">Low</MenuItem>
           <MenuItem id="medium" textValue="Medium">
             <span className="flex items-center gap-2">
@@ -271,33 +305,31 @@ export const MenuWithNote: StoryObj = {
         </Menu>
       </Popover>
     </MenuTrigger>
-  ),
-};
+  );
+}
 
-export const Disclosures: StoryObj = {
-  render: () => (
-    <div className="w-[32rem] space-y-3">
-      <Disclosure summary="Recalled memory" defaultExpanded>
-        <p className="mt-2 text-sm text-chat-muted">Prefers a worked example before the general formula.</p>
-      </Disclosure>
-      <Disclosure summary={<span className="flex items-center gap-1.5"><Sparkles className="size-4" /> Thought for 6s</span>}>
-        <p className="mt-2 text-sm text-chat-muted">Setting up a null-versus-alternative normal test.</p>
-      </Disclosure>
-    </div>
-  ),
+/** A menu with an explanatory note above single-select items that carry badges. */
+export const MenuWithNote: StoryObj<typeof NoteMenuDemo> = {
+  render: (args) => <NoteMenuDemo {...args} />,
+  args: { defaultOpen: true, onAction: fn() },
+  play: async ({ args, userEvent }) => {
+    const menu = within(document.body);
+    await expect(await menu.findByText(/Higher effort means/)).toBeInTheDocument();
+    await userEvent.click(menu.getByRole("menuitemradio", { name: /High/ }));
+    await expect(args.onAction).toHaveBeenCalledWith("high");
+  },
 };
 
 const projects = ["CSCD01 Professor", "stab57", "c34", "matc15", "CSCC43 Project", "Resume Improver", "LINA01 Professor", "ASL Webcam Transcriber"];
 
-/** Submenu with search, built only from primitives (the real one is Components/ChatHeader). */
-export const MenuWithSubmenu: StoryObj = {
-  render: () => (
-    <MenuTrigger defaultOpen>
+function SubmenuDemo({ defaultOpen, onAction }: MenuArgs) {
+  return (
+    <MenuTrigger defaultOpen={defaultOpen}>
       <Button>
         Self-hosting a team wiki <ChevronDown className="size-4" />
       </Button>
       <Popover placement="bottom start">
-        <Menu aria-label="Chat actions" className="min-w-44">
+        <Menu aria-label="Chat actions" className="min-w-44" onAction={(key) => onAction(key)}>
           <MenuItem id="pin" icon={<Pin />} shortcut="P">
             Pin
           </MenuItem>
@@ -333,39 +365,98 @@ export const MenuWithSubmenu: StoryObj = {
         </Menu>
       </Popover>
     </MenuTrigger>
-  ),
+  );
+}
+
+/** Submenu with search, built only from primitives (the real one is Components/ChatHeader). */
+export const MenuWithSubmenu: StoryObj<typeof SubmenuDemo> = {
+  render: (args) => <SubmenuDemo {...args} />,
+  args: { defaultOpen: true, onAction: fn() },
+  play: async ({ args, userEvent }) => {
+    const menu = within(document.body);
+    await userEvent.click(await menu.findByRole("menuitem", { name: /Rename/ }));
+    await expect(args.onAction).toHaveBeenCalledWith("rename");
+  },
 };
 
-export const Badges: StoryObj = {
-  render: () => (
-    <div className="flex items-center gap-2">
-      <Badge>Recommended</Badge>
-      <Badge tone="warning" icon={<AlertTriangle />}>
-        5.5× or more usage
-      </Badge>
+interface DisclosureArgs {
+  summary: string;
+  /** Open on first render. */
+  defaultExpanded: boolean;
+  /** An icon before the summary. */
+  icon: boolean;
+  indicator: "caret" | "chevron";
+  onExpandedChange: (expanded: boolean) => void;
+}
+
+function DisclosureDemo({ summary, icon, ...props }: DisclosureArgs) {
+  return (
+    <div className="w-[32rem]">
+      {/* Keyed so `defaultExpanded` applies again when it changes. */}
+      <Disclosure
+        key={String(props.defaultExpanded)}
+        summary={icon ? <span className="flex items-center gap-1.5"><Sparkles className="size-4" /> {summary}</span> : summary}
+        {...props}
+      >
+        <p className="mt-2 text-sm text-chat-muted">Prefers a worked example before the general formula.</p>
+      </Disclosure>
     </div>
-  ),
+  );
+}
+
+/** A summary row that opens and closes its content. */
+export const Disclosures: StoryObj<typeof DisclosureDemo> = {
+  name: "Disclosure",
+  render: (args) => <DisclosureDemo {...args} />,
+  args: { summary: "Recalled memory", defaultExpanded: false, icon: false, indicator: "caret", onExpandedChange: fn() },
+  argTypes: { indicator: { control: "inline-radio", options: ["caret", "chevron"] } },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button"));
+    await expect(args.onExpandedChange).toHaveBeenCalledWith(!args.defaultExpanded);
+  },
 };
 
-export const Tooltips: StoryObj = {
-  render: () => (
-    <div className="flex gap-2">
-      {(["top", "bottom", "start", "end"] as const).map((placement) => (
-        <Tooltip key={placement} content={`Tooltip ${placement}`} placement={placement} delay={0}>
-          <Button variant="subtle">{placement}</Button>
-        </Tooltip>
-      ))}
+interface TooltipArgs {
+  content: string;
+  placement: "top" | "bottom" | "start" | "end";
+  /** Milliseconds before it shows. */
+  delay: number;
+}
+
+function TooltipDemo({ placement, ...props }: TooltipArgs) {
+  return (
+    <div className="p-16">
+      <Tooltip placement={placement} {...props}>
+        <Button variant="subtle">Hover me</Button>
+      </Tooltip>
     </div>
-  ),
+  );
+}
+
+/** A short label on hover or focus. */
+export const Tooltips: StoryObj<typeof TooltipDemo> = {
+  name: "Tooltip",
+  render: (args) => <TooltipDemo {...args} />,
+  args: { content: "Tooltip text", placement: "top", delay: 0 },
+  argTypes: {
+    placement: { control: "inline-radio", options: ["top", "bottom", "start", "end"] },
+    delay: { control: { type: "range", min: 0, max: 1500, step: 100 } },
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.hover(canvas.getByRole("button"));
+    await expect(await within(document.body).findByRole("tooltip")).toHaveTextContent(args.content);
+  },
 };
 
-/** Right-click (or the Menu key / Shift+F10 when focused) anywhere in the box. */
-export const ContextMenus: StoryObj = {
-  name: "ContextMenu",
-  render: () => (
+interface ContextMenuArgs {
+  onAction: (key: Key) => void;
+}
+
+function ContextMenuDemo({ onAction }: ContextMenuArgs) {
+  return (
     <ContextMenu
       menu={
-        <Menu aria-label="Message actions" className="min-w-44">
+        <Menu aria-label="Message actions" className="min-w-44" onAction={(key) => onAction(key)}>
           <MenuItem id="copy" icon={<Copy />}>
             Copy
           </MenuItem>
@@ -386,103 +477,195 @@ export const ContextMenus: StoryObj = {
         Right-click here
       </div>
     </ContextMenu>
-  ),
+  );
+}
+
+/** Right-click (or the Menu key / Shift+F10 when focused) anywhere in the box. */
+export const ContextMenus: StoryObj<typeof ContextMenuDemo> = {
+  name: "ContextMenu",
+  render: (args) => <ContextMenuDemo {...args} />,
+  args: { onAction: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.pointer({ keys: "[MouseRight]", target: canvas.getByText("Right-click here") });
+    await userEvent.click(await within(document.body).findByRole("menuitem", { name: /Branch from here/ }));
+    await expect(args.onAction).toHaveBeenCalledWith("branch");
+  },
 };
 
-function Overlays() {
-  const [modal, setModal] = useState(false);
-  const [left, setLeft] = useState(false);
-  const [right, setRight] = useState(false);
+interface OverlayArgs {
+  kind: "modal" | "drawer";
+  /** Which edge the drawer slides from. */
+  side: "left" | "right";
+  /** Open on first render. */
+  defaultOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function OverlayDemo({ kind, side, defaultOpen, onOpenChange }: OverlayArgs) {
+  const [open, setOpen] = useState(defaultOpen);
+  const change = (value: boolean) => {
+    setOpen(value);
+    onOpenChange(value);
+  };
   return (
-    <div className="flex gap-2">
-      <Button variant="subtle" onPress={() => setModal(true)}>
-        Modal
+    <>
+      <Button variant="subtle" onPress={() => change(true)}>
+        Open {kind}
       </Button>
-      <Button variant="subtle" onPress={() => setLeft(true)}>
-        Drawer left
-      </Button>
-      <Button variant="subtle" onPress={() => setRight(true)}>
-        Drawer right
-      </Button>
-      <Modal isOpen={modal} onOpenChange={setModal} title="Rename chat" className="max-w-md">
-        <input aria-label="Title" defaultValue="Speeding up CI" className="mx-5 h-10 rounded-chat-md border border-chat-border bg-chat-bg px-3 text-chat-fg outline-none focus:border-chat-border-strong" />
-        <div className="flex justify-end gap-2 px-5 py-4">
-          <Button variant="subtle" onPress={() => setModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onPress={() => setModal(false)}>
-            Save
-          </Button>
-        </div>
-      </Modal>
-      <Drawer isOpen={left} onOpenChange={setLeft} aria-label="Left drawer">
-        <p className="p-4 text-sm">The sidebar uses this on phones.</p>
-      </Drawer>
-      <Drawer isOpen={right} onOpenChange={setRight} side="right" aria-label="Right drawer">
-        <p className="p-4 text-sm">E.g. a context or settings panel.</p>
-      </Drawer>
+      {kind === "modal" ? (
+        <Modal isOpen={open} onOpenChange={change} title="Rename chat" className="max-w-md">
+          <input aria-label="Title" defaultValue="Speeding up CI" className="mx-5 h-10 rounded-chat-md border border-chat-border bg-chat-bg px-3 text-chat-fg outline-none focus:border-chat-border-strong" />
+          <div className="flex justify-end gap-2 px-5 py-4">
+            <Button variant="subtle" onPress={() => change(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onPress={() => change(false)}>
+              Save
+            </Button>
+          </div>
+        </Modal>
+      ) : (
+        <Drawer isOpen={open} onOpenChange={change} side={side} aria-label="Drawer">
+          <p className="p-4 text-sm">{side === "left" ? "The sidebar uses this on phones." : "E.g. a context or settings panel."}</p>
+        </Drawer>
+      )}
+    </>
+  );
+}
+
+/** A centered dialog or a side drawer over a dimmed page. Escape and clicking outside close it. */
+export const ModalAndDrawer: StoryObj<typeof OverlayDemo> = {
+  name: "Modal and Drawer",
+  render: (args) => <OverlayDemo {...args} />,
+  args: { kind: "modal", side: "left", defaultOpen: false, onOpenChange: fn() },
+  argTypes: {
+    kind: { control: "inline-radio", options: ["modal", "drawer"] },
+    side: { control: "inline-radio", options: ["left", "right"], if: { arg: "kind", eq: "drawer" } },
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Open/ }));
+    const dialog = await within(document.body).findByRole("dialog");
+    await expect(args.onOpenChange).toHaveBeenLastCalledWith(true);
+    await userEvent.keyboard("{Escape}");
+    await expect(args.onOpenChange).toHaveBeenLastCalledWith(false);
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+  },
+};
+
+interface PanelArgs {
+  /** Header text; empty leaves the header out (unless there are actions). */
+  title: string;
+  variant: "card" | "flush";
+  /** Expand and close buttons on the right of the header. */
+  actions: boolean;
+  footer: boolean;
+  onClose: () => void;
+}
+
+function PanelDemo({ title, variant, actions, footer, onClose }: PanelArgs) {
+  return (
+    <div className="h-80 w-[22rem]">
+      <Panel
+        title={title || undefined}
+        variant={variant}
+        aria-label="Panel"
+        actions={
+          actions ? (
+            <>
+              <IconButton label="Expand" size="sm">
+                <Maximize2 />
+              </IconButton>
+              <IconButton label="Close" size="sm" onPress={onClose}>
+                <X />
+              </IconButton>
+            </>
+          ) : undefined
+        }
+        footer={footer ? <span className="text-xs text-chat-muted">Footer</span> : undefined}
+      >
+        <p className="m-0 p-3 text-sm">{"Scrolling body. ".repeat(60)}</p>
+      </Panel>
     </div>
   );
 }
 
-export const ModalAndDrawer: StoryObj = { name: "Modal and Drawer", render: () => <Overlays /> };
-
 /** A framed region with a header that fills its container; an assistant dock, or one agent pane in a dashboard. */
-export const Panels: StoryObj = {
+export const Panels: StoryObj<typeof PanelDemo> = {
   name: "Panel",
-  render: () => (
-    <div className="grid h-80 w-[44rem] grid-cols-2 gap-3">
-      <Panel
-        title="Assistant"
-        actions={
-          <>
-            <IconButton label="Expand" size="sm">
-              <Maximize2 />
-            </IconButton>
-            <IconButton label="Close" size="sm">
-              <X />
-            </IconButton>
-          </>
-        }
-        footer={<span className="text-xs text-chat-muted">Footer</span>}
-      >
-        <p className="m-0 p-3 text-sm">{"Scrolling body. ".repeat(60)}</p>
-      </Panel>
-      <Panel aria-label="Untitled">
-        <p className="m-0 p-3 text-sm text-chat-muted">No header: just the frame.</p>
-      </Panel>
-    </div>
-  ),
+  render: (args) => <PanelDemo {...args} />,
+  args: { title: "Assistant", variant: "card", actions: true, footer: true, onClose: fn() },
+  argTypes: { variant: { control: "inline-radio", options: ["card", "flush"] } },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
+    await expect(args.onClose).toHaveBeenCalled();
+  },
 };
 
-export const CodeBlocks: StoryObj = {
-  name: "CodeBlock",
-  render: () => (
-    <div className="flex w-[36rem] flex-col gap-4">
-      <CodeBlock language="ts" code={'const chat = useChat({ transport });\nchat.send("Hello", { model: "gpt-6-astra" });'} />
-      <CodeBlock variant="boxed" label="bash" code="pnpm install --frozen-lockfile" />
+interface CodeBlockArgs {
+  code: string;
+  language: string;
+  /** Caption; defaults to the language. */
+  label: string;
+  variant: "plain" | "boxed";
+}
+
+function CodeBlockDemo({ label, ...props }: CodeBlockArgs) {
+  return (
+    <div className="w-[36rem]">
+      <CodeBlock label={label || undefined} {...props} />
     </div>
-  ),
+  );
+}
+
+/** Highlighted code; "boxed" adds a caption bar with a copy button. */
+export const CodeBlocks: StoryObj<typeof CodeBlockDemo> = {
+  name: "CodeBlock",
+  render: (args) => <CodeBlockDemo {...args} />,
+  args: {
+    code: 'const chat = useChat({ transport });\nchat.send("Hello", { model: "gpt-6-astra" });',
+    language: "ts",
+    label: "",
+    variant: "boxed",
+  },
+  argTypes: { variant: { control: "inline-radio", options: ["plain", "boxed"] } },
+  play: async ({ canvas }) => {
+    await expect(await canvas.findByText(/useChat/)).toBeVisible();
+  },
 };
+
+interface EffortArgs {
+  onChange: (id: string) => void;
+}
+
+function EffortDemo({ onChange }: EffortArgs) {
+  const [effort, setEffort] = useState("medium");
+  return (
+    <div className="w-72 rounded-chat-popover border border-chat-popover-border bg-chat-popover p-3">
+      <EffortSlider
+        efforts={[
+          { id: "low", label: "Low", description: "Quick answers" },
+          { id: "medium", label: "Medium", description: "Balanced; the default", recommended: true },
+          { id: "high", label: "High", description: "More thorough, takes longer" },
+          { id: "max", label: "Max", description: "Most thorough", warning: "Slower" },
+        ]}
+        value={effort}
+        onChange={(id) => {
+          setEffort(id);
+          onChange(id);
+        }}
+      />
+    </div>
+  );
+}
 
 /** Effort as a slider, one stop per level. Drag, click a spot, or use the arrow keys. */
-export const EffortSliderStory: StoryObj = {
+export const EffortSliderStory: StoryObj<typeof EffortDemo> = {
   name: "Effort slider",
-  render: function Render() {
-    const [effort, setEffort] = useState("medium");
-    return (
-      <div className="w-72 rounded-chat-popover border border-chat-popover-border bg-chat-popover p-3">
-        <EffortSlider
-          efforts={[
-            { id: "low", label: "Low", description: "Quick answers" },
-            { id: "medium", label: "Medium", description: "Balanced; the default", recommended: true },
-            { id: "high", label: "High", description: "More thorough, takes longer" },
-            { id: "max", label: "Max", description: "Most thorough", warning: "Slower" },
-          ]}
-          value={effort}
-          onChange={setEffort}
-        />
-      </div>
-    );
+  render: (args) => <EffortDemo {...args} />,
+  args: { onChange: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("slider"));
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(args.onChange).toHaveBeenCalledWith("high");
   },
 };
