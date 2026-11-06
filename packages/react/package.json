@@ -1,6 +1,6 @@
 {
   "name": "agentic-ui-kit",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "React UI kit for LLM chat and agentic apps: streaming messages, tool calls, approvals, themable with CSS variables.",
   "license": "MIT",
   "type": "module",
