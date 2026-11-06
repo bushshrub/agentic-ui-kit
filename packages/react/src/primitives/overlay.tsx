@@ -23,7 +23,7 @@ export function Modal({ isOpen, onOpenChange, title, children, className, ...pro
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       isDismissable
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 data-entering:animate-chat-fade-in data-exiting:animate-chat-fade-out"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-(--chat-backdrop) p-4 data-entering:animate-chat-fade-in data-exiting:animate-chat-fade-out"
     >
       <AriaModal
         className={clsx(
@@ -56,7 +56,7 @@ export function Drawer({ isOpen, onOpenChange, side = "left", children, classNam
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       isDismissable
-      className="fixed inset-0 z-40 bg-black/50 data-entering:animate-chat-fade-in data-exiting:animate-chat-fade-out"
+      className="fixed inset-0 z-40 bg-(--chat-backdrop) data-entering:animate-chat-fade-in data-exiting:animate-chat-fade-out"
     >
       <AriaModal
         className={clsx(

@@ -11,7 +11,7 @@ const variants = {
   /** Filled with the surface color, e.g. the selected Chat/Cowork toggle. */
   subtle: "bg-chat-surface text-chat-fg data-hovered:bg-chat-hover data-pressed:bg-chat-selected",
   /** The send button. */
-  primary: "bg-chat-accent text-white data-hovered:brightness-110 data-pressed:brightness-95",
+  primary: "bg-chat-accent text-chat-accent-fg data-hovered:brightness-110 data-pressed:brightness-95",
 };
 
 const sizes = {

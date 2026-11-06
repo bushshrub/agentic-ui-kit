@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AttachmentRow, Button, ChatNotice, ChatTranscript, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
+import { AttachmentRow, Button, ChatNotice, ChatTheme, ChatTranscript, Composer, ModelPicker, useAttachments, type DraftAttachment } from "agentic-ui-kit";
 import type { Message } from "agentic-ui-kit/core";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { attachMenu, DemoChat, fakeUpload, history, models } from "../lib/demo-chat";
 
 const meta: Meta = { title: "Views/Chat view", parameters: { layout: "fullscreen" } };
@@ -46,9 +46,8 @@ const longAsk: Message = {
  * A shared chat, read only, like claude.ai's shared links: a notice on top, then the conversation; long
  * messages fold behind "Show more". No composer, retry, edit or feedback; Copy stays. Starts at the top.
  */
-export const Shared: StoryObj = {
-  render: () => (
-    <div className="h-dvh">
+function SharedChat() {
+  return (
       <ChatTranscript
         messages={[longAsk, ...history.slice(1).map((m, i) => (i === 0 ? { ...m, parentId: longAsk.id } : m))]}
         notice={
@@ -60,11 +59,32 @@ export const Shared: StoryObj = {
         }
         footer={
           <div className="flex justify-center">
-            <Button variant="primary">Continue this chat</Button>
+            <Button variant="subtle" className="border border-chat-border-strong">Continue this chat</Button>
           </div>
         }
       />
+  );
+}
+
+export const Shared: StoryObj = {
+  render: () => (
+    <div className="h-dvh">
+      <SharedChat />
     </div>
+  ),
+};
+
+/**
+ * The same shared chat in a host's theme ("warm" from themes.css). The notice takes its own colors from
+ * --chat-notice-bg and --chat-notice-border; everything else follows the theme's --chat-* variables.
+ */
+export const SharedInHostTheme: StoryObj = {
+  render: () => (
+    <ChatTheme theme="warm" className="block h-dvh">
+      <div className="h-full" style={{ "--chat-notice-bg": "#f3ece2", "--chat-notice-border": "#e2d6c5" } as CSSProperties}>
+        <SharedChat />
+      </div>
+    </ChatTheme>
   ),
 };
 

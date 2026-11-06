@@ -33,6 +33,7 @@
   --color-chat-muted: var(--chat-muted);
   --color-chat-subtle: var(--chat-subtle);
   --color-chat-accent: var(--chat-accent);
+  --color-chat-accent-fg: var(--chat-accent-fg);
   --color-chat-check: var(--chat-check);
   --color-chat-warning: var(--chat-warning);
   --color-chat-warning-bg: var(--chat-warning-bg);
@@ -117,11 +118,19 @@
     --chat-muted: #a3a29e;
     --chat-subtle: #75746f;
     --chat-accent: #d97757;
+    /* Text and icons on the accent, e.g. the send button. */
+    --chat-accent-fg: #ffffff;
     --chat-check: #6c9cf0;
     --chat-warning: #e8b04b;
     --chat-warning-bg: #4a3b1c;
     --chat-danger: #e5675c;
     --chat-focus: #6c9cf0;
+    /* Behind modals and drawers. */
+    --chat-backdrop: rgb(0 0 0 / 0.5);
+    /*
+     * --chat-notice-bg / --chat-notice-border (unset): ChatNotice, e.g. a shared chat's "Shared by" note.
+     * Default: no fill, --chat-border.
+     */
 
     --chat-font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
     --chat-font-serif: "Source Serif 4", ui-serif, Georgia, serif;

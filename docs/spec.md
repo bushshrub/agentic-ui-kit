@@ -154,7 +154,9 @@ render into the nearest `ChatTheme`, so a themed region keeps its theme in menus
 - `ChatView`: breadcrumb header with title menu and Share, message list, docked composer, disclaimer line.
 - `ChatTranscript`: a chat to read, not continue (shared links, exports). The same message list with no
   composer, approvals, retry, edit or feedback (Copy stays); `header` and a pinned `footer` slot (e.g.
-  "Continue this chat"); starts at the top (`MessageList start="top"`).
+  "Continue this chat") and a `notice` slot atop the conversation for a `ChatNotice` ("Shared by …", Report);
+  starts at the top (`MessageList start="top"`). Themed like the rest; the notice also reads
+  `--chat-notice-bg` / `--chat-notice-border`.
 
 Each view is assembled from the components above, so a host can use the view or rebuild it from parts.
 

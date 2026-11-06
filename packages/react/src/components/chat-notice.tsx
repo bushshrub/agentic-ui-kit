@@ -14,7 +14,7 @@ export interface ChatNoticeProps {
 /** A bordered note in the conversation column: "Shared by Alex. This is a copy of a chat…" with actions under it. */
 export function ChatNotice({ children, actions, icon = <Info />, className }: ChatNoticeProps) {
   return (
-    <div role="note" className={clsx("flex gap-3 rounded-chat-lg border border-chat-border px-4 py-3.5 font-chat-sans text-sm leading-relaxed text-chat-fg", className)}>
+    <div role="note" className={clsx("flex gap-3 rounded-chat-lg border border-(--chat-notice-border,var(--chat-border)) bg-(--chat-notice-bg,transparent) px-4 py-3.5 font-chat-sans text-sm leading-relaxed text-chat-fg", className)}>
       {icon && <span className="mt-0.5 shrink-0 text-chat-muted [&_svg]:size-4">{icon}</span>}
       <div className="min-w-0 flex-1">
         <div>{children}</div>
