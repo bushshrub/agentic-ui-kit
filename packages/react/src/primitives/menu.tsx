@@ -1,11 +1,14 @@
 import { cx } from "./cx";
 import { useIcons, IconSlot } from "./icons";
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useContext, useSyncExternalStore, type ReactNode } from "react";
+// The hidden tree Select and ComboBox render to collect their items; react-aria's own Popover checks it too.
+import { useIsHidden } from "react-aria/private/collections/Hidden";
 import {
   Autocomplete,
   Header,
   Modal as AriaModal,
   ModalOverlay,
+  OverlayTriggerStateContext,
   Input,
   SearchField,
   useFilter,
@@ -94,11 +97,20 @@ export interface PopoverProps extends Omit<AriaPopoverProps, "className"> {
 /** Floating panel for menus and pickers: surface color, rounded, soft shadow, fades in. On phones it's a bottom sheet. */
 export function Popover({ className, offset = 6, sheet = 768, width = "auto", fullWidthOnPhones, children, ...props }: PopoverProps) {
   const asSheet = useNarrower(sheet);
+  const isHidden = useIsHidden();
+  // The trigger's state (MenuTrigger, DialogTrigger, Select, ComboBox), as react-aria's Popover reads it.
+  const triggerState = useContext(OverlayTriggerStateContext);
   if (asSheet) {
-    const { isOpen, onOpenChange } = props;
+    const content =
+      typeof children === "function"
+        ? children({ placement: "bottom", trigger: null, isEntering: false, isExiting: false, defaultChildren: undefined })
+        : children;
+    if (isHidden) return <>{content}</>;
+    const isOpen = props.isOpen ?? triggerState?.isOpen ?? false;
+    const onOpenChange = props.onOpenChange ?? triggerState?.setOpen;
     return (
       <ModalOverlay
-        {...(isOpen !== undefined && { isOpen })}
+        isOpen={isOpen}
         {...(onOpenChange && { onOpenChange })}
         isDismissable
         className="fixed inset-0 z-50 flex items-end bg-(--chat-backdrop) data-entering:animate-chat-fade-in data-exiting:animate-chat-fade-out"
@@ -110,9 +122,7 @@ export function Popover({ className, offset = 6, sheet = 768, width = "auto", fu
             className,
           )}
         >
-          {typeof children === "function"
-            ? children({ placement: "bottom", trigger: null, isEntering: false, isExiting: false, defaultChildren: undefined })
-            : children}
+          {content}
         </AriaModal>
       </ModalOverlay>
     );

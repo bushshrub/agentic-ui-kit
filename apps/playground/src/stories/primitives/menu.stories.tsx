@@ -34,8 +34,8 @@ import {
   Wand2,
 } from "lucide-react";
 import { useState, type ComponentProps } from "react";
-import type { Key, Selection } from "react-aria-components";
-import { expect, fn, within } from "storybook/test";
+import { Button as AriaButton, ListBox, ListBoxItem, Select, SelectValue, type Key, type Selection } from "react-aria-components";
+import { expect, fn, waitFor, within } from "storybook/test";
 
 type Args = Omit<ComponentProps<typeof Menu>, "onAction"> & {
   onAction: (key: Key) => void;
@@ -289,5 +289,33 @@ export const BottomSheet: Story = {
   play: async () => {
     const menu = within(document.body);
     await expect(await menu.findByRole("menu")).toBeInTheDocument();
+  },
+};
+
+/** A react-aria `Select` with the kit `Popover`, as a bottom sheet: the dimmed overlay mounts only while the Select is open. */
+export const SelectAsSheet: Story = {
+  render: () => (
+    <Select aria-label="Theme" defaultValue="light">
+      <AriaButton className="rounded-chat-md border border-chat-border px-3 py-1.5 font-chat-sans text-sm text-chat-fg">
+        <SelectValue />
+      </AriaButton>
+      <Popover sheet={100000}>
+        <ListBox className="p-1 outline-none">
+          {["Light", "Dark", "System"].map((name) => (
+            <ListBoxItem key={name} id={name.toLowerCase()} className="rounded-chat-sm px-3 py-2 font-chat-sans text-sm text-chat-fg outline-none data-focused:bg-chat-surface">
+              {name}
+            </ListBoxItem>
+          ))}
+        </ListBox>
+      </Popover>
+    </Select>
+  ),
+  play: async ({ canvas, userEvent }) => {
+    const overlay = () => document.querySelector(".fixed.inset-0");
+    await expect(overlay()).toBeNull();
+    await userEvent.click(canvas.getByRole("button"));
+    await userEvent.click(await within(document.body).findByRole("option", { name: "Dark" }));
+    await expect(canvas.getByRole("button")).toHaveTextContent("Dark");
+    await waitFor(() => expect(overlay()).toBeNull());
   },
 };

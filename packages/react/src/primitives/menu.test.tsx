@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 import { Menu, MenuItem, MenuTrigger, Popover, PopoverTrigger } from "./menu";
 import { Button } from "./button";
-import { Dialog } from "react-aria-components";
+import { Button as AriaButton, Dialog, ListBox, ListBoxItem, Select, SelectValue } from "react-aria-components";
 
 afterEach(() => {
   cleanup();
@@ -117,4 +117,25 @@ it("PopoverTrigger opens a kit Popover without importing react-aria", async () =
   );
   await userEvent.click(screen.getByRole("button", { name: "Open" }));
   expect(screen.getByRole("dialog", { name: "Panel" })).toBeTruthy();
+});
+
+it("a Select's sheet stays closed until the Select opens", async () => {
+  stubWidth(true);
+  render(
+    <Select aria-label="Theme">
+      <AriaButton><SelectValue /></AriaButton>
+      <Popover>
+        <ListBox>
+          <ListBoxItem id="light">Light</ListBoxItem>
+          <ListBoxItem id="dark">Dark</ListBoxItem>
+        </ListBox>
+      </Popover>
+    </Select>,
+  );
+  expect(document.querySelector(".fixed.inset-0")).toBeNull();
+  await userEvent.click(screen.getByRole("button"));
+  expect(document.querySelector(".fixed.inset-0")).not.toBeNull();
+  await userEvent.click(screen.getByRole("option", { name: "Dark" }));
+  expect(screen.getByRole("button").textContent).toContain("Dark");
+  expect(document.querySelector(".fixed.inset-0")).toBeNull();
 });
