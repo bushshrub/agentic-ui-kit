@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { ArrowUp, Plus, Square } from "lucide-react";
+import { useIcons } from "../primitives/icons";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import type React from "react";
 import { IconButton } from "../primitives/button";
@@ -65,6 +65,7 @@ export function Composer({
   autoFocus,
   className,
 }: ComposerProps) {
+  const icons = useIcons();
   const labels = useLabels();
   const [own, setOwn] = useState("");
   const text = value ?? own;
@@ -141,11 +142,11 @@ export function Composer({
   const compact = variant === "compact";
   const action = busy ? (
     <IconButton label={labels.stop} variant="primary" onPress={onStop} className="rounded-chat-md [&_svg]:size-3.5 [&_svg]:fill-current">
-      <Square />
+      {icons.stop}
     </IconButton>
   ) : (
     <IconButton label={labels.send} variant="primary" onPress={submit} isDisabled={!canSend} className="rounded-chat-md">
-      <ArrowUp />
+      {icons.send}
     </IconButton>
   );
 
@@ -213,11 +214,12 @@ export interface AttachButtonProps {
 
 /** The `+` button that opens the attach menu above the composer. */
 export function AttachButton({ children, label }: AttachButtonProps) {
+  const icons = useIcons();
   const labels = useLabels();
   return (
     <MenuTrigger>
       <IconButton label={label ?? labels.addFiles}>
-        <Plus />
+        {icons.attach}
       </IconButton>
       <Popover placement="top start">{children}</Popover>
     </MenuTrigger>

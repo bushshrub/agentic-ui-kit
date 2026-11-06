@@ -2,6 +2,7 @@ import { clsx } from "clsx";
 import { useCallback, useRef, type ReactNode } from "react";
 import { UNSAFE_PortalProvider } from "react-aria";
 import { AppearanceProvider, type ChatMotion, type CodeThemes } from "./appearance";
+import { IconsProvider, type ChatIcons } from "./icons";
 import { LabelsProvider, type ChatLabels } from "./labels";
 
 export interface ChatThemeProps {
@@ -20,6 +21,11 @@ export interface ChatThemeProps {
    * then over the English defaults. Functions take the values that go into the text.
    */
   labels?: Partial<ChatLabels>;
+  /**
+   * Overrides for the kit's icons (SVG elements). Merged over the parent ChatTheme's icons, then over the
+   * Lucide defaults.
+   */
+  icons?: Partial<ChatIcons>;
   children: ReactNode;
   className?: string;
 }
@@ -29,7 +35,7 @@ export interface ChatThemeProps {
  * element instead of `<body>`, so they get the same theme. An app themed as a whole (variables on
  * `:root`) does not need it for colors, but still uses it for `codeThemes` and `motion`.
  */
-export function ChatTheme({ theme, codeThemes, motion, labels, children, className }: ChatThemeProps) {
+export function ChatTheme({ theme, codeThemes, motion, labels, icons, children, className }: ChatThemeProps) {
   const portal = useRef<HTMLDivElement>(null);
   const getContainer = useCallback(() => portal.current, []);
   return (
@@ -40,7 +46,9 @@ export function ChatTheme({ theme, codeThemes, motion, labels, children, classNa
     >
       <AppearanceProvider codeThemes={codeThemes} motion={motion}>
         <LabelsProvider labels={labels}>
-          <UNSAFE_PortalProvider getContainer={getContainer}>{children}</UNSAFE_PortalProvider>
+          <IconsProvider icons={icons}>
+            <UNSAFE_PortalProvider getContainer={getContainer}>{children}</UNSAFE_PortalProvider>
+          </IconsProvider>
         </LabelsProvider>
       </AppearanceProvider>
       <div ref={portal} />

@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { ChevronRight } from "lucide-react";
+import { useIcons, IconSlot } from "./icons";
 import type { ReactNode } from "react";
 import {
   Button,
@@ -8,7 +8,6 @@ import {
   Heading,
   type DisclosureProps as AriaDisclosureProps,
 } from "react-aria-components";
-import { Caret } from "./caret";
 
 export interface DisclosureProps extends Omit<AriaDisclosureProps, "className" | "children"> {
   /** The always-visible row. A small caret follows it, pointing right when closed and down when open. */
@@ -34,6 +33,7 @@ export function Disclosure({
   trailing,
   ...props
 }: DisclosureProps) {
+  const icons = useIcons();
   return (
     <AriaDisclosure {...props} {...(className !== undefined && { className })}>
       <Heading className="m-0 font-normal">
@@ -46,10 +46,10 @@ export function Disclosure({
           )}
         >
           {indicator === "chevron" && (
-            <ChevronRight aria-hidden className="size-3.5 shrink-0 transition-transform group-aria-expanded/trigger:rotate-90" />
+            <IconSlot className="transition-transform group-aria-expanded/trigger:rotate-90 [&_svg]:size-3.5">{icons.expand}</IconSlot>
           )}
           <span className="min-w-0 truncate">{summary}</span>
-          {indicator === "caret" && <Caret className="group-aria-expanded/trigger:rotate-90" />}
+          {indicator === "caret" && <IconSlot className="transition-transform duration-150 group-aria-expanded/trigger:rotate-90">{icons.caret}</IconSlot>}
           {trailing && <span className="ml-auto shrink-0 pl-2">{trailing}</span>}
         </Button>
       </Heading>

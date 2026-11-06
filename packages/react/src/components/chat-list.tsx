@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { ChevronRight, Folder, FolderOpen, MoreHorizontal } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import { useState, type ReactNode } from "react";
 import { Button as AriaButton, Disclosure, DisclosurePanel, Heading, Link } from "react-aria-components";
 import { Badge } from "../primitives/badge";
@@ -67,6 +67,7 @@ const rowClass = clsx(
  * markers and a per-row menu. Usable on its own (in a host's own sidebar) or inside `Sidebar`.
  */
 export function ChatList({ sections, activeId, onSelect, rowMenu, className, ...props }: ChatListProps) {
+  const icons = useIcons();
   const labels = useLabels();
   const row = (chat: ChatSummary, nested = false) => (
     <ChatRow key={chat.id} chat={chat} active={chat.id === activeId} nested={nested} {...(onSelect && { onSelect })} {...(rowMenu && { menu: rowMenu(chat) })} />
@@ -82,10 +83,9 @@ export function ChatList({ sections, activeId, onSelect, rowMenu, className, ...
             <Heading className="m-0 flex h-7 items-center gap-1 pr-1 pl-2 font-chat-sans text-xs font-normal text-chat-subtle">
               <AriaButton slot="trigger" className="group/trigger flex min-w-0 cursor-pointer items-center gap-1 rounded-chat-sm outline-none data-hovered:text-chat-muted data-focus-visible:ring-2 data-focus-visible:ring-chat-focus">
                 <span className="truncate">{section.title}</span>
-                <ChevronRight
-                  aria-hidden
-                  className="size-3 shrink-0 opacity-0 transition group-hover/section:opacity-100 group-aria-expanded/trigger:rotate-90 group-data-focus-visible/trigger:opacity-100 [@media(hover:none)]:opacity-100"
-                />
+                <IconSlot className="opacity-0 transition group-hover/section:opacity-100 group-aria-expanded/trigger:rotate-90 group-data-focus-visible/trigger:opacity-100 [@media(hover:none)]:opacity-100 [&_svg]:size-3">
+                  {icons.expand}
+                </IconSlot>
               </AriaButton>
               {section.badge}
               <span className="ml-auto flex items-center">{section.action}</span>
@@ -122,6 +122,7 @@ function ChatRow({
   onSelect?: (id: string) => void;
   menu?: ReactNode;
 }) {
+  const icons = useIcons();
   const [menuOpen, setMenuOpen] = useState(false);
   const { dismiss } = useSidebar();
   const labels = useLabels();
@@ -162,7 +163,7 @@ function ChatRow({
                 : "opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 [@media(hover:none)]:opacity-100",
             )}
           >
-            <MoreHorizontal />
+            {icons.more}
           </IconButton>
           <Popover placement="bottom start">{menu}</Popover>
         </MenuTrigger>
@@ -172,6 +173,7 @@ function ChatRow({
 }
 
 function ProjectRow({ project, activeId, row }: { project: ProjectSummary; activeId: string | undefined; row: (chat: ChatSummary, nested?: boolean) => ReactNode }) {
+  const icons = useIcons();
   const labels = useLabels();
   const holdsActive = project.chats.some((c) => c.id === activeId);
   return (
@@ -181,7 +183,7 @@ function ProjectRow({ project, activeId, row }: { project: ProjectSummary; activ
           <>
             <Heading className="m-0 font-normal">
               <AriaButton slot="trigger" className={rowClass}>
-                {isExpanded ? <FolderOpen aria-hidden className="size-4 shrink-0 text-chat-muted" /> : <Folder aria-hidden className="size-4 shrink-0 text-chat-muted" />}
+                <IconSlot className="text-chat-muted [&_svg]:size-4">{isExpanded ? icons.folderOpen : icons.folder}</IconSlot>
                 <span className="min-w-0 flex-1 truncate">{project.name}</span>
                 {!isExpanded && project.chats.some((c) => c.unread || c.running) && <Badge>{labels.new}</Badge>}
               </AriaButton>

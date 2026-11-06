@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { ChevronsUpDown } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import type { ReactNode } from "react";
 import { Button as AriaButton, Link } from "react-aria-components";
 import { MenuTrigger, Popover } from "../primitives/menu";
@@ -94,6 +94,7 @@ const initials = (name: string) =>
 
 /** The account row at the bottom: avatar, name, plan, and a menu. */
 export function SidebarUser({ name, detail, avatarUrl, menu }: SidebarUserProps) {
+  const icons = useIcons();
   const { collapsed } = useSidebar();
   const avatar = avatarUrl ? (
     <img src={avatarUrl} alt="" className="size-8 shrink-0 rounded-full object-cover" />
@@ -118,7 +119,7 @@ export function SidebarUser({ name, detail, avatarUrl, menu }: SidebarUserProps)
             <span className="truncate text-sm text-chat-fg">{name}</span>
             {detail && <span className="truncate text-xs text-chat-muted">{detail}</span>}
           </span>
-          {menu && <ChevronsUpDown aria-hidden className="size-4 shrink-0 text-chat-muted" />}
+          {menu && <IconSlot className="text-chat-muted [&_svg]:size-4">{icons.switcher}</IconSlot>}
         </>
       )}
     </AriaButton>

@@ -1,6 +1,6 @@
 import type { ModelInfo } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
-import { AlertTriangle, ChevronDown } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import type { ReactNode } from "react";
 import type { Selection } from "react-aria-components";
 import { Badge } from "../primitives/badge";
@@ -32,6 +32,7 @@ export function ModelPicker({
   footnote,
   className,
 }: ModelPickerProps) {
+  const icons = useIcons();
   const labels = useLabels();
   const current = models.find((m) => m.id === model);
   const efforts = current?.efforts ?? [];
@@ -55,7 +56,7 @@ export function ModelPicker({
       <Button size="sm" aria-label={labels.modelButton(current?.label ?? model)} className={clsx("text-chat-muted data-hovered:text-chat-fg", className)}>
         <span className="min-w-0 truncate text-chat-fg">{current?.label ?? model}</span>
         {currentEffort && <span className="chat-picker-detail text-chat-muted">{currentEffort.label}</span>}
-        <ChevronDown aria-hidden className="size-3.5" />
+        <IconSlot className="[&_svg]:size-3.5">{icons.dropdown}</IconSlot>
       </Button>
       <Popover placement="top end" className="w-72">
         <Menu aria-label={labels.model}>
@@ -86,7 +87,7 @@ export function ModelPicker({
                         {e.label}
                         {e.recommended && <Badge>{labels.recommended}</Badge>}
                         {e.warning && (
-                          <Badge tone="warning" icon={<AlertTriangle />}>
+                          <Badge tone="warning" icon={icons.warning}>
                             {e.warning}
                           </Badge>
                         )}

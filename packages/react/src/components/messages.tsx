@@ -1,6 +1,6 @@
 import { toBlocks, type Message, type Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
-import { Check, Copy, Pencil, RefreshCw, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
+import { useIcons } from "../primitives/icons";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "../primitives/button";
 import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
@@ -29,6 +29,7 @@ export function messageText(message: Message): string {
 }
 
 function CopyButton({ text }: { text: string }) {
+  const icons = useIcons();
   const labels = useLabels();
   const [copied, setCopied] = useState(false);
   return (
@@ -41,7 +42,7 @@ function CopyButton({ text }: { text: string }) {
         setTimeout(() => setCopied(false), 1500);
       }}
     >
-      {copied ? <Check /> : <Copy />}
+      {copied ? icons.copied : icons.copy}
     </IconButton>
   );
 }
@@ -59,6 +60,7 @@ export interface UserMessageProps {
 
 /** The user's turn: a bubble on the right, with time, retry, edit and copy under it on hover. */
 export function UserMessage({ message, onRetry, onEdit, actions, className }: UserMessageProps) {
+  const icons = useIcons();
   const labels = useLabels();
   const text = messageText(message);
   const attachments = message.parts.filter((p) => p.type === "attachment");
@@ -80,12 +82,12 @@ export function UserMessage({ message, onRetry, onEdit, actions, className }: Us
         <span className={timeClass}>{formatRelativeTime(message.createdAt, undefined, labels)}</span>
         {onRetry && (
           <IconButton label={labels.retry} size="sm" onPress={onRetry}>
-            <RefreshCw />
+            {icons.retry}
           </IconButton>
         )}
         {onEdit && (
           <IconButton label={labels.edit} size="sm" onPress={onEdit}>
-            <Pencil />
+            {icons.edit}
           </IconButton>
         )}
         <CopyButton text={text} />
@@ -155,6 +157,7 @@ export interface AssistantMessageProps {
  * order. When done, copy / read aloud / feedback / retry and the time sit under it.
  */
 export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, renderPart, actions, className }: AssistantMessageProps) {
+  const icons = useIcons();
   const labels = useLabels();
   const streaming = message.status === "streaming";
   const views = useToolViews();
@@ -186,22 +189,22 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
           <CopyButton text={messageText(message)} />
           {onReadAloud && (
             <IconButton label={labels.readAloud} size="sm" onPress={onReadAloud}>
-              <Volume2 />
+              {icons.speak}
             </IconButton>
           )}
           {onFeedback && (
             <>
               <IconButton label={labels.goodResponse} size="sm" onPress={() => onFeedback("good")}>
-                <ThumbsUp />
+                {icons.thumbsUp}
               </IconButton>
               <IconButton label={labels.badResponse} size="sm" onPress={() => onFeedback("bad")}>
-                <ThumbsDown />
+                {icons.thumbsDown}
               </IconButton>
             </>
           )}
           {onRetry && (
             <IconButton label={labels.retry} size="sm" onPress={onRetry}>
-              <RefreshCw />
+              {icons.retry}
             </IconButton>
           )}
           {actions}

@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { ChevronDown, FolderPlus, Pencil, Pin, PinOff, Plus, Share, Trash2 } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import type { ReactNode } from "react";
 import { useLabels } from "../primitives/labels";
 import { Button } from "../primitives/button";
@@ -18,6 +18,7 @@ export interface ChatHeaderProps {
 
 /** The bar above a chat: breadcrumb and title with its menu, actions on the right. */
 export function ChatHeader({ title, menu, leading, actions, className }: ChatHeaderProps) {
+  const icons = useIcons();
   return (
     <header className={clsx("flex h-12 shrink-0 items-center gap-1 px-3 font-chat-sans", className)}>
       {leading}
@@ -25,7 +26,7 @@ export function ChatHeader({ title, menu, leading, actions, className }: ChatHea
         <MenuTrigger>
           <Button size="sm" className="min-w-0 text-chat-fg">
             <span className="truncate">{title}</span>
-            <ChevronDown aria-hidden className="size-3.5 shrink-0 text-chat-muted" />
+            <IconSlot className="text-chat-muted [&_svg]:size-3.5">{icons.dropdown}</IconSlot>
           </Button>
           <Popover placement="bottom start">{menu}</Popover>
         </MenuTrigger>
@@ -52,6 +53,7 @@ export interface ChatTitleMenuProps {
 
 /** Pin, Rename, Add to project (searchable), Share, Delete. Each shows only when its handler is set. */
 export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProject, onCreateProject, onShare, onDelete, children }: ChatTitleMenuProps) {
+  const icons = useIcons();
   const labels = useLabels();
   const act = (key: React.Key) => {
     if (key === "pin") onPin?.();
@@ -62,18 +64,18 @@ export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProjec
   return (
     <Menu aria-label={labels.chatActions} className="min-w-44" onAction={act}>
       {onPin && (
-        <MenuItem id="pin" icon={pinned ? <PinOff /> : <Pin />} shortcut="P">
+        <MenuItem id="pin" icon={pinned ? icons.unpin : icons.pin} shortcut="P">
           {pinned ? labels.unpin : labels.pin}
         </MenuItem>
       )}
       {onRename && (
-        <MenuItem id="rename" icon={<Pencil />} shortcut="R">
+        <MenuItem id="rename" icon={icons.rename} shortcut="R">
           {labels.rename}
         </MenuItem>
       )}
       {onAddToProject && (
         <SubmenuTrigger>
-          <MenuItem id="project" icon={<FolderPlus />}>
+          <MenuItem id="project" icon={icons.addToProject}>
             {labels.addToProject}
           </MenuItem>
           <Popover placement="end top" className="w-60">
@@ -84,7 +86,7 @@ export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProjec
                 onAction={(key) => (key === "__new" ? onCreateProject?.() : onAddToProject(String(key)))}
               >
                 {onCreateProject && (
-                  <MenuItem id="__new" icon={<Plus />}>
+                  <MenuItem id="__new" icon={icons.add}>
                     {labels.newProject}
                   </MenuItem>
                 )}
@@ -99,7 +101,7 @@ export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProjec
         </SubmenuTrigger>
       )}
       {onShare && (
-        <MenuItem id="share" icon={<Share />}>
+        <MenuItem id="share" icon={icons.share}>
           {labels.shareChat}
         </MenuItem>
       )}
@@ -107,7 +109,7 @@ export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProjec
       {onDelete && (
         <>
           <MenuSeparator />
-          <MenuItem id="delete" icon={<Trash2 />} shortcut="D" tone="danger">
+          <MenuItem id="delete" icon={icons.delete} shortcut="D" tone="danger">
             {labels.delete}
           </MenuItem>
         </>

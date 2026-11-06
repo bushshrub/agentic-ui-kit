@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { Check, ChevronRight } from "lucide-react";
+import { useIcons, IconSlot } from "./icons";
 import type { ReactNode } from "react";
 import {
   Autocomplete,
@@ -94,6 +94,7 @@ export interface MenuItemProps extends Omit<AriaMenuItemProps, "className" | "ch
 }
 
 export function MenuItem({ children, icon, description, detail, shortcut, tone = "default", className, ...props }: MenuItemProps) {
+  const icons = useIcons();
   const textValue = props.textValue ?? (typeof children === "string" ? children : undefined);
   return (
     <AriaMenuItem
@@ -125,8 +126,8 @@ export function MenuItem({ children, icon, description, detail, shortcut, tone =
           </span>
           {detail && <span className="shrink-0 text-sm text-chat-muted">{detail}</span>}
           {shortcut && <Keyboard className="shrink-0 font-chat-sans text-xs text-chat-subtle">{shortcut}</Keyboard>}
-          {selectionMode !== "none" && isSelected && <Check aria-hidden className="size-4 shrink-0 text-chat-check" />}
-          {hasSubmenu && <ChevronRight aria-hidden className="size-4 shrink-0 text-chat-muted" />}
+          {selectionMode !== "none" && isSelected && <IconSlot className="text-chat-check [&_svg]:size-4">{icons.check}</IconSlot>}
+          {hasSubmenu && <IconSlot className="text-chat-muted [&_svg]:size-4">{icons.submenu}</IconSlot>}
         </>
       )}
     </AriaMenuItem>

@@ -1,6 +1,6 @@
 import type { ToolCallPart } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
-import { ShieldQuestion } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import type { PendingApproval } from "../hooks/use-chat";
 import { useLabels } from "../primitives/labels";
 import { Button } from "../primitives/button";
@@ -18,6 +18,7 @@ export interface ApprovalCardProps {
  * view's `Detail` when it has one, else the input. Replying in the composer instead declines it.
  */
 export function ApprovalCard({ approval, onRespond, className }: ApprovalCardProps) {
+  const icons = useIcons();
   const { part } = approval;
   const labels = useLabels();
   const view = useToolView(part.name);
@@ -30,7 +31,7 @@ export function ApprovalCard({ approval, onRespond, className }: ApprovalCardPro
       className={clsx("flex flex-col gap-3 rounded-chat-lg border border-chat-border-strong bg-chat-surface p-3 font-chat-sans text-chat-fg shadow-chat-popover", className)}
     >
       <div className="flex items-center gap-2 text-sm">
-        <ShieldQuestion aria-hidden className="size-4 shrink-0 text-chat-accent" />
+        <IconSlot className="text-chat-accent [&_svg]:size-4">{icons.approval}</IconSlot>
         <span className="min-w-0 flex-1 font-medium">
           {view.ask?.(part) ?? labels.allowAction(activityLabel(part, labels, view))}
         </span>

@@ -1,5 +1,5 @@
 import type { ActivityPart, ToolCallPart } from "@agentic-ui-kit/core";
-import { Globe } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import { createContext, useContext, useMemo, type ComponentType, type ReactNode } from "react";
 import { useAgentSnapshot, useAgentTool, type AgentTool } from "../hooks/agent";
 import { CodeBlock } from "../primitives/code-block";
@@ -135,6 +135,7 @@ export const webSearchTool: ToolView = {
   summary: (n, labels) => labels.searchedWeb(n),
   Detail: function WebSearchDetail({ part }) {
     const labels = useLabels();
+    const icons = useIcons();
     const results = (Array.isArray(part.result) ? part.result : recordOf(part.result).results) as
       | SearchResult[]
       | undefined;
@@ -153,7 +154,7 @@ export const webSearchTool: ToolView = {
               {result.favicon ? (
                 <img src={result.favicon} alt="" className="size-4 shrink-0 rounded-sm" />
               ) : (
-                <Globe aria-hidden className="size-4 shrink-0" />
+                <IconSlot className="[&_svg]:size-4">{icons.web}</IconSlot>
               )}
               <span className="min-w-0 flex-1 truncate">{result.title}</span>
               <span className="shrink-0 text-sm">{hostOf(result.url)}</span>

@@ -211,6 +211,13 @@ sets the language of relative times and dates (default: the browser's). The keys
 <ChatTheme labels={{ copy: "Copier", moreOptionsFor: (title) => `Plus d'options pour ${title}`, locale: "fr" }}>
 ```
 
+Every icon is swappable the same way with `icons` (Lucide by default). Pass SVG elements; the kit sizes and
+colors them with CSS. The keys are listed in `ChatIcons`.
+
+```tsx
+<ChatTheme icons={{ copy: <MyCopy />, send: <MySend /> }}>
+```
+
 The full list of variables is at the top of
 [`packages/react/src/styles.css`](packages/react/src/styles.css).
 
@@ -240,7 +247,7 @@ your brand and of the space it sits in.
 - Width and density: `contentWidth`, and `density="full" | "panel" | "inline"` for a page, a side panel or a
   box in a form.
 - Code themes and motion on or off: `ChatTheme` props.
-- Wording and locale: `ChatTheme labels`, see Theming. Icons are next, with Lucide as the default.
+- Wording and locale: `ChatTheme labels`, see Theming. Icons: `ChatTheme icons`, Lucide by default.
 - Content: the `header`, `footer`, `notice`, `emptyState` and `disclaimer` slots, custom parts through
   `renderPart`, and tool views through `useChatTool`.
 

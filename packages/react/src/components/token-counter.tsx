@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { ArrowDown } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "../primitives/appearance";
 import { useLabels } from "../primitives/labels";
@@ -58,6 +58,7 @@ export interface TokenCounterProps {
 
 /** A token count that counts up as `tokens` grows and holds still when it stops growing. */
 export function TokenCounter({ tokens, variant = "standalone", className }: TokenCounterProps) {
+  const icons = useIcons();
   const shown = useCountUp(tokens);
   const labels = useLabels();
   if (variant === "inline") {
@@ -65,7 +66,7 @@ export function TokenCounter({ tokens, variant = "standalone", className }: Toke
   }
   return (
     <span className={clsx("inline-flex items-center gap-1 font-chat-sans text-xs text-chat-subtle tabular-nums", className)}>
-      <ArrowDown aria-hidden className="size-3" />
+      <IconSlot className="[&_svg]:size-3">{icons.tokens}</IconSlot>
       {labels.tokenCount(formatTokens(shown))}
     </span>
   );

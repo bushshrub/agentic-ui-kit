@@ -1,6 +1,6 @@
 import type { Message, Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
-import { ArrowDown } from "lucide-react";
+import { useIcons } from "../primitives/icons";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
@@ -29,6 +29,7 @@ const STICK_SLOP = 48;
  * them alone once they scroll up, with a button to jump back. Sending a message always jumps down.
  */
 export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart, header, footer, start = "bottom", className }: MessageListProps) {
+  const icons = useIcons();
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const stuck = useRef(start === "bottom");
@@ -112,7 +113,7 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart,
           }}
           className="absolute bottom-[min(10rem,40%)] left-1/2 -translate-x-1/2 rounded-full border border-chat-border shadow-chat-popover"
         >
-          <ArrowDown />
+          {icons.scrollToBottom}
         </IconButton>
       )}
     </div>

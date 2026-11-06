@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { PanelLeft } from "lucide-react";
+import { useIcons } from "../primitives/icons";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { DRAWER_QUERY, NARROW_QUERY, SidebarContext, useMediaQuery, useSidebar, type SidebarState } from "../hooks/sidebar-state";
 import { IconButton } from "../primitives/button";
@@ -62,6 +62,7 @@ export interface SidebarToggleProps {
 
 /** Opens the drawer on phones, collapses / expands the pinned sidebar elsewhere. */
 export function SidebarToggle({ drawerOnly = false, className }: SidebarToggleProps) {
+  const icons = useIcons();
   const { drawer, drawerOpen, collapsed, toggle } = useSidebar();
   const labels = useLabels();
   if (drawerOnly && !drawer) return null;
@@ -74,7 +75,7 @@ export function SidebarToggle({ drawerOnly = false, className }: SidebarTogglePr
       : labels.collapseSidebar;
   return (
     <IconButton label={label} onPress={toggle} className={className}>
-      <PanelLeft />
+      {icons.sidebar}
     </IconButton>
   );
 }

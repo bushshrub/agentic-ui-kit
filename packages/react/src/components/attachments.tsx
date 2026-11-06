@@ -1,6 +1,6 @@
 import type { AttachmentPart } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
-import { FileText, Pencil, X } from "lucide-react";
+import { useIcons, IconSlot } from "../primitives/icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, IconButton } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
@@ -162,6 +162,7 @@ const extension = (name: string) => /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toUpp
 
 /** A square card: pasted text preview with a PASTED badge, an image thumbnail, or a file with its type. */
 export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", className }: AttachmentCardProps) {
+  const icons = useIcons();
   const image = a.mime.startsWith("image/") && a.url;
   const pasted = a.text !== undefined;
   const labels = useLabels();
@@ -186,7 +187,7 @@ export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", c
           </p>
         ) : (
           <div className="flex h-full flex-col gap-1.5 p-2.5">
-            <FileText aria-hidden className="size-5 shrink-0 text-chat-muted" />
+            <IconSlot className="text-chat-muted [&_svg]:size-5">{icons.file}</IconSlot>
             <span className="line-clamp-3 text-xs break-words text-chat-fg">{a.name}</span>
           </div>
         )}
@@ -203,7 +204,7 @@ export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", c
           </span>
           {pasted && onOpen && (
             <IconButton label={labels.editPastedText} size="sm" onPress={onOpen} className="size-6 border border-chat-border-strong bg-chat-bg [&_svg]:size-3.5 [@media(pointer:coarse)]:size-7!">
-              <Pencil />
+              {icons.edit}
             </IconButton>
           )}
         </div>
@@ -223,7 +224,7 @@ export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", c
             "opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 data-focus-visible:opacity-100 [@media(hover:none)]:opacity-100",
           )}
         >
-          <X />
+          {icons.remove}
         </IconButton>
       )}
     </div>
