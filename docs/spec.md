@@ -330,11 +330,18 @@ Each slice ends with tests passing and the states visible in the playground.
   like Panel's; Tooltip on a plain span/anchor (accept any element or document the Focusable wrapper).
 - Example (not a kit export): a host Map component in the component set (spec { center, zoom, markers },
   Leaflet render, lazy-loaded), as a Storybook example plus a short section in host-components.md.
-- Types under `moduleResolution: nodenext`: the shipped .d.ts use extensionless relative imports (TS2834,
-  ~110 errors in a strict consumer, already in 0.8.0). Bundler resolution is clean. Emit .js extensions
-  (rewrite in build.mjs or source imports) and add a packed-consumer typecheck to CI for both resolutions.
 - API reference: typedoc is single-entry, so agentic-ui-kit/visuals and visuals/core have no pages (adding
   entries renamed every existing URL). Configure module naming so the old URLs stay and the visuals get pages.
+- jaa-v2 chat gaps (jaa-v2 session is shut down; no reply needed), low priority:
+  1. Composer: option to allow sending while busy (server queues it); Stop only while the box is empty.
+  2. ChatView `onSend` optional when `composer={false}`.
+  3. Composer `id` / ref so a caller can focus or label the box.
+  4. UserMessage caption ("Sent by the agent" for prefilled prompts).
+  5. A streaming tool part shows "(1 tokens)": hide the count for tiny tool inputs.
+- From llm-chat-ui (on 0.8.0):
+  1. CopyButton (primitives/copy-button.tsx:17) does nothing without navigator.clipboard (plain http on a LAN
+     host); fall back like CopyField (hidden textarea + execCommand) and never show "Copied" on failure.
+  2. Export a Dialog (or PopoverDialog with aria-label) for custom popover content; hosts import RAC's today.
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
 

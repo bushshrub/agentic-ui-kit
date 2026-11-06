@@ -44,6 +44,8 @@ jobs:
 
       # Publish the pnpm-packed tarball: plain `npm publish` ignores publishConfig.exports.
       - run: pnpm --filter agentic-ui-kit pack
+      - name: Typecheck the packed package in a blank app (bundler and NodeNext)
+        run: node packages/react/check-packed.mjs agentic-ui-kit-*.tgz
       - name: Publish
         env:
           # Pre-releases go to the "next" dist-tag so `npm install agentic-ui-kit` keeps getting the latest stable.

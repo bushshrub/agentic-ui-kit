@@ -1,6 +1,6 @@
 // Builds the publishable package into dist/: ESM + types (core inlined), and two stylesheets.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { build } from "tsdown";
 
@@ -19,6 +19,21 @@ for (const file of readdirSync("dist/types/react/src", { recursive: true, withFi
     return JSON.stringify(to.startsWith(".") ? to : `./${to}`);
   };
   const text = readFileSync(path, "utf8").replaceAll('"@agentic-ui-kit/core"', rel(coreIndex)).replaceAll('"@agentic-ui-kit/core/visuals"', rel(coreVisuals));
+  writeFileSync(path, text);
+}
+
+// NodeNext resolution needs explicit extensions: "./reduce" becomes "./reduce.js", "./views" "./views/index.js".
+for (const file of readdirSync("dist/types", { recursive: true, withFileTypes: false })) {
+  if (!String(file).endsWith(".d.ts")) continue;
+  const path = join("dist/types", String(file));
+  const withExtension = (spec) => {
+    if (/\.(js|css|json)$/.test(spec)) return spec;
+    const target = join(dirname(path), spec);
+    if (existsSync(`${target}.d.ts`)) return `${spec}.js`;
+    if (existsSync(join(target, "index.d.ts"))) return `${spec}/index.js`;
+    throw new Error(`build: cannot resolve "${spec}" in ${path}`);
+  };
+  const text = readFileSync(path, "utf8").replace(/((?:from|import)\s*\(?\s*)"(\.{1,2}\/[^"]+)"/g, (_, lead, spec) => `${lead}"${withExtension(spec)}"`);
   writeFileSync(path, text);
 }
 
