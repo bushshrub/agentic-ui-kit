@@ -175,7 +175,10 @@ function useShortPane() {
 export interface EmptyStateProps {
   /** "Good evening, Alex". */
   greeting: ReactNode;
-  /** Mark left of the greeting, e.g. a logo. */
+  /**
+   * Mark left of the greeting, e.g. a logo. Its currentColor is --chat-empty-icon (default the accent), for
+   * one-color marks; a multi-color logo sets its own fills.
+   */
   icon?: ReactNode;
   /** The centered composer. */
   children: ReactNode;
@@ -188,7 +191,7 @@ export function EmptyState({ greeting, icon, children, footer }: EmptyStateProps
   return (
     <div className="flex flex-col gap-8">
       <h1 className="chat-empty-greeting flex items-center justify-center gap-3 text-center font-chat-serif text-[clamp(1.5rem,6cqw,2.5rem)] font-normal text-chat-fg">
-        {icon && <span className="flex shrink-0 text-chat-accent [&_svg]:size-[1em]">{icon}</span>}
+        {icon && <span className="flex shrink-0 text-[var(--chat-empty-icon,var(--chat-accent))] [&_svg]:size-[1em]">{icon}</span>}
         {greeting}
       </h1>
       {children}

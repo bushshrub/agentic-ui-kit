@@ -10,6 +10,8 @@ import { SidebarToggle } from "./app-shell";
 export interface SidebarProps {
   /** Name or logo at the top left; hidden when collapsed. */
   brand?: ReactNode;
+  /** A logo mark left of `brand`, sized 1.25rem. It stays at the top of the collapsed rail. */
+  brandIcon?: ReactNode;
   /** Buttons at the top right next to the collapse toggle, e.g. a mode switch. */
   headerActions?: ReactNode;
   /** Fixed items under the header: New chat, Search, Projects… (`SidebarItem`s). */
@@ -22,12 +24,18 @@ export interface SidebarProps {
 }
 
 /** The claude.ai sidebar frame. Collapses to an icon rail inside `AppShell`; a drawer on phones. */
-export function Sidebar({ brand, headerActions, nav, children, footer, className }: SidebarProps) {
+export function Sidebar({ brand, brandIcon, headerActions, nav, children, footer, className }: SidebarProps) {
   const { collapsed } = useSidebar();
   return (
     <div className={clsx("flex h-full flex-col font-chat-sans", collapsed ? "w-13" : "w-full", className)}>
+      {collapsed && brandIcon && <div className="flex h-12 shrink-0 items-center justify-center [&_svg]:size-5">{brandIcon}</div>}
       <div className={clsx("flex h-12 shrink-0 items-center gap-1 px-2", collapsed && "justify-center")}>
-        {!collapsed && <div className="min-w-0 flex-1 truncate px-1.5 font-chat-serif text-lg text-chat-fg">{brand}</div>}
+        {!collapsed && (
+          <div className="flex min-w-0 flex-1 items-center gap-2 px-1.5 font-chat-serif text-lg text-chat-fg">
+            {brandIcon && <span className="flex shrink-0 [&_svg]:size-5">{brandIcon}</span>}
+            <span className="min-w-0 truncate">{brand}</span>
+          </div>
+        )}
         {!collapsed && headerActions}
         <SidebarToggle />
       </div>
