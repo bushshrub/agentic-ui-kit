@@ -1,6 +1,7 @@
 import type { ContextCategory, ContextGroup, ContextUsage } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { Disclosure } from "../primitives/disclosure";
+import { useLabels } from "../primitives/labels";
 import { Tooltip } from "../primitives/tooltip";
 import { Focusable } from "react-aria-components";
 import { formatTokens } from "./token-counter";
@@ -20,7 +21,8 @@ const DEFAULT_COLOR = "var(--chat-subtle)";
  * What fills the context window: a usage line, a segmented bar, one row per category with its share, and
  * expandable lists (each MCP tool, each memory file). Deferred categories are listed but not counted.
  */
-export function ContextPanel({ usage, title = "Context", defaultExpanded = true, className }: ContextPanelProps) {
+export function ContextPanel({ usage, title, defaultExpanded = true, className }: ContextPanelProps) {
+  const labels = useLabels();
   const counted = usage.categories.filter((c) => !c.deferred);
   const deferred = usage.categories.filter((c) => c.deferred);
   const used = counted.reduce((sum, c) => sum + (c.reserved ? 0 : c.tokens), 0);
@@ -30,14 +32,14 @@ export function ContextPanel({ usage, title = "Context", defaultExpanded = true,
 
   return (
     <Disclosure
-      summary={title}
+      summary={title ?? labels.context}
       defaultExpanded={defaultExpanded}
       className={clsx("font-chat-sans text-chat-fg", className)}
       summaryClassName="text-[0.9375rem] text-chat-fg"
       panelClassName="pt-3"
     >
       <div className="mb-2 flex items-baseline justify-between text-[0.9375rem]">
-        <span>{Math.round((used / usage.limit) * 100)}% used</span>
+        <span>{labels.percentUsed(Math.round((used / usage.limit) * 100))}</span>
         <span className="text-sm text-chat-muted tabular-nums">
           {formatTokens(used)} / {formatTokens(usage.limit)}
         </span>
@@ -45,7 +47,7 @@ export function ContextPanel({ usage, title = "Context", defaultExpanded = true,
 
       <div
         role="meter"
-        aria-label="Context used"
+        aria-label={labels.contextUsed}
         aria-valuemin={0}
         aria-valuemax={usage.limit}
         aria-valuenow={used}
@@ -65,7 +67,7 @@ export function ContextPanel({ usage, title = "Context", defaultExpanded = true,
         {counted.map((c) => (
           <CategoryRow key={c.id} category={c} share={share(c.tokens)} />
         ))}
-        <CategoryRow category={{ id: "free", label: "Free space", tokens: free, color: FREE_COLOR }} share={share(free)} />
+        <CategoryRow category={{ id: "free", label: labels.freeSpace, tokens: free, color: FREE_COLOR }} share={share(free)} />
       </ul>
 
       {deferred.length > 0 && (

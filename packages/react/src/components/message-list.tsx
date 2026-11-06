@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { ArrowDown } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "../primitives/button";
+import { useLabels } from "../primitives/labels";
 import { AssistantMessage, UserMessage, type Feedback } from "./messages";
 
 export interface MessageListProps {
@@ -31,6 +32,7 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart,
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const stuck = useRef(start === "bottom");
+  const labels = useLabels();
   const [atBottom, setAtBottom] = useState(true);
 
   const toBottom = useCallback((behavior: ScrollBehavior = "auto") => {
@@ -79,7 +81,7 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart,
         <div ref={content} className="flex min-h-full flex-col">
           <div
             role="log"
-            aria-label="Conversation"
+            aria-label={labels.conversation}
             className="mx-auto flex w-full max-w-[calc(var(--chat-content-width)+2*var(--chat-gutter,var(--chat-content-padding)))] flex-1 flex-col gap-6 px-[var(--chat-gutter,var(--chat-content-padding))] pt-6 pb-4"
           >
             {header}
@@ -102,7 +104,7 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, renderPart,
       </div>
       {!atBottom && (
         <IconButton
-          label="Scroll to bottom"
+          label={labels.scrollToBottom}
           variant="subtle"
           onPress={() => {
             stuck.current = true;

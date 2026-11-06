@@ -1,6 +1,7 @@
 import { clsx } from "clsx";
 import { ChevronDown, FolderPlus, Pencil, Pin, PinOff, Plus, Share, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useLabels } from "../primitives/labels";
 import { Button } from "../primitives/button";
 import { Menu, MenuItem, MenuSearch, MenuSeparator, MenuTrigger, Popover, SubmenuTrigger } from "../primitives/menu";
 
@@ -51,6 +52,7 @@ export interface ChatTitleMenuProps {
 
 /** Pin, Rename, Add to project (searchable), Share, Delete. Each shows only when its handler is set. */
 export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProject, onCreateProject, onShare, onDelete, children }: ChatTitleMenuProps) {
+  const labels = useLabels();
   const act = (key: React.Key) => {
     if (key === "pin") onPin?.();
     else if (key === "rename") onRename?.();
@@ -58,32 +60,32 @@ export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProjec
     else if (key === "delete") onDelete?.();
   };
   return (
-    <Menu aria-label="Chat actions" className="min-w-44" onAction={act}>
+    <Menu aria-label={labels.chatActions} className="min-w-44" onAction={act}>
       {onPin && (
         <MenuItem id="pin" icon={pinned ? <PinOff /> : <Pin />} shortcut="P">
-          {pinned ? "Unpin" : "Pin"}
+          {pinned ? labels.unpin : labels.pin}
         </MenuItem>
       )}
       {onRename && (
         <MenuItem id="rename" icon={<Pencil />} shortcut="R">
-          Rename
+          {labels.rename}
         </MenuItem>
       )}
       {onAddToProject && (
         <SubmenuTrigger>
           <MenuItem id="project" icon={<FolderPlus />}>
-            Add to project
+            {labels.addToProject}
           </MenuItem>
           <Popover placement="end top" className="w-60">
-            <MenuSearch placeholder="Search or create a project">
+            <MenuSearch placeholder={labels.searchProjects}>
               <Menu
-                aria-label="Projects"
+                aria-label={labels.projects}
                 className="max-h-72"
                 onAction={(key) => (key === "__new" ? onCreateProject?.() : onAddToProject(String(key)))}
               >
                 {onCreateProject && (
                   <MenuItem id="__new" icon={<Plus />}>
-                    New project
+                    {labels.newProject}
                   </MenuItem>
                 )}
                 {(projects ?? []).map((p) => (
@@ -98,7 +100,7 @@ export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProjec
       )}
       {onShare && (
         <MenuItem id="share" icon={<Share />}>
-          Share chat
+          {labels.shareChat}
         </MenuItem>
       )}
       {children}
@@ -106,7 +108,7 @@ export function ChatTitleMenu({ pinned, onPin, onRename, projects, onAddToProjec
         <>
           <MenuSeparator />
           <MenuItem id="delete" icon={<Trash2 />} shortcut="D" tone="danger">
-            Delete
+            {labels.delete}
           </MenuItem>
         </>
       )}

@@ -203,6 +203,14 @@ add `background: "theme"`, which uses the Shiki theme's own background and text 
 animations even when the OS asks for less). It sets `data-chat-motion` on the element; an app that does not use
 `ChatTheme` can put `data-chat-motion="reduce"` on `<html>` instead.
 
+Every string the kit shows (text, aria-labels, placeholders) can be reworded or translated with `labels` on
+`ChatTheme`. Keys you leave out keep the English default; labels with values in them are functions, and `locale`
+sets the language of relative times and dates (default: the browser's). The keys are listed in `ChatLabels`.
+
+```tsx
+<ChatTheme labels={{ copy: "Copier", moreOptionsFor: (title) => `Plus d'options pour ${title}`, locale: "fr" }}>
+```
+
 The full list of variables is at the top of
 [`packages/react/src/styles.css`](packages/react/src/styles.css).
 
@@ -232,7 +240,7 @@ your brand and of the space it sits in.
 - Width and density: `contentWidth`, and `density="full" | "panel" | "inline"` for a page, a side panel or a
   box in a form.
 - Code themes and motion on or off: `ChatTheme` props.
-- Icons (coming, with Lucide as the default) and wording and locale.
+- Wording and locale: `ChatTheme labels`, see Theming. Icons are next, with Lucide as the default.
 - Content: the `header`, `footer`, `notice`, `emptyState` and `disclaimer` slots, custom parts through
   `renderPart`, and tool views through `useChatTool`.
 

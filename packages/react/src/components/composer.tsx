@@ -3,6 +3,7 @@ import { ArrowUp, Plus, Square } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import type React from "react";
 import { IconButton } from "../primitives/button";
+import { useLabels } from "../primitives/labels";
 import { MenuTrigger, Popover } from "../primitives/menu";
 
 export interface ComposerProps {
@@ -50,7 +51,7 @@ export function Composer({
   busy = false,
   value,
   onChange,
-  placeholder = "Reply…",
+  placeholder,
   variant = "docked",
   leading,
   trailing,
@@ -64,6 +65,7 @@ export function Composer({
   autoFocus,
   className,
 }: ComposerProps) {
+  const labels = useLabels();
   const [own, setOwn] = useState("");
   const text = value ?? own;
   const setText = (next: string) => {
@@ -138,11 +140,11 @@ export function Composer({
 
   const compact = variant === "compact";
   const action = busy ? (
-    <IconButton label="Stop" variant="primary" onPress={onStop} className="rounded-chat-md [&_svg]:size-3.5 [&_svg]:fill-current">
+    <IconButton label={labels.stop} variant="primary" onPress={onStop} className="rounded-chat-md [&_svg]:size-3.5 [&_svg]:fill-current">
       <Square />
     </IconButton>
   ) : (
-    <IconButton label="Send" variant="primary" onPress={submit} isDisabled={!canSend} className="rounded-chat-md">
+    <IconButton label={labels.send} variant="primary" onPress={submit} isDisabled={!canSend} className="rounded-chat-md">
       <ArrowUp />
     </IconButton>
   );
@@ -175,8 +177,8 @@ export function Composer({
           onChange={(e) => setText(e.target.value)}
           onKeyDown={onKeyDown}
           onPaste={onPaste}
-          placeholder={placeholder}
-          aria-label="Message"
+          placeholder={placeholder ?? labels.replyPlaceholder}
+          aria-label={labels.message}
           disabled={isDisabled}
           autoFocus={autoFocus}
           className={clsx(
@@ -210,10 +212,11 @@ export interface AttachButtonProps {
 }
 
 /** The `+` button that opens the attach menu above the composer. */
-export function AttachButton({ children, label = "Add files and more" }: AttachButtonProps) {
+export function AttachButton({ children, label }: AttachButtonProps) {
+  const labels = useLabels();
   return (
     <MenuTrigger>
-      <IconButton label={label}>
+      <IconButton label={label ?? labels.addFiles}>
         <Plus />
       </IconButton>
       <Popover placement="top start">{children}</Popover>

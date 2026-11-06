@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import type { Selection } from "react-aria-components";
 import { Badge } from "../primitives/badge";
 import { Button } from "../primitives/button";
+import { useLabels } from "../primitives/labels";
 import { Menu, MenuItem, MenuNote, MenuSection, MenuSeparator, MenuTrigger, Popover, SubmenuTrigger } from "../primitives/menu";
 
 export interface ModelPickerProps {
@@ -27,10 +28,11 @@ export function ModelPicker({
   onModelChange,
   effort,
   onEffortChange,
-  effortNote = "Higher effort means more thorough responses, but takes longer and uses your limits faster.",
+  effortNote,
   footnote,
   className,
 }: ModelPickerProps) {
+  const labels = useLabels();
   const current = models.find((m) => m.id === model);
   const efforts = current?.efforts ?? [];
   const currentEffort = efforts.find((e) => e.id === (effort ?? current?.defaultEffort));
@@ -50,13 +52,13 @@ export function ModelPicker({
 
   return (
     <MenuTrigger>
-      <Button size="sm" aria-label={`Model: ${current?.label ?? model}`} className={clsx("text-chat-muted data-hovered:text-chat-fg", className)}>
+      <Button size="sm" aria-label={labels.modelButton(current?.label ?? model)} className={clsx("text-chat-muted data-hovered:text-chat-fg", className)}>
         <span className="min-w-0 truncate text-chat-fg">{current?.label ?? model}</span>
         {currentEffort && <span className="chat-picker-detail text-chat-muted">{currentEffort.label}</span>}
         <ChevronDown aria-hidden className="size-3.5" />
       </Button>
       <Popover placement="top end" className="w-72">
-        <Menu aria-label="Model">
+        <Menu aria-label={labels.model}>
           <MenuSection selectionMode="single" selectedKeys={[model]} onSelectionChange={pick}>
             {main.map(item)}
           </MenuSection>
@@ -64,12 +66,12 @@ export function ModelPicker({
           {efforts.length > 0 && onEffortChange && (
             <SubmenuTrigger>
               <MenuItem id="__effort" detail={currentEffort?.label}>
-                Effort
+                {labels.effort}
               </MenuItem>
               <Popover placement="end top" className="w-80">
-                <MenuNote>{effortNote}</MenuNote>
+                <MenuNote>{effortNote ?? labels.effortNote}</MenuNote>
                 <Menu
-                  aria-label="Effort"
+                  aria-label={labels.effort}
                   selectionMode="single"
                   selectedKeys={currentEffort ? [currentEffort.id] : []}
                   onSelectionChange={(keys) => {
@@ -82,7 +84,7 @@ export function ModelPicker({
                     <MenuItem key={e.id} id={e.id} textValue={e.label}>
                       <span className="flex items-center gap-2">
                         {e.label}
-                        {e.recommended && <Badge>Recommended</Badge>}
+                        {e.recommended && <Badge>{labels.recommended}</Badge>}
                         {e.warning && (
                           <Badge tone="warning" icon={<AlertTriangle />}>
                             {e.warning}
@@ -97,9 +99,9 @@ export function ModelPicker({
           )}
           {more.length > 0 && (
             <SubmenuTrigger>
-              <MenuItem id="__more">More models</MenuItem>
+              <MenuItem id="__more">{labels.moreModels}</MenuItem>
               <Popover placement="end top" className="w-72">
-                <Menu aria-label="More models" selectionMode="single" selectedKeys={[model]} onSelectionChange={pick}>
+                <Menu aria-label={labels.moreModels} selectionMode="single" selectedKeys={[model]} onSelectionChange={pick}>
                   {more.map(item)}
                 </Menu>
               </Popover>

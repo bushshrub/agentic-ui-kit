@@ -24,6 +24,8 @@ export type { PanelProps } from "./primitives/panel";
 export { CodeBlock } from "./primitives/code-block";
 export { ChatTheme } from "./primitives/chat-theme";
 export type { ChatThemeProps } from "./primitives/chat-theme";
+export { defaultLabels, useLabels } from "./primitives/labels";
+export type { ChatLabels } from "./primitives/labels";
 export type { CodeThemes, ChatMotion } from "./primitives/appearance";
 
 // Hooks
