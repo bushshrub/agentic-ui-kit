@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { checkUiMarkup, findUiBlocks, parseUiMarkup, readUiValue, uiMarkupGuide } from "./ui-markup";
+import { checkUiMarkup, checkUiMarkupCode, findUiBlocks, parseUiMarkup, readUiValue, showUiTool, uiMarkupGuide } from "./ui-markup";
 import { uiActionSchema, type UiComponentSpec } from "./ui-tree";
 
 const specs: UiComponentSpec[] = [
@@ -92,4 +92,16 @@ it("writes a guide from the components", () => {
   expect(guide).toContain("- <List items={[{label}, …]} />");
   expect(guide).toContain('- <Button label="…" onPress={action} />');
   expect(uiMarkupGuide(specs)).toBe(guide);
+});
+
+it("suggests a UI tool and answers its calls", () => {
+  const tool = showUiTool(specs);
+  expect(tool.name).toBe("show_ui");
+  expect(tool.description).toContain('- <Card title?="…">…</Card>');
+  expect(showUiTool(specs).description).toBe(tool.description);
+  expect(checkUiMarkupCode('<Card title="A"><Text text="hi" /></Card>', specs)).toEqual({ ok: true, errors: [], feedback: "Shown to the user." });
+  const bad = checkUiMarkupCode('<Card title="A">\n  <Text text={3} />\n</Card>', specs);
+  expect(bad.errors).toEqual(["line 2 <Text>.props.text: expected string, got number 3"]);
+  expect(bad.feedback).toBe("Not all of it is shown. Fix these and call show_ui again:\n- line 2 <Text>.props.text: expected string, got number 3");
+  expect(checkUiMarkupCode("", specs).ok).toBe(false);
 });

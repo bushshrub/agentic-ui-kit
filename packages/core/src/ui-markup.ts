@@ -338,29 +338,37 @@ export function checkUiMarkup(text: string, components: readonly UiComponentSpec
   const errors: string[] = [];
   blocks.forEach((block, n) => {
     const where = blocks.length > 1 ? `block ${n + 1}, ` : "";
-    const parsed = parseUiMarkup(block.source);
-    for (const e of parsed.errors) errors.push(where + e);
     if (!block.closed) errors.push(`${where}the block is not closed with \`\`\``);
-    else if (!parsed.complete) errors.push(`${where}some elements are not closed`);
-    if (!parsed.nodes.length) errors.push(`${where}no components in the block`);
-    const check = checkUiTree({ root: parsed.nodes, state: parsed.state }, components, {
-      where: (node, path) => {
-        const line = isNode(node) ? parsed.lineOf(node) : undefined;
-        const name = isNode(node) ? `<${node.component}>` : path;
-        return `${where}${line ? `line ${line} ` : ""}${name}`;
-      },
-    });
-    errors.push(...check.errors);
+    errors.push(...markupErrors(block.source, components, where, block.closed));
   });
   const ok = errors.length === 0;
   const feedback = ok
     ? ""
     : `The \`\`\`${language} block in your last reply did not fully show. Problems:\n` +
-      errors.slice(0, 20).map((e) => `- ${e}`).join("\n") +
-      (errors.length > 20 ? `\n- ...and ${errors.length - 20} more` : "") +
+      list(errors) +
       `\nWhen you next write UI, avoid these. If the user still needs it, write the block again, fixed.`;
   return { ok, errors, feedback };
 }
+
+function markupErrors(source: string, components: readonly UiComponentSpec[], where = "", closed = true): string[] {
+  const errors: string[] = [];
+  const parsed = parseUiMarkup(source);
+  for (const e of parsed.errors) errors.push(where + e);
+  if (closed && !parsed.complete) errors.push(`${where}some elements are not closed`);
+  if (!parsed.nodes.length) errors.push(`${where}no components`);
+  const check = checkUiTree({ root: parsed.nodes, state: parsed.state }, components, {
+    where: (node, path) => {
+      const line = isNode(node) ? parsed.lineOf(node) : undefined;
+      const name = isNode(node) ? `<${node.component}>` : path;
+      return `${where}${line ? `line ${line} ` : ""}${name}`;
+    },
+  });
+  errors.push(...check.errors);
+  return errors;
+}
+
+const list = (errors: string[]) =>
+  errors.slice(0, 20).map((e) => `- ${e}`).join("\n") + (errors.length > 20 ? `\n- ...and ${errors.length - 20} more` : "");
 
 const isNode = (v: unknown): v is UiNode => typeof v === "object" && v !== null && !Array.isArray(v) && typeof (v as UiNode).component === "string";
 
@@ -382,11 +390,8 @@ function hint(schema: Record<string, unknown> | undefined, inner = false): strin
   return wrap("value");
 }
 
-/**
- * A suggested system-prompt section that teaches the model to write ```ui blocks with your components.
- * It only depends on the components, so it stays byte-stable across turns (good for the prompt cache).
- */
-export function uiMarkupGuide(components: readonly UiComponentSpec[], language = uiMarkupLanguage): string {
+// The component list and writing rules, shared by the tool description and the in-reply guide.
+function markupRules(components: readonly UiComponentSpec[]): string {
   const line = (c: UiComponentSpec) => {
     const props = (c.props?.properties ?? {}) as Record<string, Record<string, unknown>>;
     const req = new Set((c.props?.required as string[]) ?? []);
@@ -394,9 +399,7 @@ export function uiMarkupGuide(components: readonly UiComponentSpec[], language =
     const tag = `<${c.name}${attrs.length ? " " + attrs.join(" ") : ""}${c.children ? `>…</${c.name}>` : " />"}`;
     return `- ${tag}\n  ${c.description}`;
   };
-  return `## Interactive UI in your reply
-When a visual helps more than text (options to compare, a plan, a checklist, numbers at a glance), write a
-\`\`\`${language} fenced block in your reply. It holds JSX made of only these components:
+  return `Only these components exist:
 ${components.map(line).join("\n")}
 
 How to write it
@@ -406,6 +409,62 @@ How to write it
   {"action":"set","key":"k","value":…} changes local state; {"action":"open","url":"https://…"};
   {"action":"copy","text":"…"}.
 - Local state: start values on the first line, <State tab="overview" />; read one with attr={$state.tab}.
-- No JavaScript: no .map(), no variables, no functions. Write every element out.
+- No JavaScript: no .map(), no variables, no functions. Write every element out.`;
+}
+
+/** The suggested UI tool's name. */
+export const showUiToolName = "show_ui";
+
+/** Input of the suggested UI tool, as the model writes it. */
+export interface ShowUiInput {
+  markup: string;
+}
+
+/**
+ * A suggested tool for drawing UI from your components: the model passes JSX as a string, which streams
+ * into the chat element by element (draw it with `uiMarkupToolView`), and the harness answers the call with
+ * `checkUiMarkupCode(...).feedback`. Built only from the components, so it is byte-stable across turns.
+ */
+export function showUiTool(components: readonly UiComponentSpec[], name = showUiToolName) {
+  return {
+    name,
+    description:
+      "Show interactive UI inline in your reply, built from the app's components: options to compare, a plan, " +
+      "a checklist, numbers at a glance. Write JSX in `markup`. Keep explaining in text around it; one call per " +
+      "answer unless the user asks for more.\n\n" +
+      markupRules(components),
+    inputSchema: {
+      type: "object",
+      properties: { markup: { type: "string", description: 'JSX of the components above, e.g. <Card title="Plan"><Metric label="Total" value="€184" /></Card>' } },
+      required: ["markup"],
+    },
+  } as const;
+}
+
+/**
+ * Checks the markup of one UI tool call. Its `feedback` is the tool result to return: "Shown to the user." or
+ * what to fix, by line and component.
+ */
+export function checkUiMarkupCode(markup: unknown, components: readonly UiComponentSpec[], toolName = showUiToolName): UiMarkupCheck {
+  if (typeof markup !== "string" || !markup.trim()) {
+    return { ok: false, errors: ["markup: required, JSX of the components"], feedback: `Not shown: markup is empty. Call ${toolName} again with JSX in markup.` };
+  }
+  const errors = markupErrors(markup, components);
+  const ok = errors.length === 0;
+  const feedback = ok
+    ? "Shown to the user."
+    : `Not all of it is shown. Fix these and call ${toolName} again:\n` + list(errors);
+  return { ok, errors, feedback };
+}
+
+/**
+ * A suggested system-prompt section that teaches the model to write ```ui blocks in its reply text, if you'd
+ * rather not use a tool. It only depends on the components, so it stays byte-stable across turns.
+ */
+export function uiMarkupGuide(components: readonly UiComponentSpec[], language = uiMarkupLanguage): string {
+  return `## Interactive UI in your reply
+When a visual helps more than text (options to compare, a plan, a checklist, numbers at a glance), write a
+\`\`\`${language} fenced block in your reply. It holds JSX of the app's components.
+${markupRules(components)}
 - Keep explaining in text around the block. One block per answer, unless the user asks for more.`;
 }

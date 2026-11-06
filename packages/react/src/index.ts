@@ -63,7 +63,7 @@ export {
 export type { ToolView, ToolViews, SearchResult, ChatTool } from "./components/tools";
 export { WidgetFrame, WidgetHostProvider, useWidgetHost, WidgetPartView, widgetToolView, readVisualizeInput, widgetCsp, intersectAllow, openInNewTab, WIDGET_MAX_HEIGHT } from "./components/widget-frame";
 export type { WidgetFrameProps, WidgetToolInput, WidgetHost, WidgetAllow, WidgetResource } from "./components/widget-frame";
-export { UiComponentsProvider, UiTree, UiMarkupBlock, useUiMarkupLanguage, useUiAction, useUiState, htmlComponent, uiTreeToolView, readTreeInput } from "./components/ui-tree";
+export { UiComponentsProvider, UiTree, UiMarkupBlock, useUiMarkupLanguage, useUiAction, useUiState, htmlComponent, uiTreeToolView, uiMarkupToolView, readTreeInput } from "./components/ui-tree";
 export type { UiComponent, UiStateStore, UiTreeProps } from "./components/ui-tree";
 export { ApprovalCard } from "./components/approval-card";
 export type { ApprovalCardProps } from "./components/approval-card";

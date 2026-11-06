@@ -180,6 +180,23 @@ export function UiMarkupBlock({ id, source, streaming = false }: { id: string; s
   return <UiTree id={id} root={nodes} state={state} streaming={streaming} />;
 }
 
+/**
+ * A tool view that draws a call's (streaming) JSX markup with your registered components, for whatever tool
+ * your harness uses; the suggested one is core's `showUiTool`. Register it under your tool's name:
+ * `{ show_ui: uiMarkupToolView() }`. `read` maps your tool's input to the markup; the default reads `markup`.
+ */
+export function uiMarkupToolView(read: (input: unknown) => string | undefined = (input) => {
+  const markup = (input as { markup?: unknown } | undefined)?.markup;
+  return typeof markup === "string" ? markup : undefined;
+}) {
+  function UiMarkupToolBlock({ part }: { part: ToolCallPart }) {
+    const markup = read(part.input ?? part.partialInput);
+    if (!markup) return null;
+    return <UiMarkupBlock id={part.id} source={markup} streaming={part.status === "streaming" || part.status === "input"} />;
+  }
+  return { Block: UiMarkupToolBlock };
+}
+
 /** Reads `{ root, state }`. Models sometimes send `root` or `state` as a JSON string; those are parsed too. */
 export function readTreeInput(input: unknown): { root?: unknown; state?: Record<string, unknown> } {
   const i = (input ?? {}) as Partial<Record<keyof RenderUiInput, unknown>>;

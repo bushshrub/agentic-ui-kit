@@ -137,3 +137,21 @@ it("draws ```ui blocks in a reply, each with its own state, and code without a p
   const { container } = render(<Markdown partId="m1">{text}</Markdown>);
   expect(container.textContent).toContain("<Text text={$state.picked} />");
 });
+
+it("draws a UI tool call's markup while its input streams", async () => {
+  const { uiMarkupToolView } = await import("./ui-tree");
+  const { Block } = uiMarkupToolView();
+  const part = (partialInput: unknown, status: "input" | "done") => ({ type: "tool_call", id: "c1", name: "show_ui", status, partialInput }) as never;
+  const { rerender } = render(
+    <UiComponentsProvider components={components}>
+      <Block part={part({ markup: '<Stack><Text text="first" /><Text text="sec' }, "input")} />
+    </UiComponentsProvider>,
+  );
+  expect(screen.getByTestId("stack").textContent).toBe("first");
+  rerender(
+    <UiComponentsProvider components={components}>
+      <Block part={part({ markup: '<Stack><Text text="first" /><Text text="second" /></Stack>' }, "done")} />
+    </UiComponentsProvider>,
+  );
+  expect(screen.getByTestId("stack").textContent).toBe("firstsecond");
+});

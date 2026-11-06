@@ -1,5 +1,5 @@
-import { defaultToolViews, uiTreeToolView, widgetToolView, type ToolViews } from "agentic-ui-kit";
-import { renderUiToolName, visualizeTool } from "agentic-ui-kit/core";
+import { defaultToolViews, uiMarkupToolView, uiTreeToolView, widgetToolView, type ToolViews } from "agentic-ui-kit";
+import { renderUiToolName, showUiToolName, visualizeTool } from "agentic-ui-kit/core";
 
 /**
  * The playground's harness uses the kit's suggested tools, so it maps those names to the kit's views. A host
@@ -8,5 +8,6 @@ import { renderUiToolName, visualizeTool } from "agentic-ui-kit/core";
 export const visualViews: ToolViews = {
   ...defaultToolViews,
   [visualizeTool.name]: widgetToolView(),
+  [showUiToolName]: uiMarkupToolView(),
   [renderUiToolName]: uiTreeToolView(),
 };
