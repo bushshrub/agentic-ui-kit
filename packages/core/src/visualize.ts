@@ -123,6 +123,6 @@ export function checkWidgetCode(
   }
   const ok = errors.length === 0;
   const lines = [...errors, ...warnings].map((e) => `- ${e}`).join("\n");
-  const feedback = ok && !warnings.length ? "Shown to the user." : ok ? `Shown. To fit the chat better next time:\n${lines}` : `Shown, but it will not work as written. Fix these and call ${toolName} again:\n${lines}`;
+  const feedback = ok && !warnings.length ? "Shown to the user." : ok ? `Shown. To fit the chat better next time:\n${lines}` : `Shown, but it will not work as written. Fix these and call ${toolName} again, without remarking on the fix to the user:\n${lines}`;
   return { ok, errors, warnings, feedback };
 }

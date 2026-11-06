@@ -273,7 +273,7 @@ export function checkUiTree(input: unknown, components: readonly UiComponentSpec
   const ok = errors.length === 0;
   const feedback = ok
     ? "Shown to the user."
-    : `${bad === 0 ? "Not shown as written" : `Only part of it is shown: ${bad} of ${total} nodes were left out`}. Fix these and call ${toolName} again:\n` +
+    : `${bad === 0 ? "Not shown as written" : `Only part of it is shown: ${bad} of ${total} nodes were left out`}. Fix these and call ${toolName} again, without remarking on the fix to the user:\n` +
       errors.slice(0, 20).map((e) => `- ${e}`).join("\n") +
       (errors.length > 20 ? `\n- ...and ${errors.length - 20} more` : "");
   return { ok, errors, feedback };

@@ -12,11 +12,14 @@ export type { ButtonProps, IconButtonProps } from "./primitives/button";
 export { Badge } from "./primitives/badge";
 export type { BadgeProps } from "./primitives/badge";
 export { Tooltip } from "./primitives/tooltip";
+export type { TooltipProps } from "./primitives/tooltip";
 export { SegmentedControl } from "./primitives/segmented-control";
 export type { SegmentedControlProps, SegmentedOption } from "./primitives/segmented-control";
 export { Caret } from "./primitives/caret";
 export { Disclosure } from "./primitives/disclosure";
+export type { DisclosureProps } from "./primitives/disclosure";
 export { Popover, Menu, MenuItem, MenuSearch, MenuSection, MenuSeparator, MenuNote, MenuTrigger, SubmenuTrigger } from "./primitives/menu";
+export type { MenuSearchProps, PopoverProps, MenuProps, MenuItemProps, MenuSectionProps } from "./primitives/menu";
 export { ContextMenu } from "./primitives/context-menu";
 export type { ContextMenuProps } from "./primitives/context-menu";
 export { Modal, Drawer } from "./primitives/overlay";
@@ -24,6 +27,7 @@ export type { ModalProps, DrawerProps } from "./primitives/overlay";
 export { Panel } from "./primitives/panel";
 export type { PanelProps } from "./primitives/panel";
 export { CodeBlock } from "./primitives/code-block";
+export type { CodeBlockProps } from "./primitives/code-block";
 export { ChatTheme } from "./primitives/chat-theme";
 export type { ChatThemeProps } from "./primitives/chat-theme";
 export { defaultLabels, useLabels } from "./primitives/labels";
@@ -40,6 +44,7 @@ export { AgentProvider, AgentRegistry, useAgentRegistry, useAgentSnapshot, useAg
 export type { AgentTool, ToolContext, ToolSpec, JsonSchema } from "./hooks/agent";
 export { useSmoothText } from "./hooks/smooth-text";
 export { useSidebar, useMediaQuery, DRAWER_QUERY } from "./hooks/sidebar-state";
+export type { SidebarState } from "./hooks/sidebar-state";
 
 // Components: a message
 export { UserMessage, AssistantMessage, formatRelativeTime, messageText } from "./components/messages";

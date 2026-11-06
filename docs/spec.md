@@ -335,6 +335,16 @@ Each slice ends with tests passing and the states visible in the playground.
   (List items as plain strings, `{"$state":"tab"}` without outer braces, unknown variants), so the checks
   apply as is. Latency is the model's reasoning (2.9-4.9k reasoning tokens before the first text on the
   bigger asks), not the format.
+- From slopbot (after 0.3.0):
+  - Core without React: `agentic-ui-kit/core` pulls in React and Streamdown (161 packages in a bot image).
+    Publish core on its own, or make React/Streamdown optional peers.
+  - Export a ready component set (specs + renders: Stack, Card, Text, Metric, List, Button…) from the kit
+    so hosts don't copy the playground's lib/ui-components.tsx.
+  - UiTree state key: let the host pass a stable key (e.g. its tool activity id) when live and saved part
+    ids differ, so `persist` works.
+- e2e run 3 (qwen, 6 prompts each): show_ui chosen 3/6 vs ```ui 1/6; feedback fixed the one error. Later:
+  a failed show_ui call stays visible next to its fix; consider hiding a call whose result was an error
+  once a later call succeeds.
 - From slopbot's port (strict CSP `script-src 'self'; style-src 'self'`):
   - Shiki: use its JS regex engine (or an option) so 'wasm-unsafe-eval' isn't needed; warn once when
     highlighting fails instead of silently showing plain code. Shiki's inline token styles need
@@ -344,7 +354,6 @@ Each slice ends with tests passing and the states visible in the playground.
     data: in font-src).
   - Without Tailwind, the ChatTheme wrapper has no height and ChatView collapses silently. Give the wrapper a
     usable default (or a documented class) and say so in the README.
-  - Check `**bold**` in the serif message font (650 weight with a variable Source Serif 4).
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").

@@ -453,7 +453,7 @@ export function checkUiMarkupCode(markup: unknown, components: readonly UiCompon
   const ok = errors.length === 0;
   const feedback = ok
     ? "Shown to the user."
-    : `Not all of it is shown. Fix these and call ${toolName} again:\n` + list(errors);
+    : `Not all of it is shown. Fix these and call ${toolName} again, without remarking on the fix to the user:\n` + list(errors);
   return { ok, errors, feedback };
 }
 
