@@ -187,3 +187,10 @@ it("passes a widget's script errors to the host", async () => {
   await fromWindow(window, { method: "notifications/message", params: { level: "error", data: "forged" } });
   expect(onError.mock.calls).toEqual([["x is not defined (line 3)"]]);
 });
+
+it("the frame's boot script parses", () => {
+  const { container } = render(<WidgetFrame html="<p>hi</p>" />);
+  const doc = frameOf(container).getAttribute("srcdoc")!;
+  const boot = [...doc.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)![1]!;
+  expect(() => new Function(boot)).not.toThrow();
+});

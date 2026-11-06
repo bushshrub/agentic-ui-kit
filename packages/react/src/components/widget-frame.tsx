@@ -165,7 +165,7 @@ const BOOT = `(() => {
     const h = Math.ceil(root.getBoundingClientRect().height);
     if (h !== last) { last = h; post("ui/notifications/size-changed", { height: h }); }
     // The frame grows to fit, a moment behind; only content past the cap gets a scrollbar.
-    document.documentElement.style.overflowY = h > ${"${WIDGET_MAX_HEIGHT}"} ? "auto" : "hidden";
+    document.documentElement.style.overflowY = h > ${WIDGET_MAX_HEIGHT} ? "auto" : "hidden";
   }).observe(root);
   const seen = new Set();
   const report = (text) => { if (!seen.has(text) && seen.size < 10) { seen.add(text); post("notifications/message", { level: "error", logger: "widget", data: text }); } };
