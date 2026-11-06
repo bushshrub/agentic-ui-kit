@@ -194,3 +194,14 @@ it("the frame's boot script parses", () => {
   const boot = [...doc.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)![1]!;
   expect(() => new Function(boot)).not.toThrow();
 });
+
+it("with a frameUrl, loads that page and sends it the document when it is ready", async () => {
+  const { widgetLoaderMessages } = await import("@agentic-ui-kit/core");
+  const { container } = render(<WidgetFrame html="<p>hi</p>" frameUrl="/widget-frame.html" />);
+  const frame = frameOf(container);
+  expect(frame.getAttribute("src")).toBe("/widget-frame.html");
+  expect(frame.hasAttribute("srcdoc")).toBe(false);
+  const post = vi.spyOn(frame.contentWindow!, "postMessage");
+  window.dispatchEvent(new MessageEvent("message", { data: { type: widgetLoaderMessages.ready }, source: frame.contentWindow }));
+  expect(post).toHaveBeenCalledWith(expect.objectContaining({ type: widgetLoaderMessages.document, html: expect.stringContaining("Content-Security-Policy") }), "*");
+});

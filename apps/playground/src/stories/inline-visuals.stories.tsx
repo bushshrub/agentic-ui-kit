@@ -66,7 +66,7 @@ function assistant(parent: string, demo: Demo, html: string, streaming: boolean)
 }
 
 /** Streams the widget's markup in chunks, as the model would write it, unless `instant`. */
-function VisualChat({ demo, instant = false, readOnly = false }: { demo: Demo; instant?: boolean; readOnly?: boolean }) {
+function VisualChat({ demo, instant = false, readOnly = false, frameUrl }: { demo: Demo; instant?: boolean; readOnly?: boolean; frameUrl?: string }) {
   const [ask] = useState(() => userMessage(demo.ask, null));
   const [shown, setShown] = useState(instant ? demo.html.length : 0);
   const [extra, setExtra] = useState<Message[]>([]);
@@ -92,7 +92,7 @@ function VisualChat({ demo, instant = false, readOnly = false }: { demo: Demo; i
           messages={messages}
           busy={streaming}
           onSend={prompt}
-          widgets={{ ...(demo.allow && { allow: demo.allow }), ...(readOnly && { onPrompt: undefined }) }}
+          widgets={{ ...(demo.allow && { allow: demo.allow }), ...(readOnly && { onPrompt: undefined }), ...(frameUrl && { frameUrl }) }}
         />
       </ToolViewsProvider>
     </div>
@@ -110,6 +110,13 @@ export const WorkoutPlanner: StoryObj = { render: () => <VisualChat demo={demos.
 
 /** The same planner, shown at once instead of streamed. */
 export const WorkoutPlannerInstant: StoryObj = { render: () => <VisualChat demo={demos.workout} instant /> };
+
+/**
+ * Widgets loaded from a page the host serves (`widgets.frameUrl`, here the playground's /widget-frame.html,
+ * a copy of core's `widgetFrameLoader`) instead of srcdoc. For apps whose CSP blocks inline scripts: a
+ * srcdoc frame inherits that CSP and its scripts would not run; this frame gets its own.
+ */
+export const HostFramePage: StoryObj = { render: () => <VisualChat demo={demos.workout} frameUrl="./widget-frame.html" /> };
 
 /**
  * A `widget` part (html sent as part deltas instead of a tool call) in a shared, read-only transcript: the

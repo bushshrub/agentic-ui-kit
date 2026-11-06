@@ -47,9 +47,9 @@ export function ChatTranscript({
     ...(contentPadding && { "--chat-content-padding": contentPadding }),
   } as CSSProperties;
   const host = useMemo<WidgetHost>(() => {
-    const { allow, readResource } = { ...widgets };
+    const { allow, readResource, frameUrl } = { ...widgets };
     const onOpenLink = widgets && "onOpenLink" in widgets ? widgets.onOpenLink : openInNewTab;
-    return { ...(allow && { allow }), ...(onOpenLink && { onOpenLink }), ...(readResource && { readResource }) };
+    return { ...(allow && { allow }), ...(onOpenLink && { onOpenLink }), ...(readResource && { readResource }), ...(frameUrl && { frameUrl }) };
   }, [widgets]);
   return (
     <div data-chat-density={density} style={style} className={clsx("chat-view flex h-full min-h-0 flex-col bg-chat-bg text-chat-fg", className)}>

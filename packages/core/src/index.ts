@@ -5,6 +5,7 @@ export { toBlocks, isActivityPart } from "./blocks";
 export type { Block, ActivityPart } from "./blocks";
 export { readEventStream, formatEvent } from "./sse";
 export { parsePartialJson, salvageJson } from "./partial-json";
+export { widgetFrameLoader, widgetLoaderMessages } from "./widget-loader";
 export { replacesProperty, replacesGuide, replacedId } from "./replaces";
 export { visualizeTool, visualizeGuide, checkWidgetCode } from "./visualize";
 export type { VisualizeInput, WidgetCodeCheck } from "./visualize";

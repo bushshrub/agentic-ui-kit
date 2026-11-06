@@ -114,3 +114,10 @@ it("the drawing tools take replaces, and replacedId reads it", async () => {
   expect(replacedId({ replaces: "" })).toBeUndefined();
   expect(replacedId(undefined)).toBeUndefined();
 });
+
+it("the playground serves the current widget frame loader", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { widgetFrameLoader } = await import("./widget-loader");
+  const served = readFileSync(new URL("../../../apps/playground/public/widget-frame.html", import.meta.url), "utf8");
+  expect(served).toBe(widgetFrameLoader);
+});

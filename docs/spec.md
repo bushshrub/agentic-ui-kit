@@ -318,8 +318,6 @@ Each slice ends with tests passing and the states visible in the playground.
 12. Later: search, projects with instructions, share links, light theme, voice.
 
 ## Queued
-- WidgetHost.frameUrl: load widgets from a host-served frame page instead of srcdoc, so a strict host CSP
-  (no 'unsafe-inline') doesn't block widget scripts; srcdoc frames inherit the parent's CSP (slopbot).
 
 - The kit is only UI: harnesses bring their own tools and prompts. Tool definitions and the design guide are
   suggestions; views map any tool name/input shape (`widgetToolView(read)`, `uiTreeToolView(read)`).

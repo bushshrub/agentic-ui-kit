@@ -1,4 +1,4 @@
-import type { ToolCallPart, VisualizeInput, WidgetPart } from "@agentic-ui-kit/core";
+import { widgetLoaderMessages, type ToolCallPart, type VisualizeInput, type WidgetPart } from "@agentic-ui-kit/core";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLabels } from "../primitives/labels";
 
@@ -45,6 +45,11 @@ export interface WidgetHost {
    * fix the widget. `partId` is the widget part or tool call. Each message is reported once per widget.
    */
   onWidgetError?: ((error: { partId: string; message: string }) => void) | undefined;
+  /**
+   * Load widgets from this page (core's `widgetFrameLoader`, served by you) instead of `srcdoc`. Set it when
+   * your page's CSP blocks inline scripts: srcdoc frames inherit that CSP, so widget scripts would not run.
+   */
+  frameUrl?: string;
 }
 
 const WidgetHostContext = createContext<WidgetHost>({});
@@ -246,9 +251,12 @@ export function WidgetFrame({
   toolInput,
   toolResult,
   cancelled,
+  frameUrl: ownFrameUrl,
   className,
 }: WidgetFrameProps) {
   const labels = useLabels();
+  const hostFrameUrl = useWidgetHost().frameUrl;
+  const frameUrl = ownFrameUrl ?? hostFrameUrl;
   const frame = useRef<HTMLIFrameElement>(null);
   const host = useRef<HTMLElement>(null);
   const [ready, setReady] = useState(false);
@@ -268,8 +276,11 @@ export function WidgetFrame({
     [initial, policy, isDocument, isDocument && html],
   );
 
-  const latest = useRef({ onPrompt, onOpenLink, onCallTool, onError, policy, effective });
-  latest.current = { onPrompt, onOpenLink, onCallTool, onError, policy, effective };
+  const latest = useRef({ onPrompt, onOpenLink, onCallTool, onError, policy, effective, doc });
+  latest.current = { onPrompt, onOpenLink, onCallTool, onError, policy, effective, doc };
+  // With a frameUrl a new document needs a fresh loader page: the loader takes one document.
+  const generation = useRef({ doc, n: 0 });
+  if (generation.current.doc !== doc) generation.current = { doc, n: generation.current.n + 1 };
 
   const send = (message: object) => frame.current?.contentWindow?.postMessage({ jsonrpc: "2.0", ...message }, "*");
   const context = () => ({
@@ -302,6 +313,11 @@ export function WidgetFrame({
     const fail = (id: RpcMessage["id"], code: number, message: string) => id !== undefined && send({ id, error: { code, message } });
     const onMessage = async (e: MessageEvent) => {
       if (!frame.current || e.source !== frame.current.contentWindow) return;
+      if ((e.data as { type?: unknown } | null)?.type === widgetLoaderMessages.ready) {
+        const html = latest.current.doc;
+        if (html) frame.current.contentWindow?.postMessage({ type: widgetLoaderMessages.document, html }, "*");
+        return;
+      }
       const m = (e.data ?? {}) as RpcMessage;
       if (typeof m !== "object" || typeof m.method !== "string") return;
       const { onPrompt, onOpenLink, onCallTool, effective } = latest.current;
@@ -402,7 +418,8 @@ export function WidgetFrame({
           ref={frame}
           title={title ?? labels.widget}
           sandbox="allow-scripts"
-          srcDoc={doc}
+          key={frameUrl ? generation.current.n : "srcdoc"}
+          {...(frameUrl ? { src: frameUrl } : { srcDoc: doc })}
           style={{ height: height || (streaming ? 120 : 0), transition: "height 150ms ease-out" }}
           className="block w-full border-0 bg-transparent"
         />
