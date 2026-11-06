@@ -33,13 +33,16 @@ export interface ChatThemeProps {
 /**
  * Applies a chat theme to part of a page. Menus, tooltips and dialogs opened inside render into this
  * element instead of `<body>`, so they get the same theme. An app themed as a whole (variables on
- * `:root`) does not need it for colors, but still uses it for `codeThemes` and `motion`.
+ * `:root`) does not need it for colors, but still uses it for `codeThemes` and `motion`. The element is
+ * `height: 100%` of its parent by default (so `ChatView` has a height without Tailwind); a `className` such
+ * as `h-screen`, or a style rule of your own, replaces that.
  */
 export function ChatTheme({ theme, codeThemes, motion, labels, icons, children, className }: ChatThemeProps) {
   const portal = useRef<HTMLDivElement>(null);
   const getContainer = useCallback(() => portal.current, []);
   return (
     <div
+      data-chat-root=""
       data-chat-theme={theme}
       data-chat-motion={motion}
       className={clsx("bg-chat-bg font-chat-sans text-chat-fg", className)}

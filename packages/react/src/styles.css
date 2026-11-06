@@ -101,6 +101,12 @@
 }
 
 @layer base {
+  /* ChatTheme's wrapper fills its parent, so ChatView does not collapse in an app without Tailwind. Any
+     height class or style on the wrapper (the layer is lowest) wins. */
+  [data-chat-root] {
+    height: 100%;
+  }
+
   /* Default theme: claude.ai dark. */
   :root,
   [data-chat-theme="claude-dark"] {

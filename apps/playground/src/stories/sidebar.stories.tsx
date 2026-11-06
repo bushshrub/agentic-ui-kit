@@ -1,7 +1,7 @@
-import { Sidebar, SidebarItem, SidebarList, SidebarUser, IconButton } from "agentic-ui-kit";
+import { Menu, MenuItem, Sidebar, SidebarItem, SidebarList, SidebarUser, IconButton } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Inbox, MessageSquarePlus, MoreHorizontal, Search, Settings } from "lucide-react";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 
 /** The sidebar frame: header, nav items, a scrolling middle and a user footer. Collapsing needs `AppShell`. */
 const meta = {
@@ -76,5 +76,28 @@ export const InsideChildren: Story = {
         <SidebarItem icon={<Search />} label="Search" />
       </SidebarList>
     ),
+  },
+};
+
+/** `popoverProps` goes to the account menu's popover, e.g. `width: "trigger"` makes it as wide as the row. */
+export const UserMenuMatchingWidth: Story = {
+  args: {
+    footer: (
+      <SidebarUser
+        name="Ada Lovelace"
+        detail="Pro plan"
+        popoverProps={{ width: "trigger" }}
+        menu={
+          <Menu aria-label="Account">
+            <MenuItem>Settings</MenuItem>
+            <MenuItem>Log out</MenuItem>
+          </Menu>
+        }
+      />
+    ),
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Ada Lovelace/ }));
+    await expect(await within(document.body).findByRole("menuitem", { name: "Log out" })).toBeTruthy();
   },
 };

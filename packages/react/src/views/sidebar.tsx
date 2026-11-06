@@ -2,7 +2,7 @@ import { clsx } from "clsx";
 import { useIcons, IconSlot } from "../primitives/icons";
 import type { PointerEvent, ReactNode } from "react";
 import { Button as AriaButton, Link } from "react-aria-components";
-import { MenuTrigger, Popover } from "../primitives/menu";
+import { MenuTrigger, Popover, type PopoverProps } from "../primitives/menu";
 import { Tooltip } from "../primitives/tooltip";
 import { useSidebar } from "../hooks/sidebar-state";
 import { SidebarToggle } from "./app-shell";
@@ -154,6 +154,8 @@ export interface SidebarUserProps {
   avatarUrl?: string;
   /** Opens upward from the row, e.g. settings and log out. */
   menu?: ReactNode;
+  /** Passed to the menu's popover, e.g. `{ width: "trigger" }` to match the row's width, or a different `placement`. */
+  popoverProps?: Omit<PopoverProps, "children">;
 }
 
 const initials = (name: string) =>
@@ -164,7 +166,7 @@ const initials = (name: string) =>
     .join("");
 
 /** The account row at the bottom: avatar, name, plan, and a menu. */
-export function SidebarUser({ name, detail, avatarUrl, menu }: SidebarUserProps) {
+export function SidebarUser({ name, detail, avatarUrl, menu, popoverProps }: SidebarUserProps) {
   const icons = useIcons();
   const { collapsed } = useSidebar();
   const avatar = avatarUrl ? (
@@ -199,7 +201,7 @@ export function SidebarUser({ name, detail, avatarUrl, menu }: SidebarUserProps)
   return (
     <MenuTrigger>
       {button}
-      <Popover placement="top start">{menu}</Popover>
+      <Popover placement="top start" {...popoverProps}>{menu}</Popover>
     </MenuTrigger>
   );
 }

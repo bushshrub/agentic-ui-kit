@@ -1,7 +1,7 @@
-import { ChatList, ChatTitleMenu, type ChatListSection } from "agentic-ui-kit";
+import { AppShell, ChatList, ChatListRailButton, ChatTitleMenu, Sidebar, type ChatListSection } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useArgs } from "storybook/preview-api";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 
 const sections: ChatListSection[] = [
   { id: "pinned", title: "Pinned", items: [{ id: "ci", title: "Speeding up CI" }] },
@@ -62,5 +62,26 @@ export const DetailAndMuted: Story = {
         ],
       },
     ],
+  },
+};
+
+/**
+ * On the collapsed sidebar rail the list is hidden. `ChatListRailButton` goes in `Sidebar`'s `railActions`
+ * and opens the same list in a popover; picking a chat closes it.
+ */
+export const OnCollapsedRail: Story = {
+  decorators: [(Story) => <div className="h-[24rem] w-auto"><Story /></div>],
+  render: (args) => (
+    <AppShell
+      collapsed
+      sidebar={<Sidebar brand="Acme" railActions={<ChatListRailButton sections={args.sections} activeId={args.activeId} onSelect={args.onSelect} />}>{null}</Sidebar>}
+    >
+      <div className="p-4 text-chat-muted">Click the chats icon on the rail.</div>
+    </AppShell>
+  ),
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Chats" }));
+    await userEvent.click(await within(document.body).findByText("A short history of lighthouses"));
+    await expect(args.onSelect).toHaveBeenCalledWith("light");
   },
 };

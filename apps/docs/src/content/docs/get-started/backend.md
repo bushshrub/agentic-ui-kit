@@ -70,3 +70,6 @@ as the live run), the parts so far, then the rest as they are produced, ending w
 the reply from these events, replacing a trailing assistant message that is still streaming in
 `initialMessages` (such as an empty placeholder). If nothing is running, answer 404 and the hook ends quietly
 with no new message. Hosts with their own `Transport` implement `resume?(conversationId, signal)` the same way.
+
+Already have the whole history on your side, or watching many sessions at once? You don't need `useChat`: see
+[Bring your own messages](/custom-harness/bring-your-own-messages/).

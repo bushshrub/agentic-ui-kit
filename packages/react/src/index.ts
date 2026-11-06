@@ -112,8 +112,8 @@ export { ChatHeader, ChatTitleMenu } from "./components/chat-header";
 export type { ChatHeaderProps, ChatTitleMenuProps } from "./components/chat-header";
 export { ChatNotice } from "./components/chat-notice";
 export type { ChatNoticeProps } from "./components/chat-notice";
-export { ChatList } from "./components/chat-list";
-export type { ChatListProps, ChatListSection, ChatListItem, ChatSummary, ProjectSummary } from "./components/chat-list";
+export { ChatList, ChatListRailButton } from "./components/chat-list";
+export type { ChatListRailButtonProps, ChatListProps, ChatListSection, ChatListItem, ChatSummary, ProjectSummary } from "./components/chat-list";
 
 // Views
 export { ChatView, EmptyState } from "./views/chat-view";

@@ -1,11 +1,11 @@
 import { clsx } from "clsx";
 import { useIcons, IconSlot } from "../primitives/icons";
 import { useState, type ReactNode } from "react";
-import { Button as AriaButton, Disclosure, DisclosurePanel, Heading, Link } from "react-aria-components";
+import { Button as AriaButton, Dialog, Disclosure, DisclosurePanel, Heading, Link } from "react-aria-components";
 import { Badge } from "../primitives/badge";
 import { IconButton } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
-import { MenuTrigger, Popover } from "../primitives/menu";
+import { DialogTrigger, MenuTrigger, Popover, type PopoverProps } from "../primitives/menu";
 import { useSidebar } from "../hooks/sidebar-state";
 
 export interface ChatSummary {
@@ -110,6 +110,42 @@ export function ChatList({ sections, activeId, onSelect, rowMenu, className, ...
         ),
       )}
     </nav>
+  );
+}
+
+export interface ChatListRailButtonProps extends ChatListProps {
+  /** Accessible name and tooltip of the button. Default: the `chats` label. */
+  label?: string;
+  /** Passed to the popover, e.g. `{ placement: "right top" }` (the default). */
+  popoverProps?: Omit<PopoverProps, "children">;
+}
+
+/**
+ * An icon button that opens a `ChatList` in a popover, for `Sidebar`'s `railActions`: the list itself is
+ * hidden on the collapsed rail, so this keeps recent chats reachable. Picking a chat closes the popover.
+ */
+export function ChatListRailButton({ label, popoverProps, onSelect, className, ...list }: ChatListRailButtonProps) {
+  const icons = useIcons();
+  const labels = useLabels();
+  const name = label ?? labels.chats;
+  return (
+    <DialogTrigger>
+      <IconButton label={name}>{icons.chatList}</IconButton>
+      <Popover placement="right top" {...popoverProps}>
+        <Dialog aria-label={name} className="max-h-[70dvh] w-64 overflow-y-auto p-2 outline-none [scrollbar-width:thin]">
+          {({ close }) => (
+            <ChatList
+              {...list}
+              className={className}
+              onSelect={(id) => {
+                onSelect?.(id);
+                close();
+              }}
+            />
+          )}
+        </Dialog>
+      </Popover>
+    </DialogTrigger>
   );
 }
 

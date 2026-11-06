@@ -55,3 +55,36 @@ it("takes the theme's own background only when codeThemes.background is \"theme\
   const box = themed.container.querySelector<HTMLElement>("[data-chat-code-block]")!;
   expect(box.style.getPropertyValue("--shiki-dark-bg").toLowerCase()).toBe("#282a36");
 });
+
+it("highlights the common languages without WebAssembly (strict CSP)", async () => {
+  const wasm = globalThis.WebAssembly;
+  vi.stubGlobal("WebAssembly", undefined);
+  const samples: Record<string, string> = {
+    ts: "const x: number = 1;",
+    tsx: "const a = <div className='x'>{1}</div>;",
+    python: "def f(x):\n    return [i for i in x]",
+    bash: "echo \"$HOME\" | grep -i 'a'",
+    json: '{"a": [1, true, null]}',
+    rust: "fn main() { let x = 5; }",
+    go: "func main() { fmt.Println(1) }",
+    css: "a:hover { color: #fff; }",
+    html: "<div class=\"a\">hi</div>",
+    sql: "select * from t where a = 1;",
+    yaml: "a:\n  - b: 1",
+    markdown: "# Title\n\n- item `x`",
+    diff: "@@ -1 +1 @@\n-a\n+b",
+  };
+  try {
+    for (const [language, text] of Object.entries(samples)) {
+      const { container, unmount } = render(
+        <ChatTheme>
+          <CodeBlock language={language} code={text} />
+        </ChatTheme>,
+      );
+      await waitFor(() => expect(colors(container).length, language).toBeGreaterThan(0));
+      unmount();
+    }
+  } finally {
+    vi.stubGlobal("WebAssembly", wasm);
+  }
+});

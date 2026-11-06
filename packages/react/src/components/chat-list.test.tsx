@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { ChatList, type ChatListSection } from "./chat-list";
+import { ChatList, ChatListRailButton, type ChatListSection } from "./chat-list";
 
 afterEach(cleanup);
 
@@ -27,4 +27,14 @@ it("shows a row's detail and dims a muted row without an unread marker", () => {
   expect(screen.getByText("2h")).toBeTruthy();
   expect(screen.queryByRole("img", { name: "Unread" })).toBeNull();
   expect(screen.getByText("Beta").className).toContain("text-chat-muted");
+});
+
+it("opens the list from a rail button and closes it after a pick", () => {
+  const onSelect = vi.fn();
+  render(<ChatListRailButton sections={sections} onSelect={onSelect} />);
+  expect(screen.queryByText("Alpha")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Chats" }));
+  fireEvent.click(screen.getByRole("button", { name: "Alpha" }));
+  expect(onSelect).toHaveBeenCalledWith("a");
+  expect(screen.queryByText("Alpha")).toBeNull();
 });

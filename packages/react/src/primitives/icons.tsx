@@ -14,6 +14,7 @@ import {
   FolderPlus,
   Globe,
   Info,
+  MessageSquare,
   MoreHorizontal,
   PanelLeft,
   Pencil,
@@ -116,6 +117,8 @@ export interface ChatIcons {
   file: ReactNode;
   /** Remove an attachment. */
   remove: ReactNode;
+  /** The recent-chats button on the collapsed sidebar rail (`ChatListRailButton`). */
+  chatList: ReactNode;
   /**
    * Left of the thinking / tool-steps summary while the model works, e.g. your logo animating. None by
    * default.
@@ -165,6 +168,7 @@ export const defaultIcons: ChatIcons = {
   folderOpen: <FolderOpen />,
   file: <FileText />,
   remove: <X />,
+  chatList: <MessageSquare />,
 };
 
 const IconsContext = createContext<ChatIcons>(defaultIcons);
