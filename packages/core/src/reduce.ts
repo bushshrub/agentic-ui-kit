@@ -111,7 +111,7 @@ function applyFields(part: Part, fields: PartFields): Part {
     case "thinking":
       return { ...part, ...status, ...pick("title", "durationMs") };
     case "tool_call": {
-      const next = { ...part, ...status, ...pick("title", "subtitle", "durationMs", "input", "result", "data", "error") };
+      const next = { ...part, ...status, ...pick("title", "subtitle", "durationMs", "input", "result", "data", "error", "needsApproval") };
       // Past "input" the input is complete: parse it (or fail the call) and drop the partial view.
       return next.status === "input" || next.status === "streaming" ? next : withParsedInput(next);
     }

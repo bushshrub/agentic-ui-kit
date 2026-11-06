@@ -117,6 +117,16 @@ describe("client tools and continuations", () => {
     expect(awaitingToolCalls(m).map((p) => [p.id, p.input])).toEqual([["t1", { a: 1 }]]);
   });
 
+  it("lets a part.update ask for approval of a call that already started", () => {
+    const m = reduceEvents([
+      { type: "run.start", runId: "r", seq: 0, messageId: "m", parentId: "u", createdAt: "2026-01-01T00:00:00Z" },
+      { type: "part.start", runId: "r", seq: 1, part: { type: "tool_call", id: "t", name: "bash", status: "running", inputJson: '{"command":"rm x"}' } },
+      { type: "part.update", runId: "r", seq: 2, partId: "t", status: "awaiting", needsApproval: true },
+      { type: "run.end", runId: "r", seq: 3, status: "done" },
+    ])!;
+    expect(awaitingToolCalls(m).map((p) => [p.id, p.needsApproval])).toEqual([["t", true]]);
+  });
+
   it("cancels an awaiting call when the run is stopped", () => {
     expect(awaitingToolCalls(base("stopped"))).toEqual([]);
   });

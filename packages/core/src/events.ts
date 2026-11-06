@@ -50,6 +50,8 @@ export interface PartFields {
   data?: unknown;
   url?: string;
   resourceUri?: string;
+  /** Tool calls: ask the user before it runs, e.g. when an agent's permission request arrives after the call started. */
+  needsApproval?: boolean;
 }
 
 /** Sets fields while the part is still open, e.g. a tool call moving from input to running. */
