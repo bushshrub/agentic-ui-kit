@@ -181,10 +181,36 @@ chosen links in replies your way, e.g. a job link as a job row.
 
 ## Inline visuals
 
-Two ways for the model to draw something interactive in a reply. Both stream: they fill in as the model writes.
+The model can draw something interactive in its reply, and it fills in while the model writes. The kit is
+only the UI: your harness names the tools and writes the prompt; the kit suggests both and draws the result.
+Register the views under your tool names. Full guide: https://bushshrub.github.io/agentic-ui-kit/custom-harness/connecting-your-agent/
 
-**Sandboxed HTML.** Give the model `visualizeTool` and put `visualizeGuide` in its instructions (both from
-`agentic-ui-kit/core`). Its `show_widget` calls, and `widget` parts, render in a `WidgetFrame`: an iframe with
+**Your components (recommended).** Register components with a JSON Schema for their props (with zod:
+`z.toJSONSchema`). Give the model `showUiTool(specs)` from `agentic-ui-kit/core`: it passes JSX as a string,
+which the chat draws element by element as it streams. Answer each call with
+`checkUiMarkupCode(markup, specs).feedback`, so the model learns what to fix (line, component, allowed props).
+
+```tsx
+const components: UiComponent[] = [
+  { name: "Metric", description: "A key number with a label.", props: metricSchema, render: Metric },
+  { name: "Stack", description: "Children in a column.", children: true, render: Stack },
+];
+// server: tools: [showUiTool(components.map(({ render, ...spec }) => spec)), ...]
+<UiComponentsProvider components={components} persist={store}>
+  <ToolViewsProvider tools={{ ...defaultToolViews, show_ui: uiMarkupToolView() }}>
+    <ChatView {...chat} />
+  </ToolViewsProvider>
+</UiComponentsProvider>;
+```
+
+Inside a component, `useUiAction()` runs an action from its props (`uiActionSchema`: set a state key, send
+a message, open a URL, copy), and `useUiState()` reads and writes the widget's state. `persist` keeps each
+widget's state across reloads. Also available: ` ```ui ` blocks in reply text (`uiMarkupGuide`,
+`checkUiMarkup`) and JSON trees in a tool call (`renderUiTool`, `uiTreeToolView`, `checkUiTree`).
+
+**Sandboxed HTML.** For maps, charts and anything free-form: give the model `visualizeTool` and put
+`visualizeGuide` in its instructions, register `show_widget: widgetToolView()`, and answer calls with
+`checkWidgetCode(code, allow).feedback`. Widgets render in a `WidgetFrame`: an iframe with
 `sandbox="allow-scripts"` only and a CSP that blocks every request, themed with your `--chat-*` variables.
 The same frame hosts MCP App UIs (MCP Apps spec 2026-01-26: `ui/initialize`, tool input and result,
 `tools/call`); the kit never fetches anything itself, your `readResource` does.
@@ -195,32 +221,13 @@ The same frame hosts MCP App UIs (MCP Apps spec 2026-01-26: `ui/initialize`, too
   widgets={{
     allow: { resourceDomains: ["https://unpkg.com", "https://tile.openstreetmap.org"] }, // the most any widget may load
     onCallTool: (name, args) => mcp.callTool(name, args), // MCP App UIs; leave out to turn it off
+    onWidgetError: ({ partId, message }) => report(partId, message), // script errors, to send back to the model
   }}
 />
 ```
 
 A widget's `sendPrompt(text)` sends through `onSend`, and its links open in a new tab; set either callback to
 `undefined` to turn it off. `ChatTranscript` widgets cannot send messages or call tools.
-
-**Your components.** Register components with a JSON Schema for their props (with zod: `z.toJSONSchema`) and
-give the model `renderUiTool(specs)`, which describes them. Its `render_ui` calls are trees of your components;
-a node with an unknown component or props that don't fit renders nothing.
-
-```tsx
-const components: UiComponent[] = [
-  { name: "Metric", description: "A key number with a label.", props: metricSchema, render: Metric },
-  { name: "Stack", description: "Children in a column.", children: true, render: Stack },
-  htmlComponent, // optional: raw HTML in a WidgetFrame, for what your components can't show
-];
-// tools: [renderUiTool(components.map(({ render, ...spec }) => spec)), ...]
-<UiComponentsProvider components={components} persist={store}>
-  <ChatView {...chat} />
-</UiComponentsProvider>;
-```
-
-Inside a component, `useUiAction()` runs an action from its props (`uiActionSchema`: set a state key, send
-a message, open a URL, copy), and `useUiState()` reads and writes the widget's state; props read state with
-`{ "$state": key }`. `persist` keeps each widget's state across reloads.
 
 ## Theming
 
