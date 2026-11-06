@@ -328,9 +328,13 @@ Each slice ends with tests passing and the states visible in the playground.
   Keep the model's prompt cache: tools and instructions byte-stable, feedback only appended as tool results.
 - Later: let the model fix a visual with small edits instead of resending it (tokens): path patches for trees
   (the check's paths already name the node), find/replace for widget code, like coding agents' edit tools.
-- Storybook against a real model via a gitignored .env (see below).
-- Storybook against a real model: a gitignored .env in this repo (endpoint, key, model) so stories can talk to
-  a live model; keys never committed.
+- Live-model testing lives in ~/slop/llm-chat-ui, the reference app that uses the kit; Storybook stays scripted
+  (no .env, no model hookup here). The docs point to it as the worked example.
+- UI as JSX in the reply (```ui fenced block) instead of a render_ui tool call: probed with qwen3.8-flash-next,
+  3 of 3 fluent, streams element by element, no JSON-in-JSON escaping. The same prop mistakes as JSON remain
+  (List items as plain strings, `{"$state":"tab"}` without outer braces, unknown variants), so the checks
+  apply as is. Latency is the model's reasoning (2.9-4.9k reasoning tokens before the first text on the
+  bigger asks), not the format.
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").
