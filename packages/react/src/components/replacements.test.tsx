@@ -56,3 +56,13 @@ it("folds a visual updated in a later reply into a link to the update", () => {
   fireEvent.click(screen.getByRole("button", { name: "Updated below ↓" }));
   expect(scroll).toHaveBeenCalled();
 });
+
+it("matches replaces against an earlier visual's title when the model doesn't know the id", () => {
+  const titled = (id: string, text: string, title: string, replaces?: string): ToolCallPart => ({
+    ...call(id, text, replaces),
+    input: { text, title, ...(replaces && { replaces }) },
+  });
+  render(list([reply("a1", [titled("c1", "red curve", "normal_distribution")]), reply("a2", [titled("c2", "blue curve", "normal_distribution", "normal_distribution")])]));
+  expect(screen.queryByText("red curve")).toBeNull();
+  expect(screen.getByRole("button", { name: "Updated below ↓" })).toBeTruthy();
+});

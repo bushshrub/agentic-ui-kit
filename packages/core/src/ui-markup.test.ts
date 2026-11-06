@@ -114,3 +114,13 @@ it("the drawing tools take replaces, and replacedId reads it", async () => {
   expect(replacedId({ replaces: "" })).toBeUndefined();
   expect(replacedId(undefined)).toBeUndefined();
 });
+
+it("withCallId puts the id in the tool result; resolveReplaces falls back to titles", async () => {
+  const { withCallId, resolveReplaces } = await import("./index");
+  expect(withCallId("call_1", "Shown to the user.")).toBe("Drawn as call_1. Shown to the user.");
+  const ids = new Set(["call_1"]);
+  const titles = new Map([["gym_week", "call_1"]]);
+  expect(resolveReplaces("call_1", ids, titles)).toBe("call_1");
+  expect(resolveReplaces("gym_week", ids, titles)).toBe("call_1");
+  expect(resolveReplaces("made_up", ids, titles)).toBeUndefined();
+});

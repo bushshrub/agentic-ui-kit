@@ -1,4 +1,4 @@
-import { replacedId, type Message, type ToolCallPart } from "@agentic-ui-kit/core";
+import { replacedId, resolveReplaces, type Message, type ToolCallPart } from "@agentic-ui-kit/core";
 import { createContext, useContext, type ReactNode } from "react";
 import { Button } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
@@ -14,13 +14,36 @@ export const isReady = (p: ToolCallPart) => p.status !== "streaming" && p.status
 
 const callsOf = (m: Message) => m.parts.filter((p): p is ToolCallPart => p.type === "tool_call");
 const replaces = (p: ToolCallPart) => replacedId(p.input ?? p.partialInput);
+const titleOf = (p: ToolCallPart) => {
+  const t = ((p.input ?? p.partialInput) as { title?: unknown } | undefined)?.title;
+  return typeof t === "string" && t ? t : undefined;
+};
+
+/** Ids and titles of the calls seen so far, to resolve `replaces` (an id, or a title as a fallback). */
+function seen() {
+  const ids = new Set<string>();
+  const titles = new Map<string, string>();
+  return {
+    resolve: (call: ToolCallPart) => {
+      const r = replaces(call);
+      return r === undefined ? undefined : resolveReplaces(r, ids, titles);
+    },
+    add: (call: ToolCallPart) => {
+      ids.add(call.id);
+      const t = titleOf(call);
+      if (t) titles.set(t, call.id);
+    },
+  };
+}
 
 /** One reply's chains: each call's first call (where the chain is drawn) and each first call's chain, in order. */
 export function chainsOf(message: Message) {
   const first = new Map<string, string>();
   const chains = new Map<string, ToolCallPart[]>();
+  const known = seen();
   for (const call of callsOf(message)) {
-    const r = replaces(call);
+    const r = known.resolve(call);
+    known.add(call);
     const root = r !== undefined && first.has(r) ? first.get(r)! : call.id;
     first.set(call.id, root);
     chains.set(root, [...(chains.get(root) ?? []), call]);
@@ -31,13 +54,17 @@ export function chainsOf(message: Message) {
 /** Calls replaced by a finished call in a later reply: replaced id → the newest such call. */
 export function laterReplacements(messages: readonly Message[]): Map<string, ToolCallPart> {
   const later = new Map<string, ToolCallPart>();
+  const known = seen();
   for (const m of messages) {
     if (m.role !== "assistant") continue;
-    const own = new Set(callsOf(m).map((c) => c.id));
-    for (const call of callsOf(m)) {
-      const r = replaces(call);
+    const calls = callsOf(m);
+    const own = new Set(calls.map((c) => c.id));
+    // Resolve against earlier replies only; this reply's own replacements are its chains.
+    for (const call of calls) {
+      const r = known.resolve(call);
       if (r !== undefined && !own.has(r) && isReady(call)) later.set(r, call);
     }
+    calls.forEach(known.add);
   }
   return later;
 }

@@ -45,7 +45,10 @@ the user asks to change a visual. The kit then:
 - **later reply** ("make the line thinner"): draws the new visual in the new reply and folds the old one
   into an "Updated below ↓" link that scrolls to it.
 
-The model refers to its own call ids, so send the history back with the tool call ids intact. Warning-only
+The model refers to its own call ids, so send the history back with the tool call ids intact. Many chat
+templates (Qwen's, for one) don't show tool call ids to the model at all, so put the id in the tool result
+too: `withCallId(call.id, feedback)` starts it with "Drawn as <id>.". If the model passes a visual's `title`
+instead of its id, the kit matches the latest visual with that title. Warning-only
 feedback (hard-coded colors) says the widget works and not to redraw it. Your own drawing tool can take part
 too: add `replacesProperty` from agentic-ui-kit/core to its input schema and `replacesGuide` to its description.
 
