@@ -234,19 +234,57 @@ title          { conversationId, title }                      // auto title afte
 - `runs` (id, message_id, status, started_at, ended_at)
 - `run_events` (run_id, seq, event jsonb); pruned some time after the run ends.
 
-## Visualize
+## Visualize (inline visuals)
 
-The model can return interactive visuals inline in a reply, like claude.ai's (sliders, a plotted
-distribution, live numbers).
+Interactive visuals inline in a reply. The kit renders what the backend passes in; it is not an MCP client and
+never fetches anything for a widget. Two kinds, both built:
 
-- `WidgetFrame` renders in an iframe with `sandbox="allow-scripts"` and no same-origin access. It passes
-  the theme variables in, resizes to the content height, and talks to the page only over `postMessage`.
-- Server side, two sources produce a `widget` part:
-  1. A built-in `visualize` tool: the model writes self-contained HTML/JS/SVG as the tool input; the UI
-     renders it from the input as it streams in.
-  2. MCP Apps: an MCP tool that returns a UI resource renders the same way, so third-party MCP servers with
-     UIs work without extra code.
-- Check the current MCP Apps spec (Context7 / modelcontextprotocol docs) before building this slice.
+### 1. Sandboxed HTML: `WidgetFrame` (model-written HTML, MCP Apps)
+Prototype: apps/playground/src/lib/widget-frame.tsx, stories "Prototypes/Inline visuals" (map, calendar,
+workout planner; widgets in apps/playground/src/widgets/*.html). Move it into the kit (components layer) and
+render `widget` parts with it by default (today a widget part renders nothing unless renderPart handles it).
+- Fixed on purpose: iframe `sandbox="allow-scripts"` only (opaque origin), `srcdoc`; a CSP meta tag with
+  `default-src 'none'`, scripts/styles inline only, `connect-src 'none'`, `frame-src 'none'`, `base-uri 'none'`,
+  `form-action 'none'`. Messages from the frame are accepted only when `event.source` is that frame.
+- Theme: the --chat-* variables computed where the frame sits are copied into the frame's :root, with
+  color-scheme. TODO beyond the prototype: re-send on theme change (MCP Apps host-context-changed).
+- Size: the frame reports its content height (ResizeObserver); the host caps it (prototype: 2000px).
+- Streaming: while the part streams, the markup so far is set as innerHTML (scripts inert); when done, the full
+  markup is set once and scripts run in order, awaiting each external script's load. A rotating loading line
+  (the tool's `loading_messages`) shows while it streams.
+- Protocol (MCP Apps names, JSON-RPC 2.0 over postMessage): frame -> host `ui/notifications/initialized`,
+  `ui/notifications/size-changed {height}`, `ui/message {role:"user", content:[{type:"text",text}]}` (the
+  widget's global `sendPrompt(text)`), `ui/open-link {url}` (global `openLink(url)`, http(s) only);
+  host -> frame `ui/notifications/tool-input-partial` and `ui/notifications/tool-input`
+  `{arguments:{widget_code}}`. For real MCP App UIs also implement `ui/initialize` (host context, theme),
+  `tool-result`, `tool-cancelled`, and optional `tools/call` (spec 2026-01-26; check Context7
+  /modelcontextprotocol/ext-apps before building).
+- Host API: `allow` (the most a widget may load: `resourceDomains`, `connectDomains`; a widget's own request
+  from MCP `_meta.ui.csp` is intersected with it, never exceeds it), `onPrompt`, `onOpenLink`, `onCallTool`.
+  A callback left out turns that ability off (a shared ChatTranscript passes no onPrompt).
+- Visualize preset: `agentic-ui-kit/core` exports the tool definition (`show_widget`-like: `widget_code`
+  string required, HTML fragment or <svg>; `title` snake_case; `loading_messages` 1-4 short strings) and a
+  design-guide text for the model (the --chat-* variables, transparent background, no top-level padding,
+  fragments not documents, prefer local state over round trips, and: set apart what you added or changed from
+  what was already there, e.g. accent + a "New" tag with existing data quiet). The kit's view for that tool
+  feeds the streaming `widget_code` into WidgetFrame.
+
+### 2. Host-registered components: trusted, themed visuals the model composes
+Idea from Open Intelligent UI / OpenUI (github.com/thesysdev/open-intelligent-ui, thesysdev/openui): the
+model writes a small tree of components the host registers, instead of HTML. jaa-v2's cards (job rows, a
+profile diff with Apply/Undo) are this kind: trusted React from the app, reading data the model doesn't see,
+calling the app's own API.
+- Host registers components with a schema (zod or JSON Schema) and a description; the kit generates the
+  prompt/tool description from the registry.
+- A "render" tool whose input is the tree; the kit already parses partial tool input while it streams
+  (`partialInput`), so the tree renders progressively. Unknown components or bad props render nothing for
+  that node (validate, don't crash).
+- Actions (fixed set, from OpenUI): set local widget state, send a message to the assistant, open a URL,
+  copy to clipboard. Prefer local state over round trips. Optional per-widget state the host can persist.
+- Raw HTML inside a tree only through a WidgetFrame node (the escape hatch, like OpenUI's HtmlView).
+- Smaller gaps for trusted tool visuals (jaa-v2): a card under the tool's activity row (today `Block`
+  replaces the row); display data on a tool call separate from the result the model sees (jaa's `data`);
+  a hook into Markdown rendering for links (jaa turns job links into rows).
 
 ## Build order
 
@@ -270,9 +308,7 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
-- Inline visuals: prototype in the playground ("Prototypes/Inline visuals": map, calendar, workout planner;
-  apps/playground/src/lib/widget-frame.tsx). Design guide for model-written widgets must say: set apart what
-  you added or changed from what was already there (accent + a "New" tag; existing data quiet).
+- Build inline visuals: both kinds in "Visualize (inline visuals)" above.
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").
