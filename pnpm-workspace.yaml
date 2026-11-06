@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - apps/*
+  - examples/*
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true
@@ -14,3 +15,4 @@ minimumReleaseAgeExclude:
   - storybook@10.6.6
   - vite@8.3.6
   - '@storybook/addon-a11y@10.6.6'
+  - '@agentclientprotocol/claude-agent-acp@0.101.0'

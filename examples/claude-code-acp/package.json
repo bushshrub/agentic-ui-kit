@@ -1,0 +1,28 @@
+{
+  "name": "example-claude-code-acp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server/main.ts",
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@agentclientprotocol/claude-agent-acp": "0.101.0",
+    "@agentclientprotocol/sdk": "2.4.0",
+    "agentic-ui-kit": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.4",
+    "@types/node": "*",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "6.2.1",
+    "tailwindcss": "4.3.4",
+    "tsx": "*",
+    "vite": "8.3.6",
+    "vitest": "*"
+  }
+}

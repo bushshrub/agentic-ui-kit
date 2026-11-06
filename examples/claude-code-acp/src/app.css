@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "agentic-ui-kit/tailwind.css";
+@source "./";
+
+html, body { margin: 0; background: var(--chat-bg); color-scheme: dark; }
