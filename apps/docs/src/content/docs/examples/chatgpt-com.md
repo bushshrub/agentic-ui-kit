@@ -23,6 +23,11 @@ example is `apps/playground/src/stories/chatgpt.stories.tsx`.
   Upgrade plus a temporary-chat button go in `actions`.
 - **Composer:** `variant: "compact"` makes it one row. `+` goes in `leading`, and a Think toggle and a mic
   go in `trailing`.
+- **`+` menu:** `AttachButton` takes `icon`, `className` (here a ringed circle) and `menuClassName` (here a
+  width that spans the composer). Each `MenuItem` gets `descriptionPlacement="beside"`, which puts
+  "Upload from computer" on the same line as "Add photos & files".
+- **Message actions:** `onReadAloud` adds read aloud. `messageActions={{ time: false, extra: (m) => … }}`
+  hides the time and adds Share and a "…" menu after the kit's buttons.
 - **Empty state:** the greeting "What are you working on?" with no icon.
 
 ```tsx

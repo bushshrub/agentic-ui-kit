@@ -84,6 +84,8 @@ export interface MenuItemProps extends Omit<AriaMenuItemProps, "className" | "ch
   icon?: ReactNode;
   /** Second line under the label ("For complex work and everyday tasks"). */
   description?: ReactNode;
+  /** "below" (default) puts the description under the label; "beside" puts it after it on one line. */
+  descriptionPlacement?: "below" | "beside";
   /** Right-aligned detail: the current value of a submenu ("Medium") or a badge. */
   detail?: ReactNode;
   /** Keyboard shortcut shown on the right ("⌘U", "P"). */
@@ -93,7 +95,7 @@ export interface MenuItemProps extends Omit<AriaMenuItemProps, "className" | "ch
   className?: string;
 }
 
-export function MenuItem({ children, icon, description, detail, shortcut, tone = "default", className, ...props }: MenuItemProps) {
+export function MenuItem({ children, icon, description, descriptionPlacement = "below", detail, shortcut, tone = "default", className, ...props }: MenuItemProps) {
   const icons = useIcons();
   const textValue = props.textValue ?? (typeof children === "string" ? children : undefined);
   return (
@@ -114,12 +116,18 @@ export function MenuItem({ children, icon, description, detail, shortcut, tone =
               {icon}
             </span>
           )}
-          <span className="flex min-w-0 flex-1 flex-col">
-            <Text slot="label" className="truncate">
+          <span className={clsx("flex min-w-0 flex-1", descriptionPlacement === "beside" ? "items-baseline gap-2" : "flex-col")}>
+            <Text slot="label" className={clsx("truncate", descriptionPlacement === "beside" && "shrink-0")}>
               {children}
             </Text>
             {description && (
-              <Text slot="description" className="text-(length:--chat-ui-font-size-sm) leading-4 text-chat-muted">
+              <Text
+                slot="description"
+                className={clsx(
+                  "text-chat-muted",
+                  descriptionPlacement === "beside" ? "truncate text-(length:--chat-ui-font-size) leading-5" : "text-(length:--chat-ui-font-size-sm) leading-4",
+                )}
+              >
                 {description}
               </Text>
             )}

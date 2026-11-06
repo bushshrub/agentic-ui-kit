@@ -5,9 +5,9 @@ sidebar:
   order: 1
 ---
 
-![The kit's default look: a claude.ai-style app with sidebar, chat list and chat](/images/example-claude.jpg)
+![claude.ai built from the kit: pinned projects, Chat / Cowork, model and effort](/images/example-claude.jpg)
 
-[Try it live in Storybook](/storybook/?path=/story/views-app--full)
+[Try it live in Storybook](/storybook/?path=/story/examples-claude--new-chat) (also [a conversation](/storybook/?path=/story/examples-claude--conversation))
 
 The kit's defaults are styled after claude.ai: a warm dark (or light) page, serif message text, a sans
 interface, a rounded composer with the model picker inside it. You get that look without writing any CSS.
@@ -88,6 +88,27 @@ function ChatPage({ id }: { id?: string }) {
 }
 ```
 
+## The composer toolbar
+
+claude.ai's toolbar is built from slots. `leading` holds the `+` menu (`AttachButton` with a `Menu`) and a
+`SegmentedControl` for Chat / Cowork. `trailing` holds the `ModelPicker` with effort levels, plus dictation
+and voice buttons. The sidebar's Chat / Code switch is a `SegmentedControl` too, with `iconOnly` options.
+
+```tsx
+composer={{
+  placeholder: "How can I help you today?",
+  leading: (
+    <>
+      <AttachButton>{addMenu}</AttachButton>
+      <SegmentedControl label="Mode" value={mode} onChange={setMode}
+        options={[{ id: "chat", label: "Chat" }, { id: "cowork", label: "Cowork" }]} />
+    </>
+  ),
+  trailing: <ModelPicker models={models} model={model} onModelChange={setModel} effort={effort} onEffortChange={setEffort} />,
+}}
+```
+
+The full example is `apps/playground/src/stories/claude.stories.tsx`.
+
 From here: attachments (`useAttachments`, `AttachmentRow`), effort levels in the `ModelPicker`, shared
-read-only chats with `ChatTranscript`, and [inline visuals](/inline-visuals/overview/). The full app above is
-`apps/playground/src/stories/app.stories.tsx` in the repo.
+read-only chats with `ChatTranscript`, and [inline visuals](/inline-visuals/overview/).

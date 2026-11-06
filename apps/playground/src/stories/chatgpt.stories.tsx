@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   AppShell,
+  AttachButton,
+  Menu,
+  MenuItem,
   Button,
   ChatHeader,
   ChatList,
@@ -16,7 +19,7 @@ import {
   type ChatListSection,
 } from "agentic-ui-kit";
 import type { Message } from "agentic-ui-kit/core";
-import { Atom, ChevronDown, CircleDashed, Clock, Compass, Images, Library, Mic, Plus, Puzzle, Search, SquarePen, Sparkle } from "lucide-react";
+import { Ellipsis, Share, BookImage, Brain, GitBranch, Globe, Paperclip, PenTool, Telescope, TrendingUp, Atom, ChevronDown, CircleDashed, Clock, Compass, Images, Library, Mic, Plus, Puzzle, Search, SquarePen, Sparkle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { history } from "../lib/demo-chat";
 import { fixtureTransport } from "../lib/fixture-transport";
@@ -36,6 +39,36 @@ const sections: ChatListSection[] = [
   },
 ];
 
+/** chatgpt.com's `+`: a ringed circle opening a wide menu, each tool's description beside its name. */
+const tools = [
+  { id: "files", icon: <Paperclip />, label: "Add photos & files", description: "Upload from computer" },
+  { id: "library", icon: <BookImage />, label: "Add from library", description: "Browse and search your files" },
+  { id: "image", icon: <Images />, label: "Create image", description: "Visualize anything" },
+  { id: "web", icon: <Globe />, label: "Web search", description: "Find real-time news and info" },
+  { id: "research", icon: <Telescope />, label: "Deep research", description: "Get a detailed report" },
+  { id: "sketch", icon: <PenTool />, label: "Sketch", description: "Draw and attach an image" },
+  { id: "thinking", icon: <Brain />, label: "Thinking", description: "For detailed answers" },
+  { id: "equity", icon: <TrendingUp />, label: "Public Equity Investing", description: "Public equity research" },
+  { id: "github", icon: <GitBranch />, label: "GitHub", description: "Triage PRs, issues, CI, and publish flows" },
+];
+
+const plusMenu = (
+  <AttachButton
+    label="Add files and more"
+    icon={<Plus />}
+    className="rounded-full! border border-chat-border-strong"
+    menuClassName="w-[min(48rem,calc(100vw-2rem))] max-h-80 overflow-y-auto"
+  >
+    <Menu aria-label="Add">
+      {tools.map((t) => (
+        <MenuItem key={t.id} id={t.id} icon={t.icon} description={t.description} descriptionPlacement="beside">
+          {t.label}
+        </MenuItem>
+      ))}
+    </Menu>
+  </AttachButton>
+);
+
 function Chat({ start }: { start: Message[] }) {
   const transport = useMemo(() => fixtureTransport(), []);
   const chat = useChat({ transport, initialMessages: start });
@@ -48,6 +81,21 @@ function Chat({ start }: { start: Message[] }) {
       onStop={chat.stop}
       onRetry={(id) => chat.retry(id)}
       onFeedback={() => {}}
+      onReadAloud={() => {}}
+      messageActions={{
+        time: false,
+        extra: (m) =>
+          m.role === "assistant" && (
+            <>
+              <IconButton label="Share" size="sm">
+                <Share />
+              </IconButton>
+              <IconButton label="More actions" size="sm">
+                <Ellipsis />
+              </IconButton>
+            </>
+          ),
+      }}
       header={
         <ChatHeader
           leading={
@@ -74,11 +122,7 @@ function Chat({ start }: { start: Message[] }) {
       composer={{
         variant: "compact",
         placeholder: chat.messages.length ? "Ask ChatGPT" : "Ask anything",
-        leading: (
-          <IconButton label="Add files and more">
-            <Plus />
-          </IconButton>
-        ),
+        leading: plusMenu,
         trailing: (
           <>
             <Button variant="ghost" size="sm" className={think ? "text-chat-accent" : "text-chat-muted"} onPress={() => setThink(!think)} aria-pressed={think}>

@@ -210,18 +210,26 @@ export interface AttachButtonProps {
   /** The menu, e.g. `<Menu aria-label="Add">…</Menu>`. */
   children: ReactNode;
   label?: string;
+  /** Replaces the `+` icon. */
+  icon?: ReactNode;
+  /** On the button, e.g. `rounded-full border border-chat-border` for a ringed `+`. */
+  className?: string;
+  /** On the menu's popover, e.g. a width to span the composer: `w-[min(36rem,calc(100vw-2rem))]`. */
+  menuClassName?: string;
 }
 
 /** The `+` button that opens the attach menu above the composer. */
-export function AttachButton({ children, label }: AttachButtonProps) {
+export function AttachButton({ children, label, icon, className, menuClassName }: AttachButtonProps) {
   const icons = useIcons();
   const labels = useLabels();
   return (
     <MenuTrigger>
-      <IconButton label={label ?? labels.addFiles}>
-        {icons.attach}
+      <IconButton label={label ?? labels.addFiles} {...(className && { className })}>
+        {icon ?? icons.attach}
       </IconButton>
-      <Popover placement="top start">{children}</Popover>
+      <Popover placement="top start" {...(menuClassName && { className: menuClassName })}>
+        {children}
+      </Popover>
     </MenuTrigger>
   );
 }
