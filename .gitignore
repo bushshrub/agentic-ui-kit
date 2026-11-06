@@ -10,3 +10,7 @@ packages/react/dist
 *.tgz
 .claude/worktrees
 .agents/
+
+# local e2e scratch
+apps/playground/src/examples/e2e-scratch/
+apps/playground/src/stories/e2e-scratch.stories.tsx
