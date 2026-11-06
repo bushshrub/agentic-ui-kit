@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChatView, htmlComponent, ToolViewsProvider, UiComponentsProvider, userMessage, type UiStateStore } from "agentic-ui-kit";
 import type { Message } from "agentic-ui-kit/core";
 import { useMemo, useState } from "react";
-import { laptopCompare, weekendPlan, type VisualScript } from "../examples/visual-replies";
+import { laptopCompare, skiPacking, weekendPlan, type VisualScript } from "../examples/visual-replies";
 import { useReplay } from "../lib/replay";
 import { visualViews } from "../lib/visual-views";
 import { uiComponents } from "../lib/ui-components";
@@ -52,3 +52,9 @@ export const Combined: StoryObj = { render: () => <ScriptedChat script={weekendP
 
 /** Host components only (render_ui): tabs switch in place; one button asks the model. */
 export const HostComponents: StoryObj = { render: () => <ScriptedChat script={laptopCompare} /> };
+
+/**
+ * UI written as JSX in a ```ui block of the reply (see `uiMarkupGuide`), streamed after the model's thinking.
+ * No tool call: the block draws element by element as the text arrives.
+ */
+export const MarkupInReply: StoryObj = { render: () => <ScriptedChat script={skiPacking} /> };

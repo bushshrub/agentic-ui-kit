@@ -195,6 +195,15 @@
   .chat-markdown ol { list-style: decimal; }
   .chat-markdown li + li { margin-top: 0.3em; }
   .chat-markdown li > :is(ul, ol) { margin-top: 0.3em; }
+  /* UI drawn from a ```ui block sits in the message but is not prose: none of the rules above apply. */
+  .chat-markdown .chat-ui-tree {
+    font-family: var(--chat-font-sans);
+    font-size: var(--chat-ui-font-size);
+    line-height: 1.5;
+  }
+  .chat-markdown .chat-ui-tree :is(ul, ol) { padding-left: 0; list-style: none; }
+  .chat-markdown .chat-ui-tree li + li { margin-top: 0; }
+  .chat-markdown .chat-ui-tree :is(h1, h2, h3, h4) { margin-top: 0; font-size: inherit; }
   .chat-markdown a {
     color: var(--chat-fg);
     text-decoration: underline;

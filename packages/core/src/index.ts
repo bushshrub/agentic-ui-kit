@@ -9,3 +9,6 @@ export { visualizeTool, visualizeGuide, checkWidgetCode } from "./visualize";
 export type { VisualizeInput, WidgetCodeCheck } from "./visualize";
 export { matchesSchema, schemaErrors, checkUiTree, isStateRef, renderUiTool, renderUiToolName, uiActionSchema } from "./ui-tree";
 export type { UiNode, UiAction, RenderUiInput, UiComponentSpec, UiTreeCheck } from "./ui-tree";
+export { parseUiMarkup, readUiValue, findUiBlocks, checkUiMarkup, uiMarkupGuide, uiMarkupLanguage } from "./ui-markup";
+export type { UiMarkup, UiMarkupBlock, UiMarkupCheck } from "./ui-markup";
+export type { UiTreeCheckOptions } from "./ui-tree";

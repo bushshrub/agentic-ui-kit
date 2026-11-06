@@ -136,7 +136,7 @@ export const uiComponents: UiComponent[] = [
   },
   {
     name: "Tabs",
-    description: "A row of choices that sets a state key; pair with Show to switch content. `value` should be { \"$state\": key }.",
+    description: "A row of choices that sets a state key; pair with Show to switch content. `value` reads the same key from state.",
     props: obj({ stateKey: str, value: str, options: { type: "array", items: obj({ id: str, label: str }, ["id", "label"]), minItems: 2 } }, ["stateKey", "options"]),
     render: function Tabs({ stateKey, value, options }: { stateKey: string; value?: string; options: { id: string; label: string }[] }) {
       const [, set] = useUiState();
@@ -154,7 +154,7 @@ export const uiComponents: UiComponent[] = [
   },
   {
     name: "Show",
-    description: "Shows its children only when `value` equals `equals`. Use `value: { \"$state\": key }`; the first tab shows while the key is unset if `fallback` is true.",
+    description: "Shows its children only when `value` equals `equals`. `value` reads the state key; the first tab shows while the key is unset if `fallback` is true.",
     children: true,
     props: obj({ value: str, equals: str, fallback: { type: "boolean" } }, ["equals"]),
     render: ({ value, equals, fallback, children }: Kids & { value?: string; equals: string; fallback?: boolean }) =>
@@ -167,7 +167,7 @@ export const uiComponents: UiComponent[] = [
     render: function UiButton({ label, variant = "secondary", onPress }: { label: string; variant?: string; onPress: unknown }) {
       const run = useUiAction();
       return (
-        <Button size="sm" variant={variant === "primary" ? "primary" : "subtle"} onPress={() => run(onPress)}>
+        <Button size="sm" className="self-start" variant={variant === "primary" ? "primary" : "subtle"} onPress={() => run(onPress)}>
           {label}
         </Button>
       );

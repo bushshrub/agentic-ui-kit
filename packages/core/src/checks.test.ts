@@ -44,7 +44,7 @@ it("tells the model what to fix, with paths", () => {
 it("accepts a root sent as a JSON string, but says so, and where it broke", () => {
   const { errors } = checkUiTree({ root: '{"component":"Text","props":{"text":"a"}}]' }, specs);
   expect(errors).toHaveLength(1);
-  expect(errors[0]).toMatch(/^root: send an object, not a JSON string \(and the string has invalid JSON at character 41/);
+  expect(errors[0]).toMatch(/^root: must be a JSON object like .*, not a string: .*\(the string also has invalid JSON at character 41/);
 });
 
 it("lets a state ref stand for a value set later", () => {

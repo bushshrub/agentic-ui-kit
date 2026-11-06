@@ -188,7 +188,15 @@ export interface UiTreeCheck {
  * can send the problems back to the model (as the tool result, or a tool error) instead of retrying blind.
  * Accepts what models actually send: `root` as an object, or as a JSON string.
  */
-export function checkUiTree(input: unknown, components: readonly UiComponentSpec[], toolName = renderUiToolName): UiTreeCheck {
+export interface UiTreeCheckOptions {
+  /** The tool the feedback tells the model to call again. */
+  toolName?: string;
+  /** Names a node in messages; default its path ("root.children[2]"). */
+  where?: (node: unknown, path: string) => string;
+}
+
+export function checkUiTree(input: unknown, components: readonly UiComponentSpec[], options: string | UiTreeCheckOptions = {}): UiTreeCheck {
+  const { toolName = renderUiToolName, where } = typeof options === "string" ? { toolName: options } : options;
   const errors: string[] = [];
   const byName = new Map(components.map((c) => [c.name, c]));
   const lower = new Map(components.map((c) => [c.name.toLowerCase(), c.name]));
@@ -199,7 +207,7 @@ export function checkUiTree(input: unknown, components: readonly UiComponentSpec
   const unwrap = (key: string, value: unknown) => {
     if (typeof value !== "string") return value;
     const { value: parsed, error } = salvageJson(value);
-    fail(`${key}: send an object, not a JSON string${error ? ` (and the string has ${error})` : ""}`);
+    fail(`${key}: must be a JSON object like {"component":"Stack","children":[...]}, not a string: don't put it in quotes or escape it${error ? ` (the string also has ${error})` : ""}`);
     return parsed;
   };
   const i = typeof input === "string" ? unwrap("input", input) : input;
@@ -213,22 +221,25 @@ export function checkUiTree(input: unknown, components: readonly UiComponentSpec
   const values = (typeof state === "object" && state !== null ? state : {}) as Record<string, unknown>;
 
   const walk = (node: unknown, path: string) => {
+    if (Array.isArray(node) && path === "root") return node.forEach((n, k) => walk(n, `root[${k}]`));
     total++;
+    const at = where ? where(node, path) : path;
     const before = errors.length;
     if (typeof node !== "object" || node === null || Array.isArray(node)) {
-      fail(`${path}: expected a node { "component": ..., "props": {...} }, got ${kind(node)}`);
+      fail(`${at}: expected a node { "component": ..., "props": {...} }, got ${kind(node)}`);
       bad++;
     } else {
       const { component, props = {}, children, ...rest } = node as Record<string, unknown>;
       const extra = Object.keys(rest);
-      if (extra.length) fail(`${path}: unknown key ${extra.map((k) => `"${k}"`).join(", ")} (a node has only component, props, children)`);
+      if (typeof props === "object" && props !== null && "children" in props) fail(`${at}.props.children: children go in the node's "children" array, next to "props", not inside props`);
+      if (extra.length) fail(`${at}: unknown key ${extra.map((k) => `"${k}"`).join(", ")} (a node has only component, props, children)`);
       const spec = typeof component === "string" ? byName.get(component) : undefined;
-      if (typeof component !== "string") fail(`${path}.component: required, one of ${components.map((c) => c.name).join(", ")}`);
+      if (typeof component !== "string") fail(`${at}.component: required, one of ${components.map((c) => c.name).join(", ")}`);
       else if (!spec) {
         const near = lower.get(component.toLowerCase());
-        fail(`${path}.component: unknown "${component}"${near ? `; did you mean "${near}"?` : `; use one of ${components.map((c) => c.name).join(", ")}`}`);
+        fail(`${at}.component: unknown "${component}"${near ? `; did you mean "${near}"?` : `; use one of ${components.map((c) => c.name).join(", ")}`}`);
       }
-      if (typeof props !== "object" || props === null || Array.isArray(props)) fail(`${path}.props: expected an object`);
+      if (typeof props !== "object" || props === null || Array.isArray(props)) fail(`${at}.props: expected an object`);
       else if (spec) {
         // A state ref stands for its starting value; one without a value yet is fine as long as it is set later.
         const unset = new Set<string>();
@@ -241,16 +252,17 @@ export function checkUiTree(input: unknown, components: readonly UiComponentSpec
           if (typeof v === "object" && v !== null) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, resolve(x, `${at}.${k}`)]).filter(([, x]) => x !== undefined));
           return v;
         };
-        const resolved = resolve(props, `${path}.props`);
-        for (const line of schemaErrors(spec.props ?? { type: "object" }, resolved, `${path}.props`)) {
-          if (![...unset].some((at) => line.startsWith(at + ":") || line.startsWith(at + "."))) fail(line);
+        const resolved = resolve(props, `${at}.props`);
+        for (const line of schemaErrors(spec.props ?? { type: "object" }, resolved, `${at}.props`)) {
+          if (line.startsWith(`${at}.props.children:`)) continue;
+          if (![...unset].some((u) => line.startsWith(u + ":") || line.startsWith(u + "."))) fail(line);
         }
       }
       // Only the node's own problems leave it out; extra children are just dropped.
       if (errors.length > before) bad++;
       if (children !== undefined) {
-        if (spec && !spec.children) fail(`${path}.children: ${spec.name} takes no children (they are not shown)`);
-        else if (!Array.isArray(children)) fail(`${path}.children: expected an array of nodes`);
+        if (spec && !spec.children) fail(`${at}.children: ${spec.name} takes no children (they are not shown)`);
+        else if (!Array.isArray(children)) fail(`${at}.children: expected an array of nodes`);
         else children.forEach((child, n) => walk(child, `${path}.children[${n}]`));
       }
     }
@@ -261,7 +273,7 @@ export function checkUiTree(input: unknown, components: readonly UiComponentSpec
   const ok = errors.length === 0;
   const feedback = ok
     ? "Shown to the user."
-    : `${bad === 0 ? "Shown, with problems" : `Shown, but ${bad} of ${total} nodes were left out`}. Fix these and call ${toolName} again:\n` +
+    : `${bad === 0 ? "Not shown as written" : `Only part of it is shown: ${bad} of ${total} nodes were left out`}. Fix these and call ${toolName} again:\n` +
       errors.slice(0, 20).map((e) => `- ${e}`).join("\n") +
       (errors.length > 20 ? `\n- ...and ${errors.length - 20} more` : "");
   return { ok, errors, feedback };

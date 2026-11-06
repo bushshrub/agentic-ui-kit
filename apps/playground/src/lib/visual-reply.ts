@@ -1,7 +1,7 @@
 import type { Part, StreamEvent } from "agentic-ui-kit/core";
 
 /** One piece of a scripted reply: prose, or any tool call (show_widget, render_ui, a host tool). */
-export type ReplyStep = { text: string } | { tool: string; input: unknown; result?: unknown };
+export type ReplyStep = { text: string } | { thinking: string; title?: string } | { tool: string; input: unknown; result?: unknown };
 
 /**
  * Turns a scripted reply into the stream a backend would send: text as word deltas, tool input as raw JSON
@@ -13,6 +13,12 @@ export function replyEvents(steps: ReplyStep[], { messageId = "a1", parentId = n
   const events: StreamEvent[] = [{ type: "run.start", ...base(), messageId, parentId, createdAt: new Date().toISOString() } as StreamEvent];
   steps.forEach((step, i) => {
     const id = `p${i}`;
+    if ("thinking" in step) {
+      events.push({ type: "part.start", ...base(), part: { type: "thinking", id, text: "", status: "streaming", visibility: "full", ...(step.title && { title: step.title }) } as Part });
+      for (const word of step.thinking.match(/\S+\s*/g) ?? []) events.push({ type: "part.delta", ...base(), partId: id, text: word });
+      events.push({ type: "part.end", ...base(), partId: id });
+      return;
+    }
     if ("text" in step) {
       events.push({ type: "part.start", ...base(), part: { type: "text", id, text: "", status: "streaming" } as Part });
       for (const word of step.text.match(/\S+\s*/g) ?? []) events.push({ type: "part.delta", ...base(), partId: id, text: word });

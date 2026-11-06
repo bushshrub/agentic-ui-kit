@@ -116,3 +116,24 @@ it("reads a root the model sent as a JSON string, even one cut short", () => {
   const broken = '{"component":"Stack","children":[{"component":"Text","props":{"text":"hi"}}]]},{"component":"Text"}]}';
   expect(readTreeInput({ root: broken })).toEqual({ root: { component: "Stack", children: [{ component: "Text", props: { text: "hi" } }] } });
 });
+
+it("draws ```ui blocks in a reply, each with its own state, and code without a provider", async () => {
+  const { Markdown } = await import("./markdown");
+  const text = 'Intro\n\n```ui\n<State picked="A" />\n<Text text={$state.picked} />\n<Button label="Pick B" onPress={{action: "set", key: "picked", value: "B"}} />\n```\n\nBetween\n\n```ui\n<Text text={$state.picked} />\n<State picked="Z" />\n```\n';
+  const ids = new Set<string>();
+  const persist: UiStateStore = { load: (id) => void ids.add(id), save: () => {} };
+  const { unmount } = render(
+    <UiComponentsProvider components={components} persist={persist}>
+      <Markdown partId="m1">{text}</Markdown>
+    </UiComponentsProvider>,
+  );
+  expect(await screen.findByText("A")).toBeTruthy();
+  expect(screen.getByText("Z")).toBeTruthy();
+  fireEvent.click(screen.getByText("Pick B"));
+  expect(screen.getByText("B")).toBeTruthy();
+  expect(screen.getByText("Z")).toBeTruthy();
+  expect(ids.size).toBe(2);
+  unmount();
+  const { container } = render(<Markdown partId="m1">{text}</Markdown>);
+  expect(container.textContent).toContain("<Text text={$state.picked} />");
+});

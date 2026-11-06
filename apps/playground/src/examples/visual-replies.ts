@@ -147,3 +147,49 @@ export const weekendPlan: VisualScript = {
     }),
   ],
 };
+
+/** The same kind of reply as the model writes it with `uiMarkupGuide`: thinking, then JSX in a ```ui block. */
+export const skiPacking: VisualScript = {
+  ask: "Make a packing checklist for a 4-day ski trip to Val Thorens. I rent skis there.",
+  steps: [
+    {
+      title: "Sorting the list by where it goes",
+      thinking:
+        "They rent skis, so no skis, poles or boots on the list, but helmet and goggles are personal. Val Thorens is high, so " +
+        "cold mornings and strong sun: layers, sunscreen, lip balm. Group by bag so it is easy to tick off while packing. " +
+        "A checklist per group, and a tab to switch between the suitcase and the day pack.",
+    },
+    { text: "Here's the list by bag. Ticks stay put, so you can pack over a couple of evenings.\n\n" },
+    {
+      text: `\`\`\`ui
+<State bag="suitcase" />
+<Stack gap="md">
+  <Grid columns={3}>
+    <Metric label="Days" value={4} />
+    <Metric label="Items" value={23} />
+    <Metric label="Rented" value="Skis, boots, poles" tone="good" />
+  </Grid>
+  <Tabs stateKey="bag" value={$state.bag} options={[{id: "suitcase", label: "Suitcase"}, {id: "day", label: "Day pack"}, {id: "docs", label: "Papers"}]} />
+  <Show value={$state.bag} equals="suitcase" fallback>
+    <Card title="Suitcase">
+      <Checklist stateKey="suitcase" items={["Ski jacket", "Ski trousers", "2 thermal base layers", "Fleece mid layer", "4 pairs of ski socks", "Après-ski boots", "Swimwear for the spa"]} />
+    </Card>
+  </Show>
+  <Show value={$state.bag} equals="day">
+    <Card title="Day pack" tag="On the slope">
+      <Checklist stateKey="day" items={["Helmet", "Goggles", "Gloves and liners", "Neck warmer", "Sunscreen SPF 50", "Lip balm", "Water bottle", "Snack"]} />
+    </Card>
+  </Show>
+  <Show value={$state.bag} equals="docs">
+    <Card title="Papers">
+      <Checklist stateKey="docs" items={["ID", "Lift pass booking", "Ski rental voucher", "Insurance card", "Accommodation address"]} />
+    </Card>
+  </Show>
+  <Button label="Add a list for the drive" variant="secondary" onPress={{action: "send", text: "Add a checklist for the drive there"}} />
+</Stack>
+\`\`\`
+
+The rental shop fits boots on the first morning, so bring the ski socks in your day pack that day.`,
+    },
+  ],
+};

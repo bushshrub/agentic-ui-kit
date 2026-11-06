@@ -1,6 +1,8 @@
 import {
   isStateRef,
+  parseUiMarkup,
   salvageJson,
+  uiMarkupLanguage,
   matchesSchema,
   uiActionSchema,
   type RenderUiInput,
@@ -27,16 +29,26 @@ export interface UiStateStore {
 interface Registry {
   components: Map<string, UiComponent>;
   persist?: UiStateStore | undefined;
+  markup: string | false;
 }
 
 const RegistryContext = createContext<Registry | undefined>(undefined);
 
+export interface UiComponentsProviderProps {
+  components: readonly UiComponent[];
+  /** Keeps each widget's state (ticks, picked tab) across reloads. */
+  persist?: UiStateStore;
+  /** Fence language of UI blocks in replies (```ui); `false` shows them as code. */
+  markup?: string | false;
+  children: ReactNode;
+}
+
 /**
- * The components `render_ui` trees may use. Give the model `renderUiTool(components)` (from
- * agentic-ui-kit/core) as a tool; the kit draws its calls. `persist` keeps each widget's state.
+ * The components the model may use: in ```ui blocks of its replies (see `uiMarkupGuide` in
+ * agentic-ui-kit/core) and in tool calls drawn with `uiTreeToolView`. `persist` keeps each widget's state.
  */
-export function UiComponentsProvider({ components, persist, children }: { components: readonly UiComponent[]; persist?: UiStateStore; children: ReactNode }) {
-  const value = useMemo(() => ({ components: new Map(components.map((c) => [c.name, c])), persist }), [components, persist]);
+export function UiComponentsProvider({ components, persist, markup = uiMarkupLanguage, children }: UiComponentsProviderProps) {
+  const value = useMemo(() => ({ components: new Map(components.map((c) => [c.name, c])), persist, markup }), [components, persist, markup]);
   return <RegistryContext.Provider value={value}>{children}</RegistryContext.Provider>;
 }
 
@@ -91,6 +103,7 @@ class Contain extends Component<{ children: ReactNode }, { failed: boolean }> {
 
 function Node({ node, registry }: { node: unknown; registry: Registry }): ReactNode {
   const { state } = useContext(TreeContext);
+  if (Array.isArray(node)) return node.map((child, i) => <Node key={i} node={child} registry={registry} />);
   if (typeof node !== "object" || node === null) return null;
   const { component, props = {}, children } = node as Partial<UiNode>;
   const spec = typeof component === "string" ? registry.components.get(component) : undefined;
@@ -153,6 +166,18 @@ export function UiTree({ id, root, state: initial, streaming = false }: UiTreePr
       </div>
     </TreeContext.Provider>
   );
+}
+
+/** The fence language drawn as UI here, or undefined outside a `UiComponentsProvider`. */
+export function useUiMarkupLanguage(): string | undefined {
+  const registry = useContext(RegistryContext);
+  return registry && registry.markup !== false ? registry.markup : undefined;
+}
+
+/** A ```ui block from a reply, drawn with the registered components. Safe on a block that is still streaming. */
+export function UiMarkupBlock({ id, source, streaming = false }: { id: string; source: string; streaming?: boolean }) {
+  const { nodes, state } = useMemo(() => parseUiMarkup(source), [source]);
+  return <UiTree id={id} root={nodes} state={state} streaming={streaming} />;
 }
 
 /** Reads `{ root, state }`. Models sometimes send `root` or `state` as a JSON string; those are parsed too. */

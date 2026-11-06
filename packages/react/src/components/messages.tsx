@@ -185,7 +185,7 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
           return <ToolBlock key={block.id} part={block.part} />;
         }
         const part = block.part;
-        if (part.type === "text") return <Markdown key={part.id} streaming={part.status === "streaming"}>{part.text}</Markdown>;
+        if (part.type === "text") return <Markdown key={part.id} partId={part.id} streaming={part.status === "streaming"}>{part.text}</Markdown>;
         const custom = renderPart?.(part);
         if (custom) return <div key={part.id}>{custom}</div>;
         if (part.type === "widget") return <WidgetPartView key={part.id} part={part} />;
