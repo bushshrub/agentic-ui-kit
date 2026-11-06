@@ -174,7 +174,53 @@ edit into an open file. If the stream breaks or the arguments aren't valid JSON,
 
 A tool's `view` sets how it looks in the chat: `label`, `subtitle`, `summary`, a `Detail` component for the
 expanded row and the approval card, and `ask` for the approval question. `Block` renders a call on its own
-instead of inside the activity group.
+instead of inside the activity group; `Card` draws a card under the group while the call keeps its row (job
+cards, a diff with Apply/Undo). A backend can set `data` on a tool call (with `part.update` / `part.end`):
+display data for these views, kept apart from the `result` the model sees. `MarkdownLinksProvider` draws
+chosen links in replies your way, e.g. a job link as a job row.
+
+## Inline visuals
+
+Two ways for the model to draw something interactive in a reply. Both stream: they fill in as the model writes.
+
+**Sandboxed HTML.** Give the model `visualizeTool` and put `visualizeGuide` in its instructions (both from
+`agentic-ui-kit/core`). Its `show_widget` calls, and `widget` parts, render in a `WidgetFrame`: an iframe with
+`sandbox="allow-scripts"` only and a CSP that blocks every request, themed with your `--chat-*` variables.
+The same frame hosts MCP App UIs (MCP Apps spec 2026-01-26: `ui/initialize`, tool input and result,
+`tools/call`); the kit never fetches anything itself, your `readResource` does.
+
+```tsx
+<ChatView
+  {...chat}
+  widgets={{
+    allow: { resourceDomains: ["https://unpkg.com", "https://tile.openstreetmap.org"] }, // the most any widget may load
+    onCallTool: (name, args) => mcp.callTool(name, args), // MCP App UIs; leave out to turn it off
+  }}
+/>
+```
+
+A widget's `sendPrompt(text)` sends through `onSend`, and its links open in a new tab; set either callback to
+`undefined` to turn it off. `ChatTranscript` widgets cannot send messages or call tools.
+
+**Your components.** Register components with a JSON Schema for their props (with zod: `z.toJSONSchema`) and
+give the model `renderUiTool(specs)`, which describes them. Its `render_ui` calls are trees of your components;
+a node with an unknown component or props that don't fit renders nothing.
+
+```tsx
+const components: UiComponent[] = [
+  { name: "Metric", description: "A key number with a label.", props: metricSchema, render: Metric },
+  { name: "Stack", description: "Children in a column.", children: true, render: Stack },
+  htmlComponent, // optional: raw HTML in a WidgetFrame, for what your components can't show
+];
+// tools: [renderUiTool(components.map(({ render, ...spec }) => spec)), ...]
+<UiComponentsProvider components={components} persist={store}>
+  <ChatView {...chat} />
+</UiComponentsProvider>;
+```
+
+Inside a component, `useUiAction()` runs an action from its props (`uiActionSchema`: set a state key, send
+a message, open a URL, copy), and `useUiState()` reads and writes the widget's state; props read state with
+`{ "$state": key }`. `persist` keeps each widget's state across reloads.
 
 ## Theming
 
@@ -229,7 +275,7 @@ The React package has four layers, each built only from the ones before it:
 | ---------- | --------------------------------------------------------------------------------------------- |
 | Primitives | `Button`, `IconButton`, `Menu`, `ContextMenu`, `Modal`, `Drawer`, `Panel`, `Tooltip`, `CodeBlock`, `ChatTheme` |
 | Hooks      | `useChat`, `sseTransport`, `AgentProvider`, `useAgentTool`, `useAgentContext`, `useSmoothText` |
-| Components | `Composer`, `ModelPicker`, `MessageList`, `ActivityGroup`, `ApprovalCard`, `Markdown`, `ChatHeader`, `ChatList`, `ContextPanel` |
+| Components | `Composer`, `ModelPicker`, `MessageList`, `ActivityGroup`, `ApprovalCard`, `Markdown`, `ChatHeader`, `ChatList`, `ContextPanel`, `WidgetFrame`, `UiTree` |
 | Views      | `ChatView`, `AppShell`, `Sidebar`                                                             |
 
 Use `ChatView` for the whole thing, or build your own layout from the components.
@@ -252,6 +298,8 @@ your brand and of the space it sits in.
 - Wording and locale: `ChatTheme labels`, see Theming. Icons: `ChatTheme icons`, Lucide by default.
 - Content: the `header`, `footer`, `notice`, `emptyState` and `disclaimer` slots, custom parts through
   `renderPart`, and tool views through `useChatTool`.
+- Inline visuals: which domains widgets may load and which of their abilities are on (`widgets`), and the
+  components the model may compose (`UiComponentsProvider`).
 
 **Fixed on purpose**
 
@@ -265,6 +313,8 @@ your brand and of the space it sits in.
 - Accessibility and keyboard behavior: focus rings, roles, Enter to send, menus and dialogs from react-aria.
 - Markdown: only safe HTML in replies, streaming-safe parsing.
 - When long messages fold and how tool calls group.
+- The widget sandbox: `allow-scripts` only, the CSP, messages only from the widget's own frame, the height cap,
+  scripts running once the markup is complete. The action set of your components' trees.
 
 A new setting has to change the look or fit a different container. A setting that changes how the chat
 behaves needs a strong case. If you need different behavior, build your own layout from the components.

@@ -240,14 +240,15 @@ Interactive visuals inline in a reply. The kit renders what the backend passes i
 never fetches anything for a widget. Two kinds, both built:
 
 ### 1. Sandboxed HTML: `WidgetFrame` (model-written HTML, MCP Apps)
-Prototype: apps/playground/src/lib/widget-frame.tsx, stories "Prototypes/Inline visuals" (map, calendar,
-workout planner; widgets in apps/playground/src/widgets/*.html). Move it into the kit (components layer) and
-render `widget` parts with it by default (today a widget part renders nothing unless renderPart handles it).
+Built: components/widget-frame.tsx. `widget` parts and `show_widget` calls render with it by default
+(`renderPart` can still take over). Stories "Inline visuals/Sandboxed HTML" (map, calendar, workout planner,
+a shared transcript; widgets in apps/playground/src/widgets/*.html).
 - Fixed on purpose: iframe `sandbox="allow-scripts"` only (opaque origin), `srcdoc`; a CSP meta tag with
   `default-src 'none'`, scripts/styles inline only, `connect-src 'none'`, `frame-src 'none'`, `base-uri 'none'`,
   `form-action 'none'`. Messages from the frame are accepted only when `event.source` is that frame.
 - Theme: the --chat-* variables computed where the frame sits are copied into the frame's :root, with
-  color-scheme. TODO beyond the prototype: re-send on theme change (MCP Apps host-context-changed).
+  color-scheme. On a theme change (attributes above the frame, or the OS scheme) they are re-sent with
+  `ui/notifications/host-context-changed`; the frame does not reload.
 - Size: the frame reports its content height (ResizeObserver); the host caps it (prototype: 2000px).
 - Streaming: while the part streams, the markup so far is set as innerHTML (scripts inert); when done, the full
   markup is set once and scripts run in order, awaiting each external script's load. A rotating loading line
@@ -256,12 +257,17 @@ render `widget` parts with it by default (today a widget part renders nothing un
   `ui/notifications/size-changed {height}`, `ui/message {role:"user", content:[{type:"text",text}]}` (the
   widget's global `sendPrompt(text)`), `ui/open-link {url}` (global `openLink(url)`, http(s) only);
   host -> frame `ui/notifications/tool-input-partial` and `ui/notifications/tool-input`
-  `{arguments:{widget_code}}`. For real MCP App UIs also implement `ui/initialize` (host context, theme),
-  `tool-result`, `tool-cancelled`, and optional `tools/call` (spec 2026-01-26; check Context7
-  /modelcontextprotocol/ext-apps before building).
-- Host API: `allow` (the most a widget may load: `resourceDomains`, `connectDomains`; a widget's own request
-  from MCP `_meta.ui.csp` is intersected with it, never exceeds it), `onPrompt`, `onOpenLink`, `onCallTool`.
-  A callback left out turns that ability off (a shared ChatTranscript passes no onPrompt).
+  `{arguments:{widget_code}}`. MCP App UIs (`WidgetFrame document`, the app's own HTML with the CSP put
+  first in its head): `ui/initialize` answered with protocolVersion 2026-01-26, hostCapabilities (openLinks /
+  serverTools only when the callback is set, sandbox.csp) and hostContext (theme, styles.variables, inline,
+  maxHeight); `tool-input[-partial]`, `tool-result`, `tool-cancelled` from props; `tools/call` via
+  onCallTool; `ping`; anything else gets JSON-RPC -32601, a turned-off ability -32000.
+- Host API (`WidgetHost`, ChatView/ChatTranscript `widgets` prop): `allow` (the most a widget may load:
+  `resourceDomains`, `connectDomains`, plain origins only, `https://*.x` wildcards; a widget's own request
+  from MCP `_meta.ui.csp` is intersected with it, never exceeds it; an app document without a request gets
+  nothing), `onPrompt`, `onOpenLink`, `onCallTool`, `readResource` (for `resourceUri` parts). A callback left
+  out turns that ability off. ChatView defaults onPrompt to onSend and onOpenLink to a new tab;
+  ChatTranscript never passes onPrompt or onCallTool.
 - Visualize preset: `agentic-ui-kit/core` exports the tool definition (`show_widget`-like: `widget_code`
   string required, HTML fragment or <svg>; `title` snake_case; `loading_messages` 1-4 short strings) and a
   design-guide text for the model (the --chat-* variables, transparent background, no top-level padding,
@@ -274,17 +280,22 @@ Idea from Open Intelligent UI / OpenUI (github.com/thesysdev/open-intelligent-ui
 model writes a small tree of components the host registers, instead of HTML. jaa-v2's cards (job rows, a
 profile diff with Apply/Undo) are this kind: trusted React from the app, reading data the model doesn't see,
 calling the app's own API.
-- Host registers components with a schema (zod or JSON Schema) and a description; the kit generates the
-  prompt/tool description from the registry.
+Built: core/src/ui-tree.ts (renderUiTool, matchesSchema, uiActionSchema), components/ui-tree.tsx
+(UiComponentsProvider, UiTree, useUiAction, useUiState, htmlComponent). Stories "Inline visuals/Replies":
+Combined (one reply with metrics, a sandboxed map, tabs, a checklist and buttons) and HostComponents.
+- Host registers components with a JSON Schema (zod via `z.toJSONSchema`) and a description; `renderUiTool`
+  generates the `render_ui` tool description from them.
 - A "render" tool whose input is the tree; the kit already parses partial tool input while it streams
   (`partialInput`), so the tree renders progressively. Unknown components or bad props render nothing for
   that node (validate, don't crash).
 - Actions (fixed set, from OpenUI): set local widget state, send a message to the assistant, open a URL,
   copy to clipboard. Prefer local state over round trips. Optional per-widget state the host can persist.
 - Raw HTML inside a tree only through a WidgetFrame node (the escape hatch, like OpenUI's HtmlView).
-- Smaller gaps for trusted tool visuals (jaa-v2): a card under the tool's activity row (today `Block`
-  replaces the row); display data on a tool call separate from the result the model sees (jaa's `data`);
-  a hook into Markdown rendering for links (jaa turns job links into rows).
+- Smaller gaps for trusted tool visuals (jaa-v2), built: `ToolView.Card` (a card under the activity group,
+  the call keeps its row); `ToolCallPart.data` (display data, set by part.update/part.end `data`; the backend
+  must not send it to the model); `MarkdownLinksProvider` (`renderLink`, undefined keeps the kit's link).
+- State refs `{ "$state": key }` work in any prop; `set` actions and `useUiState` write the widget's local
+  state; `persist` (load/save by tool call id) keeps it.
 
 ## Build order
 
@@ -308,9 +319,8 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
-- Build inline visuals: both kinds in "Visualize (inline visuals)" above.
-- Storybook: one reply that combines several visuals (not one story per widget), built generically. Then an
-  end-to-end run with a real model (qwen3.8-flash-next on the gateway, Responses API) to see if it is viable.
+- End-to-end run of inline visuals with a real model (qwen3.8-flash-next on the gateway, Responses API) to
+  see if it is viable. (The combined story is done: "Inline visuals/Replies".)
 - Storybook against a real model: a gitignored .env in this repo (endpoint, key, model) so stories can talk to
   a live model; keys never committed.
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
