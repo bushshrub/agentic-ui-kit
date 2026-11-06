@@ -158,7 +158,7 @@ function DefaultDetail({ part }: { part: Extract<ActivityPart, { type: "tool_cal
     return <p className="text-[0.9375rem] leading-relaxed whitespace-pre-wrap text-chat-muted">{body}</p>;
   }
   return (
-    <pre className="max-h-56 overflow-auto font-chat-mono text-[0.8125rem] leading-relaxed text-chat-muted">
+    <pre className="max-h-56 overflow-auto font-chat-mono text-(length:--chat-code-font-size) leading-relaxed text-chat-muted">
       {JSON.stringify(body, null, 2)}
     </pre>
   );

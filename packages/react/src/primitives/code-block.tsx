@@ -37,7 +37,7 @@ export function CodeBlock({ code, language, label = language, variant = "plain",
       {label && <div className="mb-3 font-chat-sans text-xs text-chat-subtle">{label}</div>}
       <pre
         className={clsx(
-          "overflow-auto font-chat-mono text-[0.8125rem] leading-[1.75] whitespace-pre text-chat-fg",
+          "overflow-auto font-chat-mono text-(length:--chat-code-font-size) leading-[1.75] whitespace-pre text-chat-fg",
           variant === "plain" && "max-h-56",
           "[scrollbar-color:var(--chat-border-strong)_transparent] [scrollbar-width:thin]",
         )}

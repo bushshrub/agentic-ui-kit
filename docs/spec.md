@@ -268,6 +268,9 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
+- Write down what is opinionated (fixed on purpose) and what is meant to be changed, in the README and here.
+  Opinionated, keep: animations and their timings (streaming word fade, folds), the claude.ai layout. Too
+  much customizability is a cost; add knobs only for real gaps.
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").

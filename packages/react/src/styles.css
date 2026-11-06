@@ -150,6 +150,8 @@
     --chat-content-width: 48rem;
     --chat-content-padding: 1.5rem;
     --chat-message-font-size: 1.0625rem;
+    /* Code blocks and tool output. Inline code follows the text around it. */
+    --chat-code-font-size: 0.8125rem;
     --chat-message-line-height: 1.65;
   }
 }
