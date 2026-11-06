@@ -2,6 +2,7 @@ import type { ToolCallPart } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { ShieldQuestion } from "lucide-react";
 import type { PendingApproval } from "../hooks/use-chat";
+import { useLabels } from "../primitives/labels";
 import { Button } from "../primitives/button";
 import { CodeBlock } from "../primitives/code-block";
 import { activityLabel, useToolView } from "./tools";
@@ -18,19 +19,20 @@ export interface ApprovalCardProps {
  */
 export function ApprovalCard({ approval, onRespond, className }: ApprovalCardProps) {
   const { part } = approval;
+  const labels = useLabels();
   const view = useToolView(part.name);
   const Detail = view.Detail;
   const preview: ToolCallPart = { ...part, status: "awaiting" };
   return (
     <div
       role="alertdialog"
-      aria-label={`Allow ${part.name}?`}
+      aria-label={labels.allowTool(part.name)}
       className={clsx("flex flex-col gap-3 rounded-chat-lg border border-chat-border-strong bg-chat-surface p-3 font-chat-sans text-chat-fg shadow-chat-popover", className)}
     >
       <div className="flex items-center gap-2 text-sm">
         <ShieldQuestion aria-hidden className="size-4 shrink-0 text-chat-accent" />
         <span className="min-w-0 flex-1 font-medium">
-          {view.ask?.(part) ?? <>Allow {activityLabel(part, view)}?</>}
+          {view.ask?.(part) ?? labels.allowAction(activityLabel(part, labels, view))}
         </span>
       </div>
       <div className="max-h-48 overflow-auto [scrollbar-width:thin]">
@@ -38,10 +40,10 @@ export function ApprovalCard({ approval, onRespond, className }: ApprovalCardPro
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" className="border border-chat-border-strong" onPress={() => onRespond(part.id, false)}>
-          Deny
+          {labels.deny}
         </Button>
         <Button variant="primary" autoFocus onPress={() => onRespond(part.id, true)}>
-          Allow
+          {labels.allow}
         </Button>
       </div>
     </div>

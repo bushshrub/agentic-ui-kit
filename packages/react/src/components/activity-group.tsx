@@ -1,6 +1,7 @@
 import { activityTokens, type ActivityPart } from "@agentic-ui-kit/core";
 import { useState, type ReactNode } from "react";
 import { Disclosure } from "../primitives/disclosure";
+import { useLabels } from "../primitives/labels";
 import { Markdown } from "./markdown";
 import { activityHeading, isWorking, activityLabel, useToolView, useToolViews } from "./tools";
 import { TokenCounter } from "./token-counter";
@@ -19,6 +20,7 @@ export interface ActivityGroupProps {
  */
 export function ActivityGroup({ parts, defaultExpanded = false, className }: ActivityGroupProps) {
   const views = useToolViews();
+  const labels = useLabels();
   const [expanded, setExpanded] = useState(defaultExpanded);
   // Waiting on the user is not work in progress: no shimmer, no counter.
   const live = parts.some(isWorking);
@@ -35,7 +37,7 @@ export function ActivityGroup({ parts, defaultExpanded = false, className }: Act
           onExpandedChange={setExpanded}
           summary={
             <>
-              <Live live={live}>{activityHeading(parts, views)}</Live>
+              <Live live={live}>{activityHeading(parts, views, labels)}</Live>
               {after}
             </>
           }
@@ -122,13 +124,14 @@ function Step({ part }: { part: ActivityPart }) {
 
 /** The label line and expanded body of one step. Tool calls go through their registered view. */
 function useStepContent(part: ActivityPart): { summary: ReactNode; detail: ReactNode } {
+  const labels = useLabels();
   const view = useToolView(part.type === "tool_call" ? part.name : "");
   if (part.type === "thinking") {
     return {
-      summary: activityLabel(part),
+      summary: activityLabel(part, labels),
       detail:
         part.visibility === "hidden" || !part.text ? (
-          <p className="text-sm text-chat-subtle">The model's reasoning is not shown.</p>
+          <p className="text-sm text-chat-subtle">{labels.reasoningHidden}</p>
         ) : (
           <div className="max-h-96 overflow-y-auto [scrollbar-width:thin]">
             <Markdown className="chat-thinking" streaming={part.status === "streaming"}>
@@ -143,7 +146,7 @@ function useStepContent(part: ActivityPart): { summary: ReactNode; detail: React
   return {
     summary: (
       <span title={view.hint?.(part)}>
-        {activityLabel(part, view)}
+        {activityLabel(part, labels, view)}
         {subtitle && <span className="ml-1.5 text-chat-fg">{subtitle}</span>}
       </span>
     ),

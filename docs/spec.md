@@ -180,6 +180,8 @@ Each view is assembled from the components above, so a host can use the view or 
 - **Theme**: all tokens are CSS variables (`--chat-bg`, `--chat-fg`, `--chat-accent`, fonts, radii,
   `--chat-content-width`, `--chat-content-padding`, ...). The default theme is dark. A host
   maps the variables to its own theme. Content width and padding are a user setting in the web chat.
+- **Labels**: every user-visible string (text, aria-labels, placeholders) is a key of `ChatLabels`; `<ChatTheme labels={{ ... }}>`
+  overrides any of them (nested themes inherit), `locale` feeds the Intl formatters. Defaults live in `primitives/labels.tsx`.
 - **Part renderers**: `<ChatProvider renderers={{ job_row: JobRow, chat_message: ChannelEmbed }}>`. The
   kit renders built-in parts and hands `custom` parts to the matching renderer; unknown kinds render a
   plain fallback.

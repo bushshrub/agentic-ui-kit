@@ -6,6 +6,7 @@ import type { PendingApproval } from "../hooks/use-chat";
 import { Composer, type ComposerProps } from "../components/composer";
 import { MessageList } from "../components/message-list";
 import type { Feedback } from "../components/messages";
+import { useLabels } from "../primitives/labels";
 
 export type Density = "full" | "panel" | "inline";
 
@@ -76,6 +77,7 @@ export function ChatView({
   } as CSSProperties;
   const empty = messages.length === 0;
   const [body, short] = useShortPane();
+  const labels = useLabels();
   const pending = onApprove && approvals?.[0];
   const box = (variant: ComposerProps["variant"]) => (
     <Composer
@@ -84,7 +86,7 @@ export function ChatView({
       onSubmit={onSend}
       {...(onStop && { onStop })}
       {...composer}
-      {...(pending && { placeholder: "Or reply directly…" })}
+      {...(pending && { placeholder: labels.replyDirectly })}
     />
   );
 

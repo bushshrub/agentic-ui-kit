@@ -2,6 +2,7 @@ import { clsx } from "clsx";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "../primitives/appearance";
+import { useLabels } from "../primitives/labels";
 
 /** Compact token count: 526, 1.4k, 33k, 76.8k, 1M. */
 export function formatTokens(n: number): string {
@@ -58,13 +59,14 @@ export interface TokenCounterProps {
 /** A token count that counts up as `tokens` grows and holds still when it stops growing. */
 export function TokenCounter({ tokens, variant = "standalone", className }: TokenCounterProps) {
   const shown = useCountUp(tokens);
+  const labels = useLabels();
   if (variant === "inline") {
-    return <span className={clsx("text-chat-subtle tabular-nums", className)}>({formatTokens(shown)} tokens)</span>;
+    return <span className={clsx("text-chat-subtle tabular-nums", className)}>({labels.tokenCount(formatTokens(shown))})</span>;
   }
   return (
     <span className={clsx("inline-flex items-center gap-1 font-chat-sans text-xs text-chat-subtle tabular-nums", className)}>
       <ArrowDown aria-hidden className="size-3" />
-      {formatTokens(shown)} tokens
+      {labels.tokenCount(formatTokens(shown))}
     </span>
   );
 }

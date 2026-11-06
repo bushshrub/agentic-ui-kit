@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Button as AriaButton, Disclosure, DisclosurePanel, Heading, Link } from "react-aria-components";
 import { Badge } from "../primitives/badge";
 import { IconButton } from "../primitives/button";
+import { useLabels } from "../primitives/labels";
 import { MenuTrigger, Popover } from "../primitives/menu";
 import { useSidebar } from "../hooks/sidebar-state";
 
@@ -66,6 +67,7 @@ const rowClass = clsx(
  * markers and a per-row menu. Usable on its own (in a host's own sidebar) or inside `Sidebar`.
  */
 export function ChatList({ sections, activeId, onSelect, rowMenu, className, ...props }: ChatListProps) {
+  const labels = useLabels();
   const row = (chat: ChatSummary, nested = false) => (
     <ChatRow key={chat.id} chat={chat} active={chat.id === activeId} nested={nested} {...(onSelect && { onSelect })} {...(rowMenu && { menu: rowMenu(chat) })} />
   );
@@ -73,7 +75,7 @@ export function ChatList({ sections, activeId, onSelect, rowMenu, className, ...
     list.map((item) => (isProject(item) ? <ProjectRow key={item.id} project={item} activeId={activeId} row={row} /> : row(item)));
 
   return (
-    <nav aria-label={props["aria-label"] ?? "Chats"} className={clsx("flex flex-col gap-3", className)}>
+    <nav aria-label={props["aria-label"] ?? labels.chats} className={clsx("flex flex-col gap-3", className)}>
       {sections.map((section) =>
         section.title ? (
           <Disclosure key={section.id} defaultExpanded={section.defaultExpanded ?? true} className="group/section">
@@ -92,7 +94,7 @@ export function ChatList({ sections, activeId, onSelect, rowMenu, className, ...
               <ul className="flex flex-col gap-px">{items(section.items)}</ul>
               {section.onViewAll && (
                 <AriaButton onPress={section.onViewAll} className={clsx(rowClass, "text-chat-muted")}>
-                  View all
+                  {labels.viewAll}
                 </AriaButton>
               )}
             </DisclosurePanel>
@@ -122,11 +124,12 @@ function ChatRow({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { dismiss } = useSidebar();
+  const labels = useLabels();
   const markerClass = "size-2 shrink-0 rounded-full";
   const marker = chat.running ? (
-    <span role="img" aria-label="Running" className={clsx(markerClass, "animate-pulse bg-chat-accent motion-reduce:animate-none")} />
+    <span role="img" aria-label={labels.running} className={clsx(markerClass, "animate-pulse bg-chat-accent motion-reduce:animate-none")} />
   ) : chat.unread ? (
-    <span role="img" aria-label="Unread" className={clsx(markerClass, "bg-chat-check")} />
+    <span role="img" aria-label={labels.unread} className={clsx(markerClass, "bg-chat-check")} />
   ) : null;
   const content = (
     <>
@@ -149,7 +152,7 @@ function ChatRow({
       {menu && (
         <MenuTrigger isOpen={menuOpen} onOpenChange={setMenuOpen}>
           <IconButton
-            label={`More options for ${chat.title}`}
+            label={labels.moreOptionsFor(chat.title)}
             size="sm"
             tooltip={false}
             className={clsx(
@@ -169,6 +172,7 @@ function ChatRow({
 }
 
 function ProjectRow({ project, activeId, row }: { project: ProjectSummary; activeId: string | undefined; row: (chat: ChatSummary, nested?: boolean) => ReactNode }) {
+  const labels = useLabels();
   const holdsActive = project.chats.some((c) => c.id === activeId);
   return (
     <li>
@@ -179,7 +183,7 @@ function ProjectRow({ project, activeId, row }: { project: ProjectSummary; activ
               <AriaButton slot="trigger" className={rowClass}>
                 {isExpanded ? <FolderOpen aria-hidden className="size-4 shrink-0 text-chat-muted" /> : <Folder aria-hidden className="size-4 shrink-0 text-chat-muted" />}
                 <span className="min-w-0 flex-1 truncate">{project.name}</span>
-                {!isExpanded && project.chats.some((c) => c.unread || c.running) && <Badge>New</Badge>}
+                {!isExpanded && project.chats.some((c) => c.unread || c.running) && <Badge>{labels.new}</Badge>}
               </AriaButton>
             </Heading>
             <DisclosurePanel>

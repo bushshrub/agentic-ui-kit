@@ -3,6 +3,7 @@ import { PanelLeft } from "lucide-react";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { DRAWER_QUERY, NARROW_QUERY, SidebarContext, useMediaQuery, useSidebar, type SidebarState } from "../hooks/sidebar-state";
 import { IconButton } from "../primitives/button";
+import { useLabels } from "../primitives/labels";
 import { Drawer } from "../primitives/overlay";
 
 export interface AppShellProps {
@@ -26,6 +27,7 @@ export function AppShell({ sidebar, children, defaultCollapsed, className }: App
 
   const pinned = useMemo<SidebarState>(() => ({ collapsed, drawer, drawerOpen, toggle, dismiss }), [collapsed, drawer, drawerOpen, toggle, dismiss]);
   // Inside the drawer the sidebar is always full width.
+  const labels = useLabels();
   const inDrawer = useMemo<SidebarState>(() => ({ ...pinned, collapsed: false }), [pinned]);
 
   return (
@@ -44,7 +46,7 @@ export function AppShell({ sidebar, children, defaultCollapsed, className }: App
         <main className="flex min-w-0 flex-1 flex-col">{children}</main>
       </div>
       {drawer && (
-        <Drawer isOpen={drawerOpen} onOpenChange={setDrawerOpen} aria-label="Sidebar">
+        <Drawer isOpen={drawerOpen} onOpenChange={setDrawerOpen} aria-label={labels.sidebar}>
           <SidebarContext.Provider value={inDrawer}>{sidebar}</SidebarContext.Provider>
         </Drawer>
       )}
@@ -61,8 +63,15 @@ export interface SidebarToggleProps {
 /** Opens the drawer on phones, collapses / expands the pinned sidebar elsewhere. */
 export function SidebarToggle({ drawerOnly = false, className }: SidebarToggleProps) {
   const { drawer, drawerOpen, collapsed, toggle } = useSidebar();
+  const labels = useLabels();
   if (drawerOnly && !drawer) return null;
-  const label = drawer ? (drawerOpen ? "Close sidebar" : "Open sidebar") : collapsed ? "Expand sidebar" : "Collapse sidebar";
+  const label = drawer
+    ? drawerOpen
+      ? labels.closeSidebar
+      : labels.openSidebar
+    : collapsed
+      ? labels.expandSidebar
+      : labels.collapseSidebar;
   return (
     <IconButton label={label} onPress={toggle} className={className}>
       <PanelLeft />

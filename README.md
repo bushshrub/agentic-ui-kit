@@ -203,6 +203,14 @@ add `background: "theme"`, which uses the Shiki theme's own background and text 
 animations even when the OS asks for less). It sets `data-chat-motion` on the element; an app that does not use
 `ChatTheme` can put `data-chat-motion="reduce"` on `<html>` instead.
 
+Every string the kit shows (text, aria-labels, placeholders) can be reworded or translated with `labels` on
+`ChatTheme`. Keys you leave out keep the English default; labels with values in them are functions, and `locale`
+sets the language of relative times and dates (default: the browser's). The keys are listed in `ChatLabels`.
+
+```tsx
+<ChatTheme labels={{ copy: "Copier", moreOptionsFor: (title) => `Plus d'options pour ${title}`, locale: "fr" }}>
+```
+
 The full list of variables is at the top of
 [`packages/react/src/styles.css`](packages/react/src/styles.css).
 

@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { FileText, Pencil, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, IconButton } from "../primitives/button";
+import { useLabels } from "../primitives/labels";
 import { Modal } from "../primitives/overlay";
 
 /** An attachment in the composer, before it is sent. */
@@ -52,6 +53,9 @@ const draftId = () => `att_${Date.now().toString(36)}_${(counter++).toString(36)
 export function useAttachments({ upload }: UseAttachmentsOptions = {}): UseAttachments {
   const [attachments, setAttachments] = useState<DraftAttachment[]>([]);
   const uploads = useRef(new Map<string, AbortController>());
+  const labels = useLabels();
+  const labelsRef = useRef(labels);
+  labelsRef.current = labels;
   const uploadRef = useRef(upload);
   uploadRef.current = upload;
 
@@ -81,7 +85,7 @@ export function useAttachments({ upload }: UseAttachmentsOptions = {}): UseAttac
         doUpload(file, controller.signal)
           .then((result) => patch(id, { status: "ready", fileId: result.fileId, ...(result.url && { url: result.url }) }))
           .catch((error: unknown) => {
-            if (!controller.signal.aborted) patch(id, { status: "error", error: error instanceof Error ? error.message : "Upload failed" });
+            if (!controller.signal.aborted) patch(id, { status: "error", error: error instanceof Error ? error.message : labelsRef.current.uploadFailed });
           })
           .finally(() => uploads.current.delete(id));
       }
@@ -92,7 +96,7 @@ export function useAttachments({ upload }: UseAttachmentsOptions = {}): UseAttac
   const addText = useCallback((text: string) => {
     setAttachments((list) => [
       ...list,
-      { id: draftId(), kind: "text", name: "Pasted text", mime: "text/plain", size: new Blob([text]).size, text, status: "ready" },
+      { id: draftId(), kind: "text", name: labelsRef.current.pastedText, mime: "text/plain", size: new Blob([text]).size, text, status: "ready" },
     ]);
   }, []);
 
@@ -160,6 +164,7 @@ const extension = (name: string) => /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toUpp
 export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", className }: AttachmentCardProps) {
   const image = a.mime.startsWith("image/") && a.url;
   const pasted = a.text !== undefined;
+  const labels = useLabels();
   const uploading = a.status === "uploading";
   const failed = a.status === "error";
   return (
@@ -170,7 +175,7 @@ export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", c
         size === "md" ? "size-30" : "size-24",
         className,
       )}
-      title={failed ? (a.error ?? "Upload failed") : a.name}
+      title={failed ? (a.error ?? labels.uploadFailed) : a.name}
     >
       <div className={clsx("absolute inset-0 overflow-hidden rounded-[inherit]", uploading && "chat-shimmer-surface")}>
         {image ? (
@@ -194,21 +199,21 @@ export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", c
               failed ? "border-chat-danger text-chat-danger" : "border-chat-border-strong text-chat-muted",
             )}
           >
-            {failed ? "Failed" : pasted ? "Pasted" : (extension(a.name) ?? "File")}
+            {failed ? labels.failed : pasted ? labels.pasted : (extension(a.name) ?? labels.file)}
           </span>
           {pasted && onOpen && (
-            <IconButton label="Edit pasted text" size="sm" onPress={onOpen} className="size-6 border border-chat-border-strong bg-chat-bg [&_svg]:size-3.5 [@media(pointer:coarse)]:size-7!">
+            <IconButton label={labels.editPastedText} size="sm" onPress={onOpen} className="size-6 border border-chat-border-strong bg-chat-bg [&_svg]:size-3.5 [@media(pointer:coarse)]:size-7!">
               <Pencil />
             </IconButton>
           )}
         </div>
       )}
       {pasted && onOpen && !onRemove && (
-        <button type="button" aria-label="View pasted text" onClick={onOpen} className="absolute inset-0 cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-chat-focus" />
+        <button type="button" aria-label={labels.viewPastedText} onClick={onOpen} className="absolute inset-0 cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-chat-focus" />
       )}
       {onRemove && (
         <IconButton
-          label={`Remove ${a.name}`}
+          label={labels.removeAttachment(a.name)}
           variant="subtle"
           size="sm"
           tooltip={false}
@@ -235,10 +240,11 @@ export interface AttachmentRowProps {
 /** The composer's row of cards above the text. Renders nothing when empty. */
 export function AttachmentRow({ attachments, onRemove, onEditText }: AttachmentRowProps) {
   const [editing, setEditing] = useState<DraftAttachment>();
+  const labels = useLabels();
   if (attachments.length === 0) return null;
   return (
     <>
-      <ul aria-label="Attachments" className="flex gap-2.5 overflow-x-auto px-0.5 pt-2.5 pb-1 [scrollbar-width:thin]">
+      <ul aria-label={labels.attachments} className="flex gap-2.5 overflow-x-auto px-0.5 pt-2.5 pb-1 [scrollbar-width:thin]">
         {attachments.map((a) => (
           <li key={a.id}>
             <AttachmentCard
@@ -268,7 +274,9 @@ export interface PastedTextDialogProps {
 }
 
 /** Shows pasted text in a modal, editable when `onSave` is set. */
-export function PastedTextDialog({ text, onClose, onSave, title = "Pasted text" }: PastedTextDialogProps) {
+export function PastedTextDialog({ text, onClose, onSave, title }: PastedTextDialogProps) {
+  const labels = useLabels();
+  title ??= labels.pastedText;
   const [draft, setDraft] = useState(text ?? "");
   useEffect(() => setDraft(text ?? ""), [text]);
   return (
@@ -282,7 +290,7 @@ export function PastedTextDialog({ text, onClose, onSave, title = "Pasted text" 
       />
       <div className="flex justify-end gap-2 px-5 py-4">
         <Button variant="subtle" onPress={onClose}>
-          {onSave ? "Cancel" : "Close"}
+          {onSave ? labels.cancel : labels.close}
         </Button>
         {onSave && (
           <Button
@@ -292,7 +300,7 @@ export function PastedTextDialog({ text, onClose, onSave, title = "Pasted text" 
               onClose();
             }}
           >
-            Save
+            {labels.save}
           </Button>
         )}
       </div>

@@ -3,14 +3,15 @@ import { Globe } from "lucide-react";
 import { createContext, useContext, useMemo, type ComponentType, type ReactNode } from "react";
 import { useAgentSnapshot, useAgentTool, type AgentTool } from "../hooks/agent";
 import { CodeBlock } from "../primitives/code-block";
+import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
 
 /**
  * How one kind of tool call shows up in an activity group. Registered by tool name; hosts add their own and
  * override the built-in ones through `ChatProvider`.
  */
 export interface ToolView {
-  /** Row label, e.g. "Ran a command". Defaults to the part's title, then its name. */
-  label?: (part: ToolCallPart) => ReactNode;
+  /** Row label, e.g. "Ran a command". Defaults to the part's title, then its name. `labels` are the active UI strings. */
+  label?: (part: ToolCallPart, labels: ChatLabels) => ReactNode;
   /** Highlighted text after the label, e.g. the search query. Defaults to the part's subtitle. */
   subtitle?: (part: ToolCallPart) => ReactNode;
   /** Tooltip on the row label, e.g. the command's description. */
@@ -18,7 +19,7 @@ export interface ToolView {
   /** The approval question, e.g. "Add 4 events to your calendar?". Defaults to "Allow <label>?". */
   ask?: (part: ToolCallPart) => ReactNode;
   /** Phrase for the group heading, lowercase: "ran a command", "ran 3 commands". */
-  summary?: (count: number) => string;
+  summary?: (count: number, labels: ChatLabels) => string;
   /** Body shown when the row is expanded. Defaults to the result, or the input as JSON. */
   Detail?: ComponentType<{ part: ToolCallPart }>;
   /**
@@ -64,35 +65,32 @@ export const useChatTool: <Input, Output>(tool: ChatTool<Input, Output>) => void
 export const isWorking = (part: ActivityPart) => part.status !== "done" && part.status !== "error" && part.status !== "awaiting";
 
 /** Row label for any activity part. */
-export function activityLabel(part: ActivityPart, view?: ToolView): ReactNode {
+export function activityLabel(part: ActivityPart, labels: ChatLabels, view?: ToolView): ReactNode {
   if (part.type === "thinking") {
     if (part.title) return part.title;
-    if (part.status !== "done") return "Thinking…";
-    return part.durationMs ? `Thought for ${formatDuration(part.durationMs)}` : "Thought";
+    if (part.status !== "done") return labels.thinking;
+    return part.durationMs ? labels.thoughtFor(formatDuration(part.durationMs, labels)) : labels.thought;
   }
-  return view?.label?.(part) ?? part.title ?? part.name;
+  return view?.label?.(part, labels) ?? part.title ?? part.name;
 }
 
 /**
  * Heading of an activity group. While live it follows the latest step. Once done it lists what the tools
  * did, in order ("Ran a command, searched the web"); a group of only thinking shows the first title.
  */
-export function activityHeading(parts: readonly ActivityPart[], views: ToolViews): ReactNode {
+export function activityHeading(parts: readonly ActivityPart[], views: ToolViews, labels: ChatLabels): ReactNode {
   const waiting = parts.find((p): p is ToolCallPart => p.type === "tool_call" && p.status === "awaiting");
-  if (waiting) return <>{activityLabel(waiting, views[waiting.name])} · waiting for you</>;
+  if (waiting) return <>{activityLabel(waiting, labels, views[waiting.name])}{labels.waitingForYou}</>;
   if (parts.some(isWorking)) {
     const last = parts.at(-1)!;
-    return activityLabel(last, last.type === "tool_call" ? views[last.name] : undefined);
+    return activityLabel(last, labels, last.type === "tool_call" ? views[last.name] : undefined);
   }
   const counts = new Map<string, number>();
   for (const part of parts) if (part.type === "tool_call") counts.set(part.name, (counts.get(part.name) ?? 0) + 1);
-  if (counts.size === 0) return parts[0] ? activityLabel(parts[0]) : "";
-  const phrases = [...counts].map(([name, count]) => views[name]?.summary?.(count) ?? `used ${name}`);
-  const text = phrases.join(", ");
-  return text.charAt(0).toUpperCase() + text.slice(1);
+  if (counts.size === 0) return parts[0] ? activityLabel(parts[0], labels) : "";
+  const phrases = [...counts].map(([name, count]) => views[name]?.summary?.(count, labels) ?? labels.usedTool(name));
+  return labels.joinSummaries(phrases);
 }
-
-const plural = (count: number, one: string, many: (n: number) => string) => (count === 1 ? one : many(count));
 
 function recordOf(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
@@ -104,10 +102,11 @@ function stringOf(value: unknown): string | undefined {
 
 /** A shell command. Input `{ command, description? }`; result a string or `{ stdout, stderr, exitCode }`. */
 export const commandTool: ToolView = {
-  label: () => "Ran a command",
+  label: (_, labels) => labels.ranCommandLabel,
   hint: (part) => stringOf(recordOf(part.input).description),
-  summary: (n) => plural(n, "ran a command", (n) => `ran ${n} commands`),
+  summary: (n, labels) => labels.ranCommands(n),
   Detail: function CommandDetail({ part }) {
+    const labels = useLabels();
     const command = stringOf(recordOf(part.input).command) ?? part.inputJson;
     const result = recordOf(part.result);
     const output =
@@ -115,7 +114,7 @@ export const commandTool: ToolView = {
     return (
       <div className="space-y-4">
         <CodeBlock label="bash" code={command} />
-        {(output || part.status === "done") && <CodeBlock label="Output" code={output || "(no output)"} />}
+        {(output || part.status === "done") && <CodeBlock label={labels.output} code={output || labels.noOutput} />}
         {part.error && <p className="text-sm text-chat-danger">{part.error}</p>}
       </div>
     );
@@ -131,15 +130,16 @@ export interface SearchResult {
 
 /** A web search. Input `{ query }`; result `{ results: SearchResult[] }` or `SearchResult[]`. */
 export const webSearchTool: ToolView = {
-  label: () => "Searched the web",
+  label: (_, labels) => labels.searchedWebLabel,
   subtitle: (part) => stringOf(recordOf(part.input).query) ?? part.subtitle,
-  summary: (n) => plural(n, "searched the web", (n) => `searched the web ${n} times`),
+  summary: (n, labels) => labels.searchedWeb(n),
   Detail: function WebSearchDetail({ part }) {
+    const labels = useLabels();
     const results = (Array.isArray(part.result) ? part.result : recordOf(part.result).results) as
       | SearchResult[]
       | undefined;
     if (part.error) return <p className="text-sm text-chat-danger">{part.error}</p>;
-    if (!results?.length) return <p className="text-sm text-chat-muted">No results</p>;
+    if (!results?.length) return <p className="text-sm text-chat-muted">{labels.noResults}</p>;
     return (
       <ul className="-mx-1">
         {results.map((result) => (
@@ -167,12 +167,12 @@ export const webSearchTool: ToolView = {
 
 /** Memory lookups, e.g. Anthropic's memory tool. Input `{ path }`. */
 export const memoryTool: ToolView = {
-  label: () => "Recalled memory",
+  label: (_, labels) => labels.recalledMemoryLabel,
   subtitle: (part) => {
     const path = stringOf(recordOf(part.input).path);
     return path?.split("/").at(-1) ?? part.subtitle;
   },
-  summary: () => "recalled memory",
+  summary: (n, labels) => labels.recalledMemory(n),
 };
 
 export const defaultToolViews: ToolViews = {
@@ -192,7 +192,6 @@ function hostOf(url: string): string {
 }
 
 /** "9s", "1m 5s". */
-export function formatDuration(ms: number): string {
-  const seconds = Math.max(1, Math.round(ms / 1000));
-  return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+export function formatDuration(ms: number, labels: ChatLabels = defaultLabels): string {
+  return labels.duration(Math.max(1, Math.round(ms / 1000)));
 }
