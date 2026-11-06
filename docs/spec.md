@@ -271,6 +271,11 @@ Each slice ends with tests passing and the states visible in the playground.
 - Write down what is opinionated (fixed on purpose) and what is meant to be changed, in the README and here.
   Opinionated, keep: animations and their timings (streaming word fade, folds), the claude.ai layout. Too
   much customizability is a cost; add knobs only for real gaps.
+- Swappable icons, Lucide by default: `ChatTheme icons={{ copy: <MyCopy />, ... }}`, the same pattern as
+  labels (flat keys, merged over the parent's, defaults exported). After the labels work lands.
+- No hardcoded text sizes: a small scale of variables (UI text, small UI text, the user bubble; message and
+  code exist already). `density` presets set those variables instead of their own values, so a theme can
+  tune each preset. Density itself stays a prop (it describes the container, not the brand).
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").
