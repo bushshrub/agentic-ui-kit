@@ -64,3 +64,65 @@ Look
 - Set apart what you added or changed from what was already there: your proposals in the accent with a small
   "New" (or "Changed") tag, existing data quiet. The user must see at a glance what is yours.
 - Make it work on a narrow screen (down to 320px wide) and with a keyboard: real <button>s, visible focus.`;
+
+/** What `checkWidgetCode` found. */
+export interface WidgetCodeCheck {
+  /** Nothing will break: no errors (warnings may remain). */
+  ok: boolean;
+  /** Things that break the widget in the sandbox. */
+  errors: string[];
+  /** Things that work but look wrong in the chat, e.g. hard-coded colors. */
+  warnings: string[];
+  /** A message to return to the model as the tool result. */
+  feedback: string;
+}
+
+const originOf = (url: string) => {
+  try {
+    return new URL(url).origin.toLowerCase();
+  } catch {
+    return undefined;
+  }
+};
+
+/**
+ * Checks widget code before it reaches the user, so a harness can send problems back to the model as the
+ * tool result. `allow` is what the host lets widgets load (the same `allow` as the chat's `widgets`).
+ */
+export function checkWidgetCode(
+  html: unknown,
+  allow: { resourceDomains?: string[]; connectDomains?: string[] } = {},
+  toolName: string = visualizeTool.name,
+): WidgetCodeCheck {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  if (typeof html !== "string" || !html.trim()) {
+    errors.push("widget_code: required, an HTML fragment or an <svg>");
+  } else {
+    if (/<!doctype|<html[\s>]|<head[\s>]|<body[\s>]/i.test(html)) errors.push("Send a fragment: no <!doctype>, <html>, <head> or <body>.");
+    const allowed = (allow.resourceDomains ?? []).map((d) => d.toLowerCase().replace(/\/$/, ""));
+    const fits = (origin: string) => allowed.some((a) => a === origin || (a.includes("*.") && origin.endsWith(a.slice(a.indexOf("*.") + 1)) && origin.startsWith(a.slice(0, a.indexOf("*.")))));
+    const blocked = new Set<string>();
+    for (const m of html.matchAll(/(?:src|href)\s*=\s*["']?(https?:\/\/[^"'\s>]+)|url\(\s*["']?(https?:\/\/[^"')\s]+)|@import\s+["'](https?:\/\/[^"']+)/gi)) {
+      const origin = originOf(m[1] ?? m[2] ?? m[3] ?? "");
+      if (origin && !fits(origin) && !/<a\s[^>]*$/i.test(html.slice(0, m.index))) blocked.add(origin);
+    }
+    if (blocked.size) {
+      errors.push(`Blocked by the sandbox: ${[...blocked].join(", ")}. ${allowed.length ? `Only ${allowed.join(", ")} may be loaded.` : "Nothing external may be loaded."} Inline it instead.`);
+    }
+    if (!(allow.connectDomains ?? []).length && /\bfetch\s*\(|XMLHttpRequest|new\s+WebSocket|EventSource\s*\(/.test(html)) {
+      errors.push("Network calls (fetch, XHR, WebSocket) are blocked: inline the data.");
+    }
+    if (/\b(localStorage|sessionStorage|document\.cookie|indexedDB)\b/.test(html)) {
+      errors.push("Storage (localStorage, cookies, indexedDB) is not available in the sandbox: keep state in variables.");
+    }
+    if (/\b(alert|confirm|prompt)\s*\(/.test(html)) errors.push("alert/confirm/prompt are blocked: show it in the widget, or use sendPrompt(text).");
+    if (/<form[\s>]/i.test(html) && /type\s*=\s*["']?submit/i.test(html)) warnings.push("Form submits are blocked: handle the button's click in a script.");
+    const colors = new Set([...html.matchAll(/(?<![\w-])(#[0-9a-f]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\))/gi)].map((m) => m[1]!.toLowerCase()));
+    if (colors.size) warnings.push(`Hard-coded colors (${[...colors].slice(0, 5).join(", ")}${colors.size > 5 ? ", ..." : ""}): use var(--chat-*) so it matches the theme.`);
+  }
+  const ok = errors.length === 0;
+  const lines = [...errors, ...warnings].map((e) => `- ${e}`).join("\n");
+  const feedback = ok && !warnings.length ? "Shown to the user." : ok ? `Shown. To fit the chat better next time:\n${lines}` : `Shown, but it will not work as written. Fix these and call ${toolName} again:\n${lines}`;
+  return { ok, errors, warnings, feedback };
+}

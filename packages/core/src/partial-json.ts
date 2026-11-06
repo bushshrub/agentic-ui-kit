@@ -96,3 +96,19 @@ export function parsePartialJson(text: string): unknown {
   }
   return safe === 0 ? undefined : tryParse(text.slice(0, safe) + safeClose);
 }
+
+/**
+ * JSON as far as it is valid: a stray bracket midway keeps what came before it, instead of losing it all.
+ * `error` says where it broke, for feedback to the model.
+ */
+export function salvageJson(text: string): { value: unknown; error?: string } {
+  try {
+    return { value: JSON.parse(text) };
+  } catch (error) {
+    // V8: "at position 1768"; Firefox: "at line 1 column 1769".
+    const m = /position (\d+)|line 1 column (\d+)/.exec(String(error));
+    const at = m ? Number(m[1] ?? Number(m[2]) - 1) : text.length;
+    const near = text.slice(Math.max(0, at - 30), at + 10);
+    return { value: parsePartialJson(text.slice(0, at)), error: `invalid JSON at character ${at}, near ${JSON.stringify(near)}` };
+  }
+}

@@ -40,6 +40,11 @@ export interface WidgetHost {
   onCallTool?: (name: string, args: Record<string, unknown>) => Promise<unknown> | undefined;
   /** Reads the UI resource of a `widget` part with a `resourceUri`. Without it such parts render nothing. */
   readResource?: (uri: string) => Promise<WidgetResource>;
+  /**
+   * A widget's script failed (an exception or a rejected promise), e.g. to send back to the model so it can
+   * fix the widget. `partId` is the widget part or tool call. Each message is reported once per widget.
+   */
+  onWidgetError?: ((error: { partId: string; message: string }) => void) | undefined;
 }
 
 const WidgetHostContext = createContext<WidgetHost>({});
@@ -53,7 +58,9 @@ export function useWidgetHost(): WidgetHost {
   return useContext(WidgetHostContext);
 }
 
-export interface WidgetFrameProps extends Omit<WidgetHost, "readResource"> {
+export interface WidgetFrameProps extends Omit<WidgetHost, "readResource" | "onWidgetError"> {
+  /** The widget's script failed; each message once. */
+  onError?: (message: string) => void;
   /** A fragment (no <html>/<body>) or an <svg>, as the model writes it; or a full document when `document`. */
   html: string;
   /** `html` is a full MCP App document: it runs as is and talks MCP Apps itself. */
@@ -158,7 +165,10 @@ const BOOT = `(() => {
     const h = Math.ceil(root.getBoundingClientRect().height);
     if (h !== last) { last = h; post("ui/notifications/size-changed", { height: h }); }
   }).observe(root);
-  addEventListener("error", (e) => post("notifications/message", { level: "error", data: String(e.message) }));
+  const seen = new Set();
+  const report = (text) => { if (!seen.has(text) && seen.size < 10) { seen.add(text); post("notifications/message", { level: "error", logger: "widget", data: text }); } };
+  addEventListener("error", (e) => report(String(e.message) + (e.lineno ? " (line " + e.lineno + ")" : "")));
+  addEventListener("unhandledrejection", (e) => report("Unhandled promise rejection: " + String(e.reason && e.reason.message || e.reason)));
   post("ui/notifications/initialized", {});
 })();`;
 
@@ -229,6 +239,7 @@ export function WidgetFrame({
   onPrompt,
   onOpenLink,
   onCallTool,
+  onError,
   toolInput,
   toolResult,
   cancelled,
@@ -254,8 +265,8 @@ export function WidgetFrame({
     [initial, policy, isDocument, isDocument && html],
   );
 
-  const latest = useRef({ onPrompt, onOpenLink, onCallTool, policy, effective });
-  latest.current = { onPrompt, onOpenLink, onCallTool, policy, effective };
+  const latest = useRef({ onPrompt, onOpenLink, onCallTool, onError, policy, effective });
+  latest.current = { onPrompt, onOpenLink, onCallTool, onError, policy, effective };
 
   const send = (message: object) => frame.current?.contentWindow?.postMessage({ jsonrpc: "2.0", ...message }, "*");
   const context = () => ({
@@ -335,8 +346,11 @@ export function WidgetFrame({
         }
         case "ping":
           return reply(m.id, {});
-        case "notifications/message":
-          return console.warn("widget:", m.params?.data);
+        case "notifications/message": {
+          const data = typeof m.params?.data === "string" ? m.params.data : JSON.stringify(m.params?.data);
+          if (m.params?.level === "error" && data) latest.current.onError?.(data.slice(0, 1000));
+          return;
+        }
         default:
           return fail(m.id, -32601, "Method not found");
       }
@@ -395,15 +409,21 @@ export function WidgetFrame({
 }
 
 /** Pulls the host's abilities from context into frame props. */
-function useHostProps(): Omit<WidgetHost, "readResource"> {
-  const { allow, onPrompt, onOpenLink, onCallTool } = useWidgetHost();
-  return { ...(allow && { allow }), ...(onPrompt && { onPrompt }), ...(onOpenLink && { onOpenLink }), ...(onCallTool && { onCallTool }) };
+function useHostProps(partId: string): Omit<WidgetFrameProps, "html"> {
+  const { allow, onPrompt, onOpenLink, onCallTool, onWidgetError } = useWidgetHost();
+  return {
+    ...(allow && { allow }),
+    ...(onPrompt && { onPrompt }),
+    ...(onOpenLink && { onOpenLink }),
+    ...(onCallTool && { onCallTool }),
+    ...(onWidgetError && { onError: (message: string) => onWidgetError({ partId, message }) }),
+  };
 }
 
 /** The default look of a `widget` part: inline html, or an app UI the host reads from `resourceUri`. */
 export function WidgetPartView({ part }: { part: WidgetPart }) {
   const host = useWidgetHost();
-  const props = useHostProps();
+  const props = useHostProps(part.id);
   const [resource, setResource] = useState<WidgetResource>();
   const uri = part.html === undefined ? part.resourceUri : undefined;
   useEffect(() => {
@@ -445,7 +465,7 @@ export function readVisualizeInput(input: unknown): WidgetToolInput {
  */
 export function widgetToolView(read: (input: unknown) => WidgetToolInput = readVisualizeInput) {
   function WidgetToolBlock({ part }: { part: ToolCallPart }) {
-    const props = useHostProps();
+    const props = useHostProps(part.id);
     const { html = "", title, loadingMessages } = read(part.input ?? part.partialInput);
     if (part.status === "error" && !html) return null;
     return (

@@ -1,6 +1,6 @@
 import {
   isStateRef,
-  parsePartialJson,
+  salvageJson,
   matchesSchema,
   uiActionSchema,
   type RenderUiInput,
@@ -155,22 +155,10 @@ export function UiTree({ id, root, state: initial, streaming = false }: UiTreePr
   );
 }
 
-/** JSON as far as it is valid: a stray bracket midway keeps the nodes before it instead of losing all. */
-function salvageJson(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch (error) {
-    // V8: "at position 1768"; Firefox: "at line 1 column 1769".
-    const m = /position (\d+)|line 1 column (\d+)/.exec(String(error));
-    const at = m ? Number(m[1] ?? Number(m[2]) - 1) : text.length;
-    return parsePartialJson(text.slice(0, at));
-  }
-}
-
 /** Reads `{ root, state }`. Models sometimes send `root` or `state` as a JSON string; those are parsed too. */
 export function readTreeInput(input: unknown): { root?: unknown; state?: Record<string, unknown> } {
   const i = (input ?? {}) as Partial<Record<keyof RenderUiInput, unknown>>;
-  const unwrap = (v: unknown) => (typeof v === "string" ? salvageJson(v) : v);
+  const unwrap = (v: unknown) => (typeof v === "string" ? salvageJson(v).value : v);
   const root = unwrap(i.root);
   const state = unwrap(i.state);
   return { ...(root !== undefined && { root }), ...(typeof state === "object" && state !== null && { state: state as Record<string, unknown> }) };

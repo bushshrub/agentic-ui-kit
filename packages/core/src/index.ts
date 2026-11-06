@@ -4,8 +4,8 @@ export { applyEvent, reduceEvents, estimateTokens, outputTokens, activityTokens,
 export { toBlocks, isActivityPart } from "./blocks";
 export type { Block, ActivityPart } from "./blocks";
 export { readEventStream, formatEvent } from "./sse";
-export { parsePartialJson } from "./partial-json";
-export { visualizeTool, visualizeGuide } from "./visualize";
-export type { VisualizeInput } from "./visualize";
-export { matchesSchema, isStateRef, renderUiTool, renderUiToolName, uiActionSchema } from "./ui-tree";
-export type { UiNode, UiAction, RenderUiInput, UiComponentSpec } from "./ui-tree";
+export { parsePartialJson, salvageJson } from "./partial-json";
+export { visualizeTool, visualizeGuide, checkWidgetCode } from "./visualize";
+export type { VisualizeInput, WidgetCodeCheck } from "./visualize";
+export { matchesSchema, schemaErrors, checkUiTree, isStateRef, renderUiTool, renderUiToolName, uiActionSchema } from "./ui-tree";
+export type { UiNode, UiAction, RenderUiInput, UiComponentSpec, UiTreeCheck } from "./ui-tree";

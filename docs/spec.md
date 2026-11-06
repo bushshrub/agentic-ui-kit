@@ -321,10 +321,13 @@ Each slice ends with tests passing and the states visible in the playground.
 
 - The kit is only UI: harnesses bring their own tools and prompts. Tool definitions and the design guide are
   suggestions; views map any tool name/input shape (`widgetToolView(read)`, `uiTreeToolView(read)`).
-- Make it as easy as possible for any model to build a good UI first time: checks whose messages a model can
-  act on (tree: unknown component, bad prop, path; widget code: document tags, hard-coded colors, blocked
-  network), widget runtime errors passed to the host, so a harness feeds them back instead of retrying.
+- Built: checks a harness runs on the tool call and returns as its result (`checkUiTree`, `checkWidgetCode`:
+  paths, "did you mean", blocked origins, hard-coded colors) and `widgets.onWidgetError` for script errors,
+  so any model gets told what to fix instead of the harness retrying blind.
 - Markdown docs with examples: plugging the visuals into a custom harness (tools, prompts, feeding errors back).
+  Keep the model's prompt cache: tools and instructions byte-stable, feedback only appended as tool results.
+- Later: let the model fix a visual with small edits instead of resending it (tokens): path patches for trees
+  (the check's paths already name the node), find/replace for widget code, like coding agents' edit tools.
 - Storybook against a real model via a gitignored .env (see below).
 - Storybook against a real model: a gitignored .env in this repo (endpoint, key, model) so stories can talk to
   a live model; keys never committed.

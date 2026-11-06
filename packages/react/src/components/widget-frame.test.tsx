@@ -177,3 +177,13 @@ it("draws widget parts and calls of the tool the host maps to widgetToolView; a 
   await fromWindow(own, { id: 7, ...prompt });
   expect(replies).toEqual([expect.objectContaining({ id: 7, error: expect.objectContaining({ code: -32000 }) })]);
 });
+
+it("passes a widget's script errors to the host", async () => {
+  const onError = vi.fn();
+  const { container } = render(<WidgetFrame html="" onError={onError} />);
+  const own = frameOf(container).contentWindow!;
+  await fromWindow(own, { method: "notifications/message", params: { level: "error", data: "x is not defined (line 3)" } });
+  await fromWindow(own, { method: "notifications/message", params: { level: "info", data: "hello" } });
+  await fromWindow(window, { method: "notifications/message", params: { level: "error", data: "forged" } });
+  expect(onError.mock.calls).toEqual([["x is not defined (line 3)"]]);
+});
