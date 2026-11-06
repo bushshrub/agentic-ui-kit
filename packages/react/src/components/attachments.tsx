@@ -140,7 +140,10 @@ export function useAttachments({ upload }: UseAttachmentsOptions = {}): UseAttac
 /** What a card needs; both composer drafts and sent attachment parts fit. */
 export interface AttachmentCardData {
   name: string;
-  mime: string;
+  /** Without it the card reads `kind`, else guesses from the extension of `url` (or `name`). */
+  mime?: string;
+  /** Says what the attachment is when there is no `mime`: "image" draws the `url` as a thumbnail. */
+  kind?: "text" | "image" | "file";
   text?: string;
   /** Image thumbnail. */
   url?: string;
@@ -158,12 +161,22 @@ export interface AttachmentCardProps {
   className?: string;
 }
 
+const IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|avif|svg|bmp|ico)$/i;
+
+/** Whether the card draws a thumbnail: by mime when given, else by `kind`, else by the file extension of the url or name. */
+function isImage({ mime, kind, url, name }: AttachmentCardData): boolean {
+  if (mime) return mime.startsWith("image/");
+  if (kind) return kind === "image";
+  const path = url && !url.startsWith("data:") ? url.split(/[?#]/)[0]! : "";
+  return url?.startsWith("data:image/") === true || IMAGE_EXTENSION.test(path) || IMAGE_EXTENSION.test(name);
+}
+
 const extension = (name: string) => /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toUpperCase();
 
 /** A square card: pasted text preview with a PASTED badge, an image thumbnail, or a file with its type. */
 export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", className }: AttachmentCardProps) {
   const icons = useIcons();
-  const image = a.mime.startsWith("image/") && a.url;
+  const image = a.url && isImage(a);
   const pasted = a.text !== undefined;
   const labels = useLabels();
   const uploading = a.status === "uploading";

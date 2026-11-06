@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { cx } from "./cx";
 import type { ReactNode } from "react";
 
 const tones = {
@@ -18,7 +18,7 @@ export interface BadgeProps {
 export function Badge({ children, tone = "outline", icon, className }: BadgeProps) {
   return (
     <span
-      className={clsx(
+      className={cx(
         "inline-flex items-center gap-1 rounded-full px-2 py-px font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 whitespace-nowrap [&_svg]:size-3",
         tones[tone],
         className,

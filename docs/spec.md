@@ -321,50 +321,13 @@ Each slice ends with tests passing and the states visible in the playground.
 
 - jaa-v2 app shell gaps (reply to jaa-v2 with what ships and the version; code in ~/slop/jaa-v2 branch
   worktree-agent-a67fe6e30eb58a8fb, web/src/components/{Layout,Sidebar,SidebarApps}.tsx):
-  1. AppShell window-scroll mode (sticky sidebar, the page scrolls the window).
-  2. Resizable sidebar: resizable={min,max} + onWidthChange (or persistKey); no width transition while dragging.
-  3. Controlled collapsed / onCollapsedChange.
-  4. SidebarItem: trailing slot (row actions), secondary text, title/tooltip for truncated labels, data-* passthrough.
-  5. Collapsed rail: show icon-only headerActions (or a rail slot).
-  6. SidebarToggle ⌘B shortcut and "(⌘ B)" in its label; SidebarItem icon size via a --chat-* var.
-  7. Menu: a check mark on the selected item in a selectionMode menu.
-  8. Document that SidebarItem href needs react-aria's RouterProvider for client-side nav (or a router adapter).
-  9. Button/IconButton (and Modal, Drawer, Popover): merge className with tailwind-merge so caller classes win.
-  10. Button: justify-center, so a full-width Button centers its text.
-  11. A tooltip on a disabled Button (RAC disabled buttons get no hover/focus): a supported way, e.g. `disabledReason`.
-  12. Nice to have: SegmentedControl clearable, isDisabled, size.
-- jaa-v2 chat gaps for 0.7.0 (code: ~/slop/jaa-v2 branch worktree-agent-aadd144d8a8f5b55e, web/src/api/chat_stream.ts,
-  web/src/pages/Chat.tsx):
-  1. Resume a run already going: useChat({ resume }) calling transport.resume?(conversationId) -> AsyncIterable<StreamEvent>.
-  2. useChat survives the StrictMode double mount (abort only on a real unmount).
-  3. Markdown block overrides (ul/li passthrough or renderList), so a list of job links can render as cards and keep
-     the fade, highlighting and KaTeX.
-  4. ModelInfo.icon?: ReactNode in the ModelPicker menu.
-  5. Docs: part.start with a finished status counts as finished; without input, inputJson is only parsed by
-     part.end (or run.end).
 - Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
   for the local wrapper components.
 - Slopbot friction (on 0.5.1), worst first:
-  1. Modal size: className loses to the panel's own w-full/max-w-2xl (no class merging), so every override
-     needs `!`. Add `size` (sm/md/lg/xl/full) and `placement` ("center" | "top"), or merge classes.
-  2. SidebarItem is a bare <li>: outside the nav slot it gets a list bullet. list-none, or a SidebarList export.
-  3. SidebarItem: a `badge` that always shows (`shortcut` only shows on hover); now "Inbox (3)".
-  4. ChatList items: `detail` (e.g. relative time) and `muted` (an "off" channel).
   5. Message authors: `author { name, avatarUrl? }` on messages, user turns too, with optional grouping of
      one author's consecutive messages (Discord transcripts: many people plus the bot).
-  6. ChatView without a composer: `composer={false}` / `readOnly`.
-  7. Export a PopoverTrigger/DialogTrigger so apps don't import react-aria for the kit Popover.
-  8. AttachmentCard without a mime type: infer it from the URL, or take `kind: "image" | "file"`.
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
-- Approval card wording: it reuses the finished-call label, so it reads "Allow Ran a command?". It needs a
-  present-tense ask ("Run this command?"). Seen with Claude Code over ACP.
-- Bug (llm-chat-ui): ChatTranscript with start="top" opens ~115px down when it has a notice and a widget that
-  grows after mount; it should stay at scrollTop 0 until the reader scrolls.
-- CopyField (llm-chat-ui): read-only URL + Copy button with a "Copied" state, for share dialogs.
-- ContextMeter (llm-chat-ui): a 14-16px progress ring for the composer toolbar beside ModelPicker, filled to
-  used/limit (ContextPanel's count), accent then warning/danger; tooltip "Context: 13.8k / 200k (7%)" with an
-  override or extra line; click/Enter opens ContextPanel in a Popover above it; aria label; optional loading.
 
 - The kit is only UI: harnesses bring their own tools and prompts. Tool definitions and the design guide are
   suggestions; views map any tool name/input shape (`widgetToolView(read)`, `uiTreeToolView(read)`).

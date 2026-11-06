@@ -46,8 +46,12 @@ export interface ChatViewProps {
   widgets?: WidgetHost;
   /** Usually a `<ChatHeader>`. */
   header?: ReactNode;
-  /** Passed to the composer: toolbar slots, placeholder, controlled text. */
-  composer?: Partial<Omit<ComposerProps, "onSubmit" | "onStop" | "busy">>;
+  /**
+   * Passed to the composer: toolbar slots, placeholder, controlled text. `false` shows no composer (a chat you
+   * can only read or answer through approvals and message actions): `renderComposer` is not called, the empty
+   * state gets `null` in place of the composer and nothing shows if there is none.
+   */
+  composer?: Partial<Omit<ComposerProps, "onSubmit" | "onStop" | "busy">> | false;
   /**
    * Shown instead of the list while there are no messages; gets the centered composer to place, e.g.
    * `(composer) => <EmptyState greeting="Good evening">{composer}</EmptyState>`. Defaults to the composer.
@@ -107,7 +111,8 @@ export function ChatView({
   const [body, short] = useShortPane();
   const labels = useLabels();
   const pending = onApprove && approvals?.[0];
-  const box = (variant: ComposerProps["variant"]) => {
+  const box = (variant: ComposerProps["variant"]): ReactNode => {
+    if (composer === false) return null;
     const element = <Composer
       variant={density === "inline" || (short && !empty) ? "compact" : variant}
       busy={busy}

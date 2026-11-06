@@ -21,3 +21,10 @@ it("opens a project that holds the active chat", () => {
   render(<ChatList sections={sections} activeId="b" />);
   expect(screen.getByRole("button", { name: "website" }).getAttribute("aria-expanded")).toBe("true");
 });
+
+it("shows a row's detail and dims a muted row without an unread marker", () => {
+  render(<ChatList sections={[{ id: "s", items: [{ id: "a", title: "Alpha", detail: "2h" }, { id: "b", title: "Beta", muted: true, unread: true }] }]} />);
+  expect(screen.getByText("2h")).toBeTruthy();
+  expect(screen.queryByRole("img", { name: "Unread" })).toBeNull();
+  expect(screen.getByText("Beta").className).toContain("text-chat-muted");
+});

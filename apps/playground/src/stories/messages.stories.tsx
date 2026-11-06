@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { reduceEvents, type Message, type StreamEvent } from "agentic-ui-kit/core";
 import { agentRun, fullThinkingRun, mathRun, researchRun } from "@agentic-ui-kit/core/fixtures";
-import { AssistantMessage, UserMessage, type AssistantMessageProps } from "agentic-ui-kit";
+import { AssistantMessage, MarkdownLinksProvider, UserMessage, type AssistantMessageProps } from "agentic-ui-kit";
 import { expect, fn } from "storybook/test";
 import { useReplay } from "../lib/replay";
 
@@ -78,6 +78,48 @@ export const MarkdownAndMath: Story = {
     await expect(args.onFeedback).toHaveBeenCalledWith("good");
     await userEvent.click(canvas.getAllByRole("button", { name: "Retry" }).at(-1)!);
     await expect(args.onRetry).toHaveBeenCalled();
+  },
+};
+
+const jobsReply: Message = {
+  id: "msg_jobs",
+  parentId: "msg_u1",
+  role: "assistant",
+  status: "done",
+  createdAt: "2026-11-04T18:00:05Z",
+  parts: [
+    {
+      type: "text",
+      id: "t",
+      status: "done",
+      text: "Three roles match, with the **salary** at about $120k ($E = mc^2$ is not a job):\n\n- [Staff engineer, Berlin](https://jobs.example/jobs/7)\n- [Product designer, Remote](https://jobs.example/jobs/9)\n- [Data analyst, Lisbon](https://jobs.example/jobs/12)\n\nSee also [the careers page](https://jobs.example).",
+    },
+  ],
+};
+
+/** `MarkdownLinksProvider renderLinkList`: a list in which every item is a link is drawn as cards. Other lists and lone links stay as they are. */
+export const LinkListAsCards: Story = {
+  args: { message: jobsReply, question: "Any jobs for me?" },
+  decorators: [
+    (Story) => (
+      <MarkdownLinksProvider
+        renderLinkList={({ links }) => (
+          <div className="grid gap-2">
+            {links.map((l) => (
+              <a key={l.href} href={l.href} className="rounded-chat-md border border-chat-border p-3 font-chat-sans text-sm hover:bg-chat-surface">
+                {l.children}
+              </a>
+            ))}
+          </div>
+        )}
+      >
+        <Story />
+      </MarkdownLinksProvider>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("link", { name: "Staff engineer, Berlin" })).toBeVisible();
+    await expect(canvas.queryByRole("list")).toBeNull();
   },
 };
 

@@ -1,5 +1,6 @@
-import type { StreamEvent } from "@agentic-ui-kit/core";
+import type { Message, StreamEvent } from "@agentic-ui-kit/core";
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { StrictMode, useEffect } from "react";
 import { expect, it } from "vitest";
 import { useChat, type SendRequest, type Transport } from "./use-chat";
 
@@ -61,4 +62,74 @@ it("retry replaces the reply with a new one from the same user message", async (
   await waitFor(() => expect(result.current.busy).toBe(false));
   expect(result.current.messages).toHaveLength(2);
   expect(textOf(result.current.messages[1]!)).toBe("echo: hi");
+});
+
+/** A transport whose only way to a reply is joining the run that is already going. */
+function joinable(): Transport & { joined: string[]; sends: number } {
+  const t = {
+    joined: [] as string[],
+    sends: 0,
+    // eslint-disable-next-line require-yield
+    async *send() {
+      t.sends++;
+    },
+    async *resume(conversationId: string) {
+      t.joined.push(conversationId);
+      const runId = "r";
+      yield { type: "run.start", runId, seq: 0, messageId: "a", parentId: "u", createdAt: "2026-11-05T00:00:00Z" } as const;
+      yield { type: "part.start", runId, seq: 1, part: { type: "text", id: "p", text: "", status: "streaming" } } as const;
+      yield { type: "part.delta", runId, seq: 2, partId: "p", text: "so far" } as const;
+      yield { type: "part.end", runId, seq: 3, partId: "p" } as const;
+      yield { type: "run.end", runId, seq: 4, status: "done" } as const;
+    },
+  };
+  return t;
+}
+
+const asked = (): Message => ({ id: "u", parentId: null, role: "user", status: "done", createdAt: "2026-11-05T00:00:00Z", parts: [{ type: "text", id: "t", text: "hi", status: "done" }] });
+const placeholder = (): Message => ({ id: "awaited", parentId: "u", role: "assistant", status: "streaming", createdAt: "2026-11-05T00:00:00Z", parts: [] });
+
+it("resume joins the running reply and replaces an empty placeholder", async () => {
+  const transport = joinable();
+  const { result } = renderHook(() => useChat({ transport, conversationId: "c1", initialMessages: [asked(), placeholder()], resume: true }));
+  await waitFor(() => expect(result.current.busy).toBe(false));
+  expect(transport.joined).toEqual(["c1"]);
+  expect(transport.sends).toBe(0);
+  expect(result.current.messages.map((m) => m.id)).toEqual(["u", "a"]);
+  expect(textOf(result.current.messages[1]!)).toBe("so far");
+  expect(result.current.messages[1]).toMatchObject({ status: "done" });
+});
+
+it("resume survives the StrictMode double mount and joins once", async () => {
+  const transport = joinable();
+  const { result } = renderHook(() => useChat({ transport, conversationId: "c1", initialMessages: [asked()], resume: true }), { wrapper: StrictMode });
+  await waitFor(() => expect(result.current.busy).toBe(false));
+  expect(transport.joined).toHaveLength(1);
+  expect(result.current.messages[1]).toMatchObject({ status: "done" });
+  expect(textOf(result.current.messages[1]!)).toBe("so far");
+});
+
+it("a send from a mount effect survives StrictMode; a real unmount aborts", async () => {
+  const transport = echo({ hold: true });
+  const { result, unmount } = renderHook(
+    () => {
+      const chat = useChat({ transport });
+      useEffect(() => chat.send("hi"), []);
+      return chat;
+    },
+    { wrapper: StrictMode },
+  );
+  await waitFor(() => expect(result.current.messages).toHaveLength(2));
+  expect(transport.requests).toHaveLength(1);
+  expect(transport.requests[0]!.signal.aborted).toBe(false);
+  unmount();
+  await waitFor(() => expect(transport.requests[0]!.signal.aborted).toBe(true));
+});
+
+it("resume with nothing running ends quietly and keeps the conversation", async () => {
+  // eslint-disable-next-line require-yield
+  const transport: Transport = { async *send() {}, async *resume() { throw new Error("404 Not Found"); } };
+  const { result } = renderHook(() => useChat({ transport, conversationId: "c1", initialMessages: [asked()], resume: true }));
+  await waitFor(() => expect(result.current.busy).toBe(false));
+  expect(result.current.messages.map((m) => m.id)).toEqual(["u"]);
 });

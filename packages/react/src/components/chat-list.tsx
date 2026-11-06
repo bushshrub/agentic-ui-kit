@@ -15,6 +15,10 @@ export interface ChatSummary {
   running?: boolean;
   /** Something new since the user last opened it. */
   unread?: boolean;
+  /** Quiet text at the right of the row, e.g. a relative time ("2h"). Makes room for the "…" button on hover. */
+  detail?: ReactNode;
+  /** Dimmed row, e.g. a channel with notifications off. Unread styling is dropped. */
+  muted?: boolean;
   /** Link target. Rows render as links when set (middle-click, open in new tab), else as buttons. */
   href?: string;
 }
@@ -129,12 +133,13 @@ function ChatRow({
   const markerClass = "size-2 shrink-0 rounded-full";
   const marker = chat.running ? (
     <span role="img" aria-label={labels.running} className={clsx(markerClass, "animate-pulse bg-chat-accent motion-reduce:animate-none")} />
-  ) : chat.unread ? (
+  ) : chat.unread && !chat.muted ? (
     <span role="img" aria-label={labels.unread} className={clsx(markerClass, "bg-chat-check")} />
   ) : null;
   const content = (
     <>
-      <span className={clsx("min-w-0 flex-1 truncate", chat.unread && !active && "font-medium")}>{chat.title}</span>
+      <span className={clsx("min-w-0 flex-1 truncate", chat.unread && !active && !chat.muted && "font-medium", chat.muted && "text-chat-muted")}>{chat.title}</span>
+      {chat.detail != null && <span className="shrink-0 text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle tabular-nums">{chat.detail}</span>}
       {marker}
     </>
   );

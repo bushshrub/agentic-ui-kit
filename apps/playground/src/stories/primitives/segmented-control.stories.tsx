@@ -19,19 +19,23 @@ const meta = {
     label: { control: "text", description: "Accessible name of the group." },
     options: { control: "object", description: "The choices: `id`, `label`, and optionally `icon` and `iconOnly` (then the label is only the accessible name)." },
     value: { control: false, description: "The selected option's id. Held in state by the story." },
+    clearable: { control: "boolean", description: "Pressing the selected option clears the selection: `value` may be null and `onChange` gets null." },
+    isDisabled: { control: "boolean", description: "Disable the whole control. An option can also set `isDisabled`." },
+    size: { control: "inline-radio", options: ["sm", "md"], description: "Height of the buttons: sm 24px (default), md 32px." },
     onChange: { description: "Called with the id of the option the user picked." },
   },
-  parameters: { controls: { include: ["label", "options", "onChange"] } },
+  parameters: { controls: { include: ["label", "options", "clearable", "isDisabled", "size", "onChange"] } },
   render: ({ value: initial, onChange, ...args }) => {
-    const [value, setValue] = useState(initial);
+    const [value, setValue] = useState<string | null>(initial);
     return (
       <div className="inline-flex rounded-chat-lg bg-chat-surface p-2">
         <SegmentedControl
           {...args}
-          value={value}
-          onChange={(v) => {
+          clearable
+          value={args.clearable ? value : (value ?? "a")}
+          onChange={(v: string | null) => {
             setValue(v);
-            onChange(v);
+            (onChange as (v: string | null) => void)(v);
           }}
         />
       </div>
@@ -52,3 +56,18 @@ export const Default: Story = {
 
 /** Icons only; the labels become the accessible names. */
 export const IconOnly: Story = { args: { label: "View", options: iconOptions } };
+
+/** Clearable: pressing the selected option again reports null. */
+export const Clearable: Story = {
+  args: { clearable: true },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getAllByRole("radio")[0]!);
+    await expect(args.onChange).toHaveBeenCalledWith(null);
+  },
+};
+
+/** The taller size. */
+export const Medium: Story = { args: { size: "md" } };
+
+/** Disabled as a whole. */
+export const Disabled: Story = { args: { isDisabled: true } };

@@ -7,15 +7,17 @@ import { expect, fn, waitFor, within } from "storybook/test";
 const meta = {
   title: "Primitives/Modal",
   component: Modal,
-  args: { isOpen: false, title: "Rename chat", className: "max-w-md", onOpenChange: fn(), children: null },
+  args: { isOpen: false, title: "Rename chat", size: "md", placement: "center", onOpenChange: fn(), children: null },
   argTypes: {
     isOpen: { control: "boolean", description: "Whether the dialog is showing." },
     title: { control: "text", description: "Heading of the dialog; also its accessible name." },
-    className: { control: "text", description: "Classes for the dialog panel, e.g. a max width." },
+    size: { control: "select", options: ["sm", "md", "lg", "xl", "full"], description: "Width of the dialog (default lg)." },
+    placement: { control: "inline-radio", options: ["center", "top"], description: "Vertical position: centered, or near the top (e.g. a command palette)." },
+    className: { control: "text", description: "Classes for the dialog panel. Merged with tailwind-merge, so they win over the size without `!`." },
     children: { control: false, description: "The dialog body. The story supplies a rename form." },
     onOpenChange: { description: "Called with `false` when the user dismisses it (Escape, outside click), or with the new state from the story's buttons." },
   },
-  parameters: { controls: { include: ["isOpen", "title", "className", "children", "onOpenChange"] } },
+  parameters: { controls: { include: ["isOpen", "title", "size", "placement", "className", "children", "onOpenChange"] } },
   render: ({ isOpen, onOpenChange, ...args }) => {
     const [open, setOpen] = useState(isOpen);
     useEffect(() => setOpen(isOpen), [isOpen]);
@@ -61,3 +63,15 @@ export const Default: Story = {
 
 /** Already open on first render. */
 export const Open: Story = { args: { isOpen: true } };
+
+/** Small dialog for a quick confirmation. */
+export const Small: Story = { args: { isOpen: true, size: "sm" } };
+
+/** Anchored near the top edge, like a command palette. */
+export const Top: Story = { args: { isOpen: true, placement: "top" } };
+
+/** Fills the page. */
+export const Full: Story = { args: { isOpen: true, size: "full" } };
+
+/** A caller class overrides the size, no `!` needed. */
+export const CustomWidth: Story = { args: { isOpen: true, className: "max-w-[30rem]" } };

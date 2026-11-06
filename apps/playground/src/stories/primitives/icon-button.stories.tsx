@@ -14,9 +14,10 @@ const meta = {
     variant: { control: "select", options: ["ghost", "subtle", "outline", "primary", "danger"], description: "Visual weight and intent." },
     size: { control: "inline-radio", options: ["sm", "md"], description: "Button size." },
     isDisabled: { control: "boolean", description: "Blocks presses and dims the button." },
+    disabledReason: { control: "text", description: "Why the button is disabled. With `isDisabled` the button stays focusable, never fires `onPress`, and shows the reason as a tooltip and accessible description." },
     onPress: { description: "Called when the button is pressed." },
   },
-  parameters: { controls: { include: ["label", "children", "variant", "size", "isDisabled", "onPress"] } },
+  parameters: { controls: { include: ["label", "children", "variant", "size", "isDisabled", "disabledReason", "onPress"] } },
 } satisfies Meta<typeof IconButton>;
 export default meta;
 
@@ -38,3 +39,14 @@ export const Small: Story = { args: { size: "sm" } };
 
 /** Disabled: no hover, no presses. */
 export const Disabled: Story = { args: { isDisabled: true } };
+
+/** Disabled with a reason: focusable, and the tooltip and description explain why. */
+export const DisabledWithReason: Story = {
+  args: { isDisabled: true, disabledReason: "Write a message first" },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.tab();
+    await expect(canvas.getByRole("button")).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onPress).not.toHaveBeenCalled();
+  },
+};

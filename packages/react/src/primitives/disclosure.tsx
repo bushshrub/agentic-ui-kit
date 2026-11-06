@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { cx } from "./cx";
 import { useIcons, IconSlot } from "./icons";
 import type { ReactNode } from "react";
 import {
@@ -39,7 +39,7 @@ export function Disclosure({
       <Heading className="m-0 font-normal">
         <Button
           slot="trigger"
-          className={clsx(
+          className={cx(
             "group/trigger flex max-w-full cursor-pointer items-center gap-1.5 rounded-chat-sm text-left text-chat-muted outline-none",
             "data-hovered:text-chat-fg data-focus-visible:ring-2 data-focus-visible:ring-chat-focus",
             summaryClassName,

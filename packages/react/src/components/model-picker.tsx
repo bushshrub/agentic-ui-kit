@@ -8,8 +8,14 @@ import { Button } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
 import { Menu, MenuItem, MenuNote, MenuSection, MenuSeparator, MenuTrigger, Popover, SubmenuTrigger } from "../primitives/menu";
 
+/** A model as the picker lists it: `ModelInfo` plus a logo. (`ModelInfo` is in the framework-free core, so it has no ReactNode.) */
+export interface ModelOption extends ModelInfo {
+  /** Shown before the model's name in the menu and on the button when it is selected, e.g. its provider's logo. */
+  icon?: ReactNode;
+}
+
 export interface ModelPickerProps {
-  models: ModelInfo[];
+  models: ModelOption[];
   model: string;
   onModelChange: (id: string) => void;
   effort?: string;
@@ -40,8 +46,8 @@ export function ModelPicker({
   const main = models.filter((m) => !m.secondary);
   const more = models.filter((m) => m.secondary);
 
-  const item = (m: ModelInfo) => (
-    <MenuItem key={m.id} id={m.id} description={m.disabledReason ?? m.description} isDisabled={m.disabled ?? false}>
+  const item = (m: ModelOption) => (
+    <MenuItem key={m.id} id={m.id} {...(m.icon && { icon: m.icon })} description={m.disabledReason ?? m.description} isDisabled={m.disabled ?? false}>
       {m.label}
     </MenuItem>
   );
@@ -54,6 +60,7 @@ export function ModelPicker({
   return (
     <MenuTrigger>
       <Button size="sm" aria-label={labels.modelButton(current?.label ?? model)} className={clsx("text-chat-muted data-hovered:text-chat-fg", className)}>
+        {current?.icon && <IconSlot className="text-chat-fg [&_svg]:size-3.5">{current.icon}</IconSlot>}
         <span className="min-w-0 truncate text-chat-fg">{current?.label ?? model}</span>
         {currentEffort && <span className="chat-picker-detail text-chat-muted">{currentEffort.label}</span>}
         <IconSlot className="[&_svg]:size-3.5">{icons.dropdown}</IconSlot>

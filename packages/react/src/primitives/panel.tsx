@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { cx } from "./cx";
 import type { ReactNode } from "react";
 
 export interface PanelProps {
@@ -23,7 +23,7 @@ export function Panel({ title, actions, footer, children, variant = "card", clas
   return (
     <section
       aria-label={props["aria-label"]}
-      className={clsx(
+      className={cx(
         "flex min-h-0 min-w-0 flex-col overflow-hidden bg-chat-bg font-chat-sans text-chat-fg",
         variant === "card" && "rounded-chat-md border border-chat-border",
         className,

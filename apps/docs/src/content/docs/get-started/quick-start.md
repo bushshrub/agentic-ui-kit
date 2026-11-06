@@ -65,3 +65,37 @@ Its text and buttons are yours:
   )}
 />
 ```
+
+**No composer.** For a chat the reader only reads, or answers through approvals, pass `composer={false}`:
+nothing is drawn under the conversation, `renderComposer` is not called, and `emptyState` gets `null` where
+the composer would go.
+
+## Links and lists in replies
+
+Message markdown draws links and lists the kit's way. To draw your own, wrap the chat in
+`MarkdownLinksProvider`:
+
+```tsx
+<MarkdownLinksProvider
+  renderLink={({ href, children }) => (href.includes("/jobs/") ? <JobLink href={href}>{children}</JobLink> : undefined)}
+  renderLinkList={({ links, ordered, children }) =>
+    links.every((l) => l.href.includes("/jobs/")) ? <JobCards jobs={links} /> : undefined
+  }
+>
+  <ChatView … />
+</MarkdownLinksProvider>
+```
+
+`renderLinkList` is called for a bullet or numbered list in which every item is a single link and nothing
+else. Each `links[i].children` is the link text as the kit rendered it, so word fade, bold and inline math
+carry over. `children` is the list as the kit would draw it. Return `undefined` to keep it.
+
+## Model logos
+
+A `ModelPicker` model (`ModelOption`) takes `icon`, a React node shown before its name in the menu and on the
+button when it is selected.
+
+## Attachments without a mime type
+
+`AttachmentCard` takes `mime`, or `kind: "image" | "file"`, or neither: it then treats a `url` ending in
+an image extension as an image.

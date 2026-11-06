@@ -35,6 +35,12 @@ export interface Transport {
   send(request: SendRequest): AsyncIterable<StreamEvent>;
   /** Tells the server to stop the run. The stream is aborted locally either way. */
   stop?(runId: string): Promise<void>;
+  /**
+   * Joins a run that is already going for the conversation (a page opened mid-reply, or a chat just created
+   * whose reply has started) and yields its events from the start of the run: `run.start` first, then the parts
+   * so far and the rest as they come. Used by `useChat({ resume: true })`; the stream ends with the run.
+   */
+  resume?(conversationId: string, signal: AbortSignal): AsyncIterable<StreamEvent>;
 }
 
 export interface UseChatOptions {
@@ -46,6 +52,13 @@ export interface UseChatOptions {
   agent?: AgentRegistry | null;
   /** Continuations allowed per user message, so a looping model stops. Default 12. */
   maxSteps?: number;
+  /**
+   * Join the run already going for `conversationId` when the hook mounts, through `transport.resume`. The reply
+   * is rebuilt from the replayed events; a trailing assistant message that is still streaming (e.g. an empty
+   * placeholder, or the part seen so far) is replaced. Does nothing without `transport.resume` or a
+   * `conversationId`. Safe in React StrictMode: the run is joined once and survives the double mount.
+   */
+  resume?: boolean;
 }
 
 export interface SendOptions {
@@ -101,7 +114,7 @@ type Run = { controller: AbortController; runId?: string; reply?: Message };
  * retries. With an `AgentProvider` it also runs the agent loop: client tools run in the page, approvals
  * wait for the user, then the reply continues; every finished tool call reaches its tool's `onResult`.
  */
-export function useChat({ transport, conversationId, initialMessages = [], onTitle, agent, maxSteps = 12 }: UseChatOptions): UseChat {
+export function useChat({ transport, conversationId, initialMessages = [], onTitle, agent, maxSteps = 12, resume = false }: UseChatOptions): UseChat {
   const contextAgent = useAgentRegistry();
   const registry = agent === undefined ? contextAgent : agent;
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -170,7 +183,7 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
   const advanceRef = useRef<(reply: Message) => void>(() => {});
 
   const start = useCallback(
-    (history: Message[], options: SendOptions, continuation?: Message) => {
+    (history: Message[], options: SendOptions, continuation?: Message, joining?: boolean) => {
       const message = history.at(-1)!;
       const controller = new AbortController();
       const current: Run = { controller, ...(continuation && { reply: continuation }) };
@@ -183,7 +196,10 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
         try {
           const { transport, conversationId, registry } = latest.current;
           const tools = registry?.specs();
-          for await (const event of transport.send({
+          const events =
+            joining && conversationId !== undefined && transport.resume
+              ? transport.resume(conversationId, controller.signal)
+              : transport.send({
             message,
             history,
             signal: controller.signal,
@@ -193,7 +209,8 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
             ...(conversationId !== undefined && { conversationId }),
             ...(options.model !== undefined && { model: options.model }),
             ...(options.effort !== undefined && { effort: options.effort }),
-          })) {
+          });
+          for await (const event of events) {
             if (controller.signal.aborted) break;
             if (event.type === "title") {
               latest.current.onTitle?.(event.title);
@@ -346,7 +363,32 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
     [start],
   );
 
-  useEffect(() => () => run.current?.controller.abort(), []);
+  // Join a run already going, once (StrictMode runs the effect twice on the same refs).
+  const joined = useRef(false);
+  useEffect(() => {
+    if (!resume || joined.current || run.current) return;
+    const { transport, conversationId, messages } = latest.current;
+    if (!transport.resume || conversationId === undefined) return;
+    joined.current = true;
+    const last = messages.at(-1);
+    const history = last?.role === "assistant" && last.status === "streaming" ? messages.slice(0, -1) : messages;
+    loop.current = { options: {}, step: 0 };
+    // The stream rebuilds the reply; `message` is only the parent it answers.
+    start(history, {}, undefined, true);
+  }, [resume, start]);
+
+  // Abort on a real unmount only. StrictMode unmounts and remounts synchronously, so a mount that follows
+  // within the same tick cancels the abort.
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      queueMicrotask(() => {
+        if (!mounted.current) run.current?.controller.abort();
+      });
+    };
+  }, []);
 
   return { messages, busy, approvals, respond, send, stop, retry };
 }

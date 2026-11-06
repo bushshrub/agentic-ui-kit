@@ -24,6 +24,7 @@ Generic UI with no chat knowledge.
 | [`Caret`](/reference/api/agentic-ui-kit/functions/caret/) | The small filled triangle claude.ai uses after expandable labels. Points right; rotate to point down. |
 | [`Disclosure`](/reference/api/agentic-ui-kit/functions/disclosure/) | A row that expands to show more, like "Recalled memory ▸". |
 | [`Popover`](/reference/api/agentic-ui-kit/functions/popover/) | Floating panel for menus and pickers: surface color, rounded, soft shadow, fades in. |
+| `PopoverTrigger` (also `DialogTrigger`) | Wraps a trigger button and a `Popover` or `Modal` so a press toggles it; no react-aria import needed. |
 | [`Menu`](/reference/api/agentic-ui-kit/functions/menu/) | List of items inside a Popover, with keyboard navigation. |
 | [`MenuItem`](/reference/api/agentic-ui-kit/functions/menuitem/) | One row in a Menu. |
 | [`MenuSearch`](/reference/api/agentic-ui-kit/functions/menusearch/) | A search box above a menu that filters its items, like "Search or create a project". |
@@ -44,6 +45,26 @@ Generic UI with no chat knowledge.
 | [`useIcons`](/reference/api/agentic-ui-kit/functions/useicons/) | The active icons: the enclosing `ChatTheme`'s `icons` over the defaults. |
 
 Types: [`ButtonProps`](/reference/api/agentic-ui-kit/interfaces/buttonprops/), [`IconButtonProps`](/reference/api/agentic-ui-kit/interfaces/iconbuttonprops/), [`BadgeProps`](/reference/api/agentic-ui-kit/interfaces/badgeprops/), [`ContextMenuProps`](/reference/api/agentic-ui-kit/interfaces/contextmenuprops/), [`ModalProps`](/reference/api/agentic-ui-kit/interfaces/modalprops/), [`DrawerProps`](/reference/api/agentic-ui-kit/interfaces/drawerprops/), [`PanelProps`](/reference/api/agentic-ui-kit/interfaces/panelprops/), [`ChatThemeProps`](/reference/api/agentic-ui-kit/interfaces/chatthemeprops/), [`ChatLabels`](/reference/api/agentic-ui-kit/interfaces/chatlabels/), [`ChatIcons`](/reference/api/agentic-ui-kit/interfaces/chaticons/), [`CodeThemes`](/reference/api/agentic-ui-kit/interfaces/codethemes/), [`ChatMotion`](/reference/api/agentic-ui-kit/type-aliases/chatmotion/).
+
+### Primitive behavior worth knowing
+
+- **Class merging.** Every primitive merges `className` with tailwind-merge, so a caller's `h-7`, `size-10`,
+  `rounded-none` or `max-w-sm` replaces the kit's class for the same property; no `!` needed. It knows the
+  kit's own `rounded-chat-*`, `shadow-chat-popover` and `animate-chat-*` utilities.
+- **Disabled with a reason.** `<Button isDisabled disabledReason="Fill in the title">` (also `IconButton`)
+  stays focusable with `aria-disabled`, never fires `onPress` or submits a form, shows the reason as a tooltip
+  on hover and focus, and exposes it as the accessible description. Without `disabledReason`, `isDisabled`
+  is a native disabled button as before.
+- **Modal size and placement.** `size` is `sm`, `md`, `lg` (default), `xl` or `full`; `placement` is `center`
+  (default) or `top`.
+- **Popover on phones.** Below 768px a `Popover` (and so every `Menu` in one) opens as a bottom sheet over the
+  `--chat-backdrop` dimmer, with the same keyboard and focus behavior. `sheet={480}` changes the breakpoint,
+  `sheet={false}` keeps the floating popover. `width="trigger"` sizes it to its trigger, and
+  `fullWidthOnPhones` stretches a floating popover to the viewport.
+- **Menu rows.** In a `selectionMode` menu the selected item shows a check mark; `indicator="switch"` shows an
+  on/off switch instead.
+- **SegmentedControl.** `clearable` lets the selected option be pressed again (`value` and `onChange` then use
+  `null`), `isDisabled` disables the group (options take it too), and `size="md"` is the taller variant.
 
 ## Hooks
 
@@ -117,6 +138,8 @@ Chat pieces with one job each, built from primitives.
 | [`useCountUp`](/reference/api/agentic-ui-kit/functions/usecountup/) | Follows `target` with a number that counts up smoothly instead of jumping. Each frame closes part of the |
 | [`formatTokens`](/reference/api/agentic-ui-kit/functions/formattokens/) | Compact token count: 526, 1.4k, 33k, 76.8k, 1M. |
 | [`ContextPanel`](/reference/api/agentic-ui-kit/functions/contextpanel/) | What fills the context window: a usage line, a segmented bar, one row per category with its share, and |
+| [`ContextMeter`](/reference/api/agentic-ui-kit/functions/contextmeter/) | A small progress ring for the composer toolbar, filled to the share of the context window in use (accent, |
+| [`CopyField`](/reference/api/agentic-ui-kit/functions/copyfield/) | A read-only, selectable field with a Copy button, for share links. The button says "Copied" for about two |
 | [`Composer`](/reference/api/agentic-ui-kit/functions/composer/) | The chat box: growing textarea, toolbar slots, send / stop. Enter sends, Shift+Enter adds a line. |
 | [`AttachButton`](/reference/api/agentic-ui-kit/functions/attachbutton/) | The `+` button that opens the attach menu above the composer. |
 | [`ModelPicker`](/reference/api/agentic-ui-kit/functions/modelpicker/) | "Opus 5.5 High ⌄": the models, an Effort submenu for models that have levels, and More models. |
@@ -130,7 +153,7 @@ Chat pieces with one job each, built from primitives.
 | [`ChatNotice`](/reference/api/agentic-ui-kit/functions/chatnotice/) | A bordered note in the conversation column: "Shared by Alex. This is a copy of a chat…" with actions under it. |
 | [`ChatList`](/reference/api/agentic-ui-kit/functions/chatlist/) | The chat picker: sections of chats and projects, collapsible, with an active row, running and unread |
 
-Types: [`UserMessageProps`](/reference/api/agentic-ui-kit/interfaces/usermessageprops/), [`AssistantMessageProps`](/reference/api/agentic-ui-kit/interfaces/assistantmessageprops/), [`Feedback`](/reference/api/agentic-ui-kit/type-aliases/feedback/), [`MarkdownProps`](/reference/api/agentic-ui-kit/interfaces/markdownprops/), [`RenderLink`](/reference/api/agentic-ui-kit/type-aliases/renderlink/), [`ActivityGroupProps`](/reference/api/agentic-ui-kit/interfaces/activitygroupprops/), [`ToolView`](/reference/api/agentic-ui-kit/interfaces/toolview/), [`ToolViews`](/reference/api/agentic-ui-kit/type-aliases/toolviews/), [`SearchResult`](/reference/api/agentic-ui-kit/interfaces/searchresult/), [`ChatTool`](/reference/api/agentic-ui-kit/interfaces/chattool/), [`WidgetFrameProps`](/reference/api/agentic-ui-kit/interfaces/widgetframeprops/), [`WidgetToolInput`](/reference/api/agentic-ui-kit/interfaces/widgettoolinput/), [`WidgetHost`](/reference/api/agentic-ui-kit/interfaces/widgethost/), [`WidgetAllow`](/reference/api/agentic-ui-kit/interfaces/widgetallow/), [`WidgetResource`](/reference/api/agentic-ui-kit/interfaces/widgetresource/), [`UiComponent`](/reference/api/agentic-ui-kit/interfaces/uicomponent/), [`UiStateStore`](/reference/api/agentic-ui-kit/interfaces/uistatestore/), [`UiTreeProps`](/reference/api/agentic-ui-kit/interfaces/uitreeprops/), [`ApprovalCardProps`](/reference/api/agentic-ui-kit/interfaces/approvalcardprops/), [`TokenCounterProps`](/reference/api/agentic-ui-kit/interfaces/tokencounterprops/), [`ContextPanelProps`](/reference/api/agentic-ui-kit/interfaces/contextpanelprops/), [`ComposerProps`](/reference/api/agentic-ui-kit/interfaces/composerprops/), [`AttachButtonProps`](/reference/api/agentic-ui-kit/interfaces/attachbuttonprops/), [`ModelPickerProps`](/reference/api/agentic-ui-kit/interfaces/modelpickerprops/), [`DraftAttachment`](/reference/api/agentic-ui-kit/interfaces/draftattachment/), [`UploadResult`](/reference/api/agentic-ui-kit/interfaces/uploadresult/), [`UseAttachments`](/reference/api/agentic-ui-kit/functions/useattachments/), [`UseAttachmentsOptions`](/reference/api/agentic-ui-kit/interfaces/useattachmentsoptions/), [`AttachmentCardData`](/reference/api/agentic-ui-kit/interfaces/attachmentcarddata/), [`AttachmentCardProps`](/reference/api/agentic-ui-kit/interfaces/attachmentcardprops/), [`AttachmentRowProps`](/reference/api/agentic-ui-kit/interfaces/attachmentrowprops/), [`PastedTextDialogProps`](/reference/api/agentic-ui-kit/interfaces/pastedtextdialogprops/), [`MessageListProps`](/reference/api/agentic-ui-kit/interfaces/messagelistprops/), [`ChatHeaderProps`](/reference/api/agentic-ui-kit/interfaces/chatheaderprops/), [`ChatTitleMenuProps`](/reference/api/agentic-ui-kit/interfaces/chattitlemenuprops/), [`ChatNoticeProps`](/reference/api/agentic-ui-kit/interfaces/chatnoticeprops/), [`ChatListProps`](/reference/api/agentic-ui-kit/interfaces/chatlistprops/), [`ChatListSection`](/reference/api/agentic-ui-kit/interfaces/chatlistsection/), [`ChatListItem`](/reference/api/agentic-ui-kit/type-aliases/chatlistitem/), [`ChatSummary`](/reference/api/agentic-ui-kit/interfaces/chatsummary/), [`ProjectSummary`](/reference/api/agentic-ui-kit/interfaces/projectsummary/).
+Types: [`UserMessageProps`](/reference/api/agentic-ui-kit/interfaces/usermessageprops/), [`AssistantMessageProps`](/reference/api/agentic-ui-kit/interfaces/assistantmessageprops/), [`Feedback`](/reference/api/agentic-ui-kit/type-aliases/feedback/), [`MarkdownProps`](/reference/api/agentic-ui-kit/interfaces/markdownprops/), [`RenderLink`](/reference/api/agentic-ui-kit/type-aliases/renderlink/), [`ActivityGroupProps`](/reference/api/agentic-ui-kit/interfaces/activitygroupprops/), [`ToolView`](/reference/api/agentic-ui-kit/interfaces/toolview/), [`ToolViews`](/reference/api/agentic-ui-kit/type-aliases/toolviews/), [`SearchResult`](/reference/api/agentic-ui-kit/interfaces/searchresult/), [`ChatTool`](/reference/api/agentic-ui-kit/interfaces/chattool/), [`WidgetFrameProps`](/reference/api/agentic-ui-kit/interfaces/widgetframeprops/), [`WidgetToolInput`](/reference/api/agentic-ui-kit/interfaces/widgettoolinput/), [`WidgetHost`](/reference/api/agentic-ui-kit/interfaces/widgethost/), [`WidgetAllow`](/reference/api/agentic-ui-kit/interfaces/widgetallow/), [`WidgetResource`](/reference/api/agentic-ui-kit/interfaces/widgetresource/), [`UiComponent`](/reference/api/agentic-ui-kit/interfaces/uicomponent/), [`UiStateStore`](/reference/api/agentic-ui-kit/interfaces/uistatestore/), [`UiTreeProps`](/reference/api/agentic-ui-kit/interfaces/uitreeprops/), [`ApprovalCardProps`](/reference/api/agentic-ui-kit/interfaces/approvalcardprops/), [`TokenCounterProps`](/reference/api/agentic-ui-kit/interfaces/tokencounterprops/), [`ContextPanelProps`](/reference/api/agentic-ui-kit/interfaces/contextpanelprops/), [`ContextMeterProps`](/reference/api/agentic-ui-kit/interfaces/contextmeterprops/), [`CopyFieldProps`](/reference/api/agentic-ui-kit/interfaces/copyfieldprops/), [`ComposerProps`](/reference/api/agentic-ui-kit/interfaces/composerprops/), [`AttachButtonProps`](/reference/api/agentic-ui-kit/interfaces/attachbuttonprops/), [`ModelPickerProps`](/reference/api/agentic-ui-kit/interfaces/modelpickerprops/), [`DraftAttachment`](/reference/api/agentic-ui-kit/interfaces/draftattachment/), [`UploadResult`](/reference/api/agentic-ui-kit/interfaces/uploadresult/), [`UseAttachments`](/reference/api/agentic-ui-kit/functions/useattachments/), [`UseAttachmentsOptions`](/reference/api/agentic-ui-kit/interfaces/useattachmentsoptions/), [`AttachmentCardData`](/reference/api/agentic-ui-kit/interfaces/attachmentcarddata/), [`AttachmentCardProps`](/reference/api/agentic-ui-kit/interfaces/attachmentcardprops/), [`AttachmentRowProps`](/reference/api/agentic-ui-kit/interfaces/attachmentrowprops/), [`PastedTextDialogProps`](/reference/api/agentic-ui-kit/interfaces/pastedtextdialogprops/), [`MessageListProps`](/reference/api/agentic-ui-kit/interfaces/messagelistprops/), [`ChatHeaderProps`](/reference/api/agentic-ui-kit/interfaces/chatheaderprops/), [`ChatTitleMenuProps`](/reference/api/agentic-ui-kit/interfaces/chattitlemenuprops/), [`ChatNoticeProps`](/reference/api/agentic-ui-kit/interfaces/chatnoticeprops/), [`ChatListProps`](/reference/api/agentic-ui-kit/interfaces/chatlistprops/), [`ChatListSection`](/reference/api/agentic-ui-kit/interfaces/chatlistsection/), [`ChatListItem`](/reference/api/agentic-ui-kit/type-aliases/chatlistitem/), [`ChatSummary`](/reference/api/agentic-ui-kit/interfaces/chatsummary/), [`ProjectSummary`](/reference/api/agentic-ui-kit/interfaces/projectsummary/).
 
 ## Views
 
@@ -145,9 +168,63 @@ Assemblies that fill a page or pane, mostly slots.
 | [`SidebarToggle`](/reference/api/agentic-ui-kit/functions/sidebartoggle/) | Opens the drawer on phones, collapses / expands the pinned sidebar elsewhere. |
 | [`Sidebar`](/reference/api/agentic-ui-kit/functions/sidebar/) | The claude.ai sidebar frame. Collapses to an icon rail inside `AppShell`; a drawer on phones. |
 | [`SidebarItem`](/reference/api/agentic-ui-kit/functions/sidebaritem/) | A nav row: icon and label; just the icon with a tooltip when collapsed. Closes the drawer when picked. |
+| [`SidebarList`](/reference/api/agentic-ui-kit/functions/sidebarlist/) | The `<ul>` for `SidebarItem`s outside `Sidebar`'s `nav` slot: no bullets, no padding. |
 | [`SidebarUser`](/reference/api/agentic-ui-kit/functions/sidebaruser/) | The account row at the bottom: avatar, name, plan, and a menu. |
 
-Types: [`ChatViewProps`](/reference/api/agentic-ui-kit/interfaces/chatviewprops/), [`EmptyStateProps`](/reference/api/agentic-ui-kit/interfaces/emptystateprops/), [`Density`](/reference/api/agentic-ui-kit/type-aliases/density/), [`ChatTranscriptProps`](/reference/api/agentic-ui-kit/interfaces/chattranscriptprops/), [`AppShellProps`](/reference/api/agentic-ui-kit/interfaces/appshellprops/), [`SidebarToggleProps`](/reference/api/agentic-ui-kit/interfaces/sidebartoggleprops/), [`SidebarProps`](/reference/api/agentic-ui-kit/interfaces/sidebarprops/), [`SidebarItemProps`](/reference/api/agentic-ui-kit/interfaces/sidebaritemprops/), [`SidebarUserProps`](/reference/api/agentic-ui-kit/interfaces/sidebaruserprops/).
+Types: [`ChatViewProps`](/reference/api/agentic-ui-kit/interfaces/chatviewprops/), [`EmptyStateProps`](/reference/api/agentic-ui-kit/interfaces/emptystateprops/), [`Density`](/reference/api/agentic-ui-kit/type-aliases/density/), [`ChatTranscriptProps`](/reference/api/agentic-ui-kit/interfaces/chattranscriptprops/), [`AppShellProps`](/reference/api/agentic-ui-kit/interfaces/appshellprops/), [`SidebarToggleProps`](/reference/api/agentic-ui-kit/interfaces/sidebartoggleprops/), [`SidebarProps`](/reference/api/agentic-ui-kit/interfaces/sidebarprops/), [`SidebarItemProps`](/reference/api/agentic-ui-kit/interfaces/sidebaritemprops/), [`SidebarListProps`](/reference/api/agentic-ui-kit/interfaces/sidebarlistprops/), [`SidebarUserProps`](/reference/api/agentic-ui-kit/interfaces/sidebaruserprops/).
+
+### App shell and sidebar
+
+`AppShell` is exactly as tall as the window and `main` scrolls inside it. Pass `scroll="window"` and the shell grows
+with the page instead: the window scrolls, `position: sticky` in the page keeps working, and the sidebar sticks to the
+top at window height.
+
+```tsx
+<AppShell
+  scroll="window"
+  sidebar={<Sidebar brand="Acme" nav={<SidebarItem icon={<Home />} label="Home" href="/" badge={3} />} />}
+  resizable={{ min: 220, max: 420 }}
+  persistKey="acme.sidebar-width"
+  collapsed={collapsed}
+  onCollapsedChange={setCollapsed}
+>
+  <Page />
+</AppShell>
+```
+
+- **Collapsed**: `defaultCollapsed` seeds it; `collapsed` + `onCollapsedChange` let your app own it (to persist it, say).
+  The rail shows the nav items, the toggle and `Sidebar`'s `railActions`; `headerActions` and the children are hidden.
+- **Resizable**: `resizable={{ min, max }}` adds a drag handle on the right edge, a focusable `separator` that also takes
+  Arrow keys (Shift for bigger steps), Home and End. The width is in px: seed it with `defaultWidth`, control it with
+  `width`, watch it with `onWidthChange` (called when a drag ends, not on each move), or keep it in localStorage with
+  `persistKey`. Without `resizable` the width is the `--chat-sidebar-width` CSS variable (default 18rem).
+- **Shortcut**: Cmd+B (Ctrl+B off Apple platforms) toggles the sidebar and `SidebarToggle`'s label ends in "(⌘ B)" or
+  "(Ctrl B)". `shortcut={false}` turns both off; the texts are the `withShortcut` and `ctrlKey` labels.
+- **`SidebarItem`**: `badge` always shows (an unread count; a dot on the rail), `shortcut` shows on hover, `description`
+  is a second line, `trailing` holds row actions that appear on hover or focus, `title` sets a tooltip (by default the
+  label gets one only when `…` cuts it off), and `data-*` attributes land on the row's `<li>`. Icons are 1rem; set
+  `--chat-sidebar-icon-size` (for example `18px`) to change that. Outside the `nav` slot, wrap items in `SidebarList`.
+- **`ChatList`** rows take `detail` (quiet text on the right, such as "2h") and `muted` (dimmed, no unread marker).
+
+#### Links and client-side navigation
+
+`SidebarItem` with `href` renders a react-aria `Link`. A plain `href` reloads the page. To navigate inside a
+single-page app, wrap it in react-aria's `RouterProvider` once, near the root. This example uses React Router; the same
+goes for any router, as `navigate` is the only function it needs. The `ChatList` rows with an `href` use it too.
+
+```tsx
+import { RouterProvider } from "react-aria-components";
+import { useNavigate } from "react-router";
+
+function Root() {
+  const navigate = useNavigate();
+  return (
+    <RouterProvider navigate={(to) => void navigate(to)}>
+      <App />
+    </RouterProvider>
+  );
+}
+```
 
 ## Core
 

@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 | Event        | Meaning                                                                                         |
 | ------------ | ----------------------------------------------------------------------------------------------- |
 | `run.start`  | A reply starts. Reusing an existing `messageId` continues that message (after tools ran).     |
-| `part.start` | A new part: `text`, `thinking`, `tool_call`, attachments, or your own custom type.             |
+| `part.start` | A new part: `text`, `thinking`, `tool_call`, attachments, or your own custom type. It is added as sent: a `status` of `done` or `error` counts as finished. |
 | `part.delta` | Appends `text`, or `inputJson` for a tool call's arguments as the model writes them.          |
 | `part.update`| Sets fields: `status`, `title`, `subtitle`, `result`, `error`, …                                |
 | `part.end`   | Closes a part. A tool call's input is parsed here; invalid JSON fails the call.                |
@@ -45,6 +45,28 @@ export async function POST(request: Request) {
 | `run.end`    | `done`, `stopped` or `error`.                                                                    |
 | `title`      | A title for the conversation.                                                                    |
 
+A tool call's `inputJson` is parsed into `input` only when the part closes: on `part.end`, on a `part.update`
+with a status past `input`, or on `run.end` for a part still open. A `part.start` that arrives already `done`
+is never parsed, so send its `input` yourself.
+
 Every event carries `runId` and an increasing `seq`, so a client can resume a dropped stream. Not using SSE?
 Implement `Transport` yourself: one `send(request)` that returns an async iterable of events.
 
+## Joining a run already going
+
+A page opened while a reply is still being written, or a chat just created whose reply has started, can join
+that run: `useChat({ transport, conversationId, resume: true })` calls `transport.resume(conversationId, signal)`
+once when the hook mounts. It survives React StrictMode's double mount. For `sseTransport`, give it a
+`resumeUrl`:
+
+```ts
+const transport = sseTransport({ url: "/api/chat", stopUrl: "/api/stop", resumeUrl: "/api/chat/stream" });
+// or: resumeUrl: (id) => `/api/chats/${id}/stream`
+```
+
+The kit sends `GET /api/chat/stream?conversationId=<id>` (same headers, no body). Answer with the same
+`text/event-stream`, **replayed from the start of the run**: `run.start` first (same `runId` and `messageId`
+as the live run), the parts so far, then the rest as they are produced, ending with `run.end`. The kit rebuilds
+the reply from these events, replacing a trailing assistant message that is still streaming in
+`initialMessages` (such as an empty placeholder). If nothing is running, answer 404 and the hook ends quietly
+with no new message. Hosts with their own `Transport` implement `resume?(conversationId, signal)` the same way.

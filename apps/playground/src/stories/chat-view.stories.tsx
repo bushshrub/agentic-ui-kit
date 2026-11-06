@@ -43,6 +43,8 @@ interface ChatArgs {
   density: Density;
   /** Start with the recorded conversation, or empty (greeting over the centered composer). */
   conversation: boolean;
+  /** `false` hides the composer (`composer={false}`). */
+  composer: boolean;
   /** Shared view in a host's theme ("warm" from themes.css); the notice takes --chat-notice-bg and --chat-notice-border. */
   hostTheme: boolean;
   /** Send a message to get a recorded reply. */
@@ -84,7 +86,7 @@ function SharedChat({ onReport, onContinue }: Pick<ChatArgs, "onReport" | "onCon
   );
 }
 
-function LiveChat({ density, conversation, onSend, onStop, onRetry, onFeedback, onShare, onPin, onRename, onDelete }: ChatArgs) {
+function LiveChat({ density, conversation, composer, onSend, onStop, onRetry, onFeedback, onShare, onPin, onRename, onDelete }: ChatArgs) {
   const transport = useMemo(() => fixtureTransport({}), []);
   const [title, setTitle] = useState("Speeding up CI");
   const chat = useChat({ transport, initialMessages: conversation ? history : [], onTitle: setTitle });
@@ -132,7 +134,7 @@ function LiveChat({ density, conversation, onSend, onStop, onRetry, onFeedback, 
           }
         />
       }
-      composer={{
+      composer={composer ? {
         placeholder: started ? "Reply…" : "How can I help you today?",
         leading: attachMenu(),
         trailing: density === "inline" ? undefined : picker,
@@ -141,7 +143,7 @@ function LiveChat({ density, conversation, onSend, onStop, onRetry, onFeedback, 
         onLongPaste: files.addText,
         allowEmpty: files.attachments.length > 0,
         submitDisabled: files.uploading,
-      }}
+      } : false}
       emptyState={(composer) =>
         density === "full" ? (
           <EmptyState greeting="Good evening, Alex" icon={<Sparkles />}>
@@ -196,6 +198,7 @@ const meta = {
     view: hidden,
     density: hidden,
     conversation: hidden,
+    composer: hidden,
     hostTheme: hidden,
     onSend: ev("Called with the text when the user sends a message; a recorded reply then streams in."),
     onStop: ev("Called when the user stops a reply midway."),
@@ -209,7 +212,7 @@ const meta = {
     onContinue: ev("Shared view: the footer's Continue this chat button."),
   },
   args: {
-    view: "chat", density: "full", conversation: true, hostTheme: false,
+    view: "chat", density: "full", conversation: true, composer: true, hostTheme: false,
     onSend: fn(), onStop: fn(), onRetry: fn(), onFeedback: fn(), onShare: fn(), onPin: fn(), onRename: fn(), onDelete: fn(), onReport: fn(), onContinue: fn(),
   },
 } satisfies Meta<typeof ChatDemo>;
@@ -222,6 +225,15 @@ export const InProgress: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.type(canvas.getByRole("textbox"), "Thanks!{Enter}");
     await expect(args.onSend).toHaveBeenCalledWith("Thanks!");
+  },
+};
+
+/** `composer={false}`: the conversation with nothing to type in, e.g. a chat driven by something else. Retry and Copy stay. */
+export const WithoutComposer: Story = {
+  args: { composer: false },
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByRole("textbox")).toBeNull();
+    await expect(canvas.getAllByRole("log")[0]).toBeVisible();
   },
 };
 

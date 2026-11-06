@@ -16,8 +16,13 @@ export interface ToolView {
   subtitle?: (part: ToolCallPart) => ReactNode;
   /** Tooltip on the row label, e.g. the command's description. */
   hint?: (part: ToolCallPart) => string | undefined;
-  /** The approval question, e.g. "Add 4 events to your calendar?". Defaults to "Allow <label>?". */
-  ask?: (part: ToolCallPart) => ReactNode;
+  /** The approval question, e.g. "Add 4 events to your calendar?". Defaults to "Allow <askLabel or label>?". */
+  ask?: (part: ToolCallPart, labels: ChatLabels) => ReactNode;
+  /**
+   * The label in the present tense, for the default approval question: the row label is past tense once the
+   * call has run ("Ran a command"), so "Allow Ran a command?" would read wrong. Falls back to `label`.
+   */
+  askLabel?: (part: ToolCallPart, labels: ChatLabels) => ReactNode;
   /** Phrase for the group heading, lowercase: "ran a command", "ran 3 commands". */
   summary?: (count: number, labels: ChatLabels) => string;
   /** Body shown when the row is expanded. Defaults to the result, or the input as JSON. */
@@ -107,6 +112,7 @@ function stringOf(value: unknown): string | undefined {
 
 /** A shell command. Input `{ command, description? }`; result a string or `{ stdout, stderr, exitCode }`. */
 export const commandTool: ToolView = {
+  ask: (_, labels) => labels.runCommandAsk,
   label: (_, labels) => labels.ranCommandLabel,
   hint: (part) => stringOf(recordOf(part.input).description),
   summary: (n, labels) => labels.ranCommands(n),
@@ -138,6 +144,7 @@ export interface SearchResult {
  * part's display `data`, else its `result`.
  */
 export const webSearchTool: ToolView = {
+  ask: (_, labels) => labels.searchWebAsk,
   label: (_, labels) => labels.searchedWebLabel,
   subtitle: (part) => stringOf(recordOf(part.input).query) ?? part.subtitle,
   summary: (n, labels) => labels.searchedWeb(n),
@@ -177,6 +184,7 @@ export const webSearchTool: ToolView = {
 
 /** Reads a web page. Input `{ url }`; the row shows the page's host, the detail links to it. */
 export const webFetchTool: ToolView = {
+  ask: (_, labels) => labels.readPageAsk,
   label: (_, labels) => labels.readPageLabel,
   subtitle: (part) => {
     const url = stringOf(recordOf(part.input).url);

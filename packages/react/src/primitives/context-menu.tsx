@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { cx } from "./cx";
 import { useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { Button as AriaButton, MenuTrigger } from "react-aria-components";
 import { Popover } from "./menu";
@@ -35,7 +35,7 @@ export function ContextMenu({ menu, children, className }: ContextMenuProps) {
   };
 
   return (
-    <div ref={root} onContextMenu={onContextMenu} onKeyDown={onKeyDown} className={clsx("relative", className)}>
+    <div ref={root} onContextMenu={onContextMenu} onKeyDown={onKeyDown} className={cx("relative", className)}>
       {children}
       <MenuTrigger isOpen={at !== undefined} onOpenChange={(open) => !open && setAt(undefined)}>
         {/* The anchor the menu opens from; not focusable, focus returns to where it was. */}

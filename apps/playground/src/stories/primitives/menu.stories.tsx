@@ -250,3 +250,44 @@ export const WithSubmenu: Story = {
     await expect(args.onAction).toHaveBeenCalledWith("rename");
   },
 };
+
+function SettingsMenu({ onAction, popover }: { onAction: (key: Key) => void; popover?: Partial<ComponentProps<typeof Popover>> }) {
+  const [selected, setSelected] = useState<Selection>(new Set(["columns"]));
+  return (
+    <MenuTrigger defaultOpen>
+      <Button variant="outline">View</Button>
+      <Popover {...popover}>
+        <Menu aria-label="View" selectionMode="multiple" selectedKeys={selected} onSelectionChange={setSelected} onAction={onAction}>
+          <MenuItem id="columns" indicator="switch">Columns</MenuItem>
+          <MenuItem id="follow" indicator="switch">Follow the agent</MenuItem>
+        </Menu>
+      </Popover>
+    </MenuTrigger>
+  );
+}
+
+/** `indicator="switch"` draws an on/off switch instead of the check mark, for settings rows. */
+export const SwitchIndicator: Story = {
+  render: (args) => <SettingsMenu {...args} />,
+  play: async ({ userEvent }) => {
+    const menu = within(document.body);
+    const item = await menu.findByRole("menuitemcheckbox", { name: "Follow the agent" });
+    await expect(item).toHaveAttribute("aria-checked", "false");
+    await userEvent.click(item);
+    await expect(item).toHaveAttribute("aria-checked", "true");
+  },
+};
+
+/** `width="trigger"` makes the popover as wide as the button that opened it. */
+export const TriggerWidth: Story = {
+  render: (args) => <SettingsMenu {...args} popover={{ width: "trigger" }} />,
+};
+
+/** On narrow screens (under 768px by default) a Popover opens as a bottom sheet; this one forces the sheet at any width with `sheet={100000}`. `sheet={false}` opts out. */
+export const BottomSheet: Story = {
+  render: (args) => <SettingsMenu {...args} popover={{ sheet: 100000 }} />,
+  play: async () => {
+    const menu = within(document.body);
+    await expect(await menu.findByRole("menu")).toBeInTheDocument();
+  },
+};

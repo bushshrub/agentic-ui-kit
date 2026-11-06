@@ -63,12 +63,18 @@ Every event carries the `runId` and a `seq` that counts up from 0.
 | Event | When |
 | --- | --- |
 | `run.start` `{ messageId, parentId, createdAt }` | First. `parentId` is the user message's id. |
-| `part.start` `{ part }` | A new text, thinking or tool_call part begins. |
+| `part.start` `{ part }` | A new text, thinking or tool_call part begins. Added as sent, so a `status` of `done` counts as finished. |
 | `part.delta` `{ partId, text }` or `{ partId, inputJson }` | Streamed text, or a tool's input JSON. |
 | `part.update` `{ partId, ...fields }` | Changes to a part, e.g. a tool's `input` or `title` that came later. |
 | `part.end` `{ partId, result?, status?, error? }` | A part is complete. A tool's `result` goes here. |
 | `title` `{ conversationId, title }` | Names the chat. |
 | `run.end` `{ status, usage?, error? }` | Last. `status` is `"done"`, `"stopped"` or `"error"`. |
+
+A tool's `inputJson` is parsed into `input` on `part.end`, on a `part.update` with a status past `input`, or
+on `run.end` for a part still open. A part that starts already `done` is not parsed: put `input` on it.
+
+To let a page join a reply that is already running, see "Joining a run already going" in
+[Connect your server](/get-started/backend/).
 
 Name tool parts after the kit's tool views and they render as they should. For example, `bash` with input
 `{ command, description }` and a string result shows as a command. The bridge maps Claude Code's `Bash`,

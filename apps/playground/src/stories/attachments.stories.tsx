@@ -35,3 +35,13 @@ export const Uploading: Story = { args: { attachment: { name: "benchmarks.pdf", 
 
 /** A failed upload. */
 export const Failed: Story = { args: { attachment: { name: "huge.iso", mime: "application/octet-stream", status: "error", error: "Too large" } } };
+
+/** No `mime`: a `url` that ends in an image extension is drawn as an image. */
+export const ImageFromUrl: Story = {
+  args: { attachment: { name: "diagram", url: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%23d97757'/%3E%3C/svg%3E" } },
+};
+
+/** No `mime` and an extensionless url: `kind: "image"` says it is an image. */
+export const ImageByKind: Story = {
+  args: { attachment: { name: "upload", kind: "image", url: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%2341826a'/%3E%3C/svg%3E" } },
+};

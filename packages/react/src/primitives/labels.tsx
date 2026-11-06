@@ -28,6 +28,12 @@ export interface ChatLabels {
   ranCommandLabel: string;
   /** Heading phrase for command calls, lowercase: "ran a command", "ran 3 commands". */
   ranCommands: (count: number) => string;
+  /** Approval question for the command tool, present tense. */
+  runCommandAsk: string;
+  /** Approval question for the web search tool. */
+  searchWebAsk: string;
+  /** Approval question for the page fetch tool. */
+  readPageAsk: string;
   /** Row label of the web search tool. */
   searchedWebLabel: string;
   readPageLabel: string;
@@ -68,6 +74,12 @@ export interface ChatLabels {
   expandSidebar: string;
   /** Sidebar toggle, full width. */
   collapseSidebar: string;
+  /** Accessible name of the sidebar's resize handle. */
+  resizeSidebar: string;
+  /** A label with its keyboard shortcut, e.g. "Collapse sidebar (⌘ B)". */
+  withShortcut: (label: string, keys: string) => string;
+  /** The Ctrl key's name in shortcut hints (non-Mac). */
+  ctrlKey: string;
 
   // Context panel and tokens
   /** Default title of the context panel. */
@@ -76,6 +88,10 @@ export interface ChatLabels {
   contextUsed: string;
   /** "42% used". */
   percentUsed: (percent: number) => string;
+  /** Context meter summary, also its accessible name: "Context: 13.8k / 200k (7%)". */
+  contextSummary: (used: string, limit: string, percent: number) => string;
+  /** Context meter while the numbers are still loading. */
+  contextLoading: string;
   /** Row for the unused part of the window. */
   freeSpace: string;
   /** "1.2k tokens"; `count` is already formatted. */
@@ -174,6 +190,8 @@ export interface ChatLabels {
   copy: string;
   /** Copy button right after copying. */
   copied: string;
+  /** Accessible name of a copy field's read-only input. */
+  copyFieldLabel: string;
   /** Retry button. */
   retry: string;
   /** Edit button. */
@@ -239,6 +257,9 @@ export const defaultLabels: ChatLabels = {
   duration: (seconds) => (seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`),
   ranCommandLabel: "Ran a command",
   ranCommands: (count) => plural(count, "ran a command", (n) => `ran ${n} commands`),
+  runCommandAsk: "Run this command?",
+  searchWebAsk: "Search the web?",
+  readPageAsk: "Read this page?",
   searchedWebLabel: "Searched the web",
   readPageLabel: "Read page",
   readPages: (count) => plural(count, "read a page", (n) => `read ${n} pages`),
@@ -260,10 +281,15 @@ export const defaultLabels: ChatLabels = {
   openSidebar: "Open sidebar",
   expandSidebar: "Expand sidebar",
   collapseSidebar: "Collapse sidebar",
+  resizeSidebar: "Resize sidebar",
+  withShortcut: (label, keys) => `${label} (${keys})`,
+  ctrlKey: "Ctrl",
 
   context: "Context",
   contextUsed: "Context used",
   percentUsed: (percent) => `${percent}% used`,
+  contextSummary: (used, limit, percent) => `Context: ${used} / ${limit} (${percent}%)`,
+  contextLoading: "Context: loading",
   freeSpace: "Free space",
   tokenCount: (count) => `${count} tokens`,
 
@@ -313,6 +339,7 @@ export const defaultLabels: ChatLabels = {
   justNow: "just now",
   copy: "Copy",
   copied: "Copied",
+  copyFieldLabel: "Link",
   retry: "Retry",
   edit: "Edit",
   readAloud: "Read aloud",

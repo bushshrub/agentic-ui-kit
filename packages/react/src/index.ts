@@ -19,7 +19,7 @@ export type { SegmentedControlProps, SegmentedOption } from "./primitives/segmen
 export { Caret } from "./primitives/caret";
 export { Disclosure } from "./primitives/disclosure";
 export type { DisclosureProps } from "./primitives/disclosure";
-export { Popover, Menu, MenuItem, MenuSearch, MenuSection, MenuSeparator, MenuNote, MenuTrigger, SubmenuTrigger } from "./primitives/menu";
+export { Popover, Menu, MenuItem, MenuSearch, MenuSection, MenuSeparator, MenuNote, MenuTrigger, SubmenuTrigger, DialogTrigger, PopoverTrigger } from "./primitives/menu";
 export type { MenuSearchProps, PopoverProps, MenuProps, MenuItemProps, MenuSectionProps } from "./primitives/menu";
 export { ContextMenu } from "./primitives/context-menu";
 export type { ContextMenuProps } from "./primitives/context-menu";
@@ -51,7 +51,7 @@ export type { SidebarState } from "./hooks/sidebar-state";
 export { UserMessage, AssistantMessage, formatRelativeTime, messageText } from "./components/messages";
 export type { UserMessageProps, AssistantMessageProps, Feedback, MessageActions } from "./components/messages";
 export { Markdown, MarkdownLinksProvider } from "./components/markdown";
-export type { MarkdownProps, RenderLink } from "./components/markdown";
+export type { LinkList, MarkdownProps, RenderLink, RenderLinkList } from "./components/markdown";
 export { ActivityGroup } from "./components/activity-group";
 export type { ActivityGroupProps } from "./components/activity-group";
 export {
@@ -79,6 +79,10 @@ export { TokenCounter, useCountUp, formatTokens } from "./components/token-count
 export type { TokenCounterProps } from "./components/token-counter";
 export { ContextPanel } from "./components/context-panel";
 export type { ContextPanelProps } from "./components/context-panel";
+export { ContextMeter } from "./components/context-meter";
+export type { ContextMeterProps } from "./components/context-meter";
+export { CopyField } from "./components/copy-field";
+export type { CopyFieldProps } from "./components/copy-field";
 
 // Components: input
 export { Composer, AttachButton } from "./components/composer";
@@ -88,7 +92,7 @@ export { EffortSlider, EffortButton } from "./components/effort-slider";
 export type { EffortSliderProps, EffortButtonProps } from "./components/effort-slider";
 export type { ComposerProps, AttachButtonProps } from "./components/composer";
 export { ModelPicker } from "./components/model-picker";
-export type { ModelPickerProps } from "./components/model-picker";
+export type { ModelOption, ModelPickerProps } from "./components/model-picker";
 export { useAttachments, AttachmentCard, AttachmentRow, PastedTextDialog } from "./components/attachments";
 export type {
   DraftAttachment,
@@ -118,5 +122,5 @@ export { ChatTranscript } from "./views/chat-transcript";
 export type { ChatTranscriptProps } from "./views/chat-transcript";
 export { AppShell, SidebarToggle } from "./views/app-shell";
 export type { AppShellProps, SidebarToggleProps } from "./views/app-shell";
-export { Sidebar, SidebarItem, SidebarUser } from "./views/sidebar";
-export type { SidebarProps, SidebarItemProps, SidebarUserProps } from "./views/sidebar";
+export { Sidebar, SidebarItem, SidebarList, SidebarUser } from "./views/sidebar";
+export type { SidebarProps, SidebarItemProps, SidebarListProps, SidebarUserProps } from "./views/sidebar";

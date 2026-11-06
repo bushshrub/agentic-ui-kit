@@ -47,3 +47,20 @@ export const Default: Story = {
 export const RowMenu: Story = {
   args: { rowMenu: () => <ChatTitleMenu onPin={fn()} onRename={fn()} onShare={fn()} onDelete={fn()} /> },
 };
+
+/** `detail` is quiet text at the right of a row, e.g. a relative time. `muted` dims a row, e.g. a channel with notifications off. */
+export const DetailAndMuted: Story = {
+  args: {
+    sections: [
+      {
+        id: "chan",
+        title: "Channels",
+        items: [
+          { id: "ci", title: "Speeding up CI", detail: "2h" },
+          { id: "off", title: "random (off)", detail: "3d", muted: true, unread: true },
+          { id: "light", title: "A short history of lighthouses", detail: "1w" },
+        ],
+      },
+    ],
+  },
+};

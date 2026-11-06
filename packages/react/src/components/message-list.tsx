@@ -47,10 +47,13 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, onReadAloud
     if (el) el.scrollTo({ top: el.scrollHeight, behavior });
   }, []);
 
-  const onScroll = () => {
+  const nearBottom = () => {
     const el = scroller.current;
-    if (!el) return;
-    const bottom = el.scrollHeight - el.scrollTop - el.clientHeight < STICK_SLOP;
+    return !el || el.scrollHeight - el.scrollTop - el.clientHeight < STICK_SLOP;
+  };
+
+  const onScroll = () => {
+    const bottom = nearBottom();
     stuck.current = bottom;
     setAtBottom(bottom);
   };
@@ -72,14 +75,16 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, onReadAloud
   const jumpedFor = useRef<string | undefined | null>(start === "top" ? lastUser : null);
   useLayoutEffect(() => {
     if (lastUser === jumpedFor.current) {
-      onScroll();
+      // Only the button. Following growth starts when the reader scrolls: a page that is short at mount
+      // (a notice, a widget still loading) is "at the bottom" until it grows, and must not follow it.
+      setAtBottom(nearBottom());
       return;
     }
     jumpedFor.current = lastUser;
     stuck.current = true;
     setAtBottom(true);
     toBottom();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onScroll only reads refs
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nearBottom only reads refs
   }, [lastUser, toBottom]);
 
   return (

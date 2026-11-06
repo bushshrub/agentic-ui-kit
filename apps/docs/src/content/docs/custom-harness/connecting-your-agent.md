@@ -95,6 +95,8 @@ const tools = { ...defaultToolViews, show_ui: uiMarkupToolView(), show_widget: w
 
 Send the model's output to the kit as `StreamEvent`s (see [The backend](/get-started/backend/)): text and
 thinking as `part.delta`s, tool calls with their `inputJson` deltas. The kit draws the UI and widgets while
-they stream; you don't parse anything yourself.
+they stream; you don't parse anything yourself. Tool `inputJson` is parsed when the part closes, and a part
+sent already `done` needs its `input` set (details in [The backend](/get-started/backend/)). A page opened
+mid-reply joins the run with `useChat({ resume: true })`, covered there too.
 
 The reference app, llm-chat-ui, wires all of this up end to end on a real model.

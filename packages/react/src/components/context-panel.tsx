@@ -17,6 +17,14 @@ export interface ContextPanelProps {
 const FREE_COLOR = "var(--chat-raised)";
 const DEFAULT_COLOR = "var(--chat-subtle)";
 
+/** Tokens used (reserved and deferred categories excluded) and tokens still free. */
+export function contextTotals(usage: ContextUsage): { used: number; free: number } {
+  const counted = usage.categories.filter((c) => !c.deferred);
+  const used = counted.reduce((sum, c) => sum + (c.reserved ? 0 : c.tokens), 0);
+  const reserved = counted.reduce((sum, c) => sum + (c.reserved ? c.tokens : 0), 0);
+  return { used, free: Math.max(usage.limit - used - reserved, 0) };
+}
+
 /**
  * What fills the context window: a usage line, a segmented bar, one row per category with its share, and
  * expandable lists (each MCP tool, each memory file). Deferred categories are listed but not counted.
@@ -25,9 +33,7 @@ export function ContextPanel({ usage, title, defaultExpanded = true, className }
   const labels = useLabels();
   const counted = usage.categories.filter((c) => !c.deferred);
   const deferred = usage.categories.filter((c) => c.deferred);
-  const used = counted.reduce((sum, c) => sum + (c.reserved ? 0 : c.tokens), 0);
-  const reserved = counted.reduce((sum, c) => sum + (c.reserved ? c.tokens : 0), 0);
-  const free = Math.max(usage.limit - used - reserved, 0);
+  const { used, free } = contextTotals(usage);
   const share = (tokens: number) => formatShare(tokens / usage.limit);
 
   return (

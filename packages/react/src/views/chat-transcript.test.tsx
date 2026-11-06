@@ -97,3 +97,42 @@ it("renderComposer puts the host's buttons outside the composer box, empty and d
   expect(screen.getByRole("button", { name: "Outside docked" })).toBeTruthy();
   expect(screen.getByRole("textbox")).toBeTruthy();
 });
+
+it("start='top' stays at the top when a widget grows after mount, until the reader scrolls", () => {
+  // A short page at mount (notice only), then content that grows: the page is not "at the bottom" any more.
+  let height = 500;
+  const observers: (() => void)[] = [];
+  const RealObserver = globalThis.ResizeObserver;
+  const sizes = [
+    vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockImplementation(() => height),
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(500),
+  ];
+  globalThis.ResizeObserver = class {
+    constructor(callback: () => void) {
+      observers.push(callback);
+    }
+    observe() {}
+    disconnect() {}
+    unobserve() {}
+  } as unknown as typeof ResizeObserver;
+  try {
+    render(<ChatTranscript messages={messages} notice={<p>Shared by Ada</p>} />);
+    height = 900;
+    for (const grow of observers) grow();
+    expect(scrolls).toBe(0);
+    const scroller = screen.getByRole("log").parentElement!.parentElement!;
+    scroller.scrollTop = 100;
+    fireEvent.scroll(scroller);
+    height = 1200;
+    for (const grow of observers) grow();
+    expect(scrolls).toBe(0);
+    scroller.scrollTop = 700;
+    fireEvent.scroll(scroller);
+    height = 1500;
+    for (const grow of observers) grow();
+    expect(scrolls).toBe(1);
+  } finally {
+    for (const spy of sizes) spy.mockRestore();
+    globalThis.ResizeObserver = RealObserver;
+  }
+});

@@ -33,7 +33,7 @@ export function ApprovalCard({ approval, onRespond, className }: ApprovalCardPro
       <div className="flex items-center gap-2 text-(length:--chat-ui-font-size) leading-5">
         <IconSlot className="text-chat-accent [&_svg]:size-4">{icons.approval}</IconSlot>
         <span className="min-w-0 flex-1 font-medium">
-          {view.ask?.(part) ?? labels.allowAction(activityLabel(part, labels, view))}
+          {view.ask?.(part, labels) ?? labels.allowAction(view.askLabel?.(part, labels) ?? activityLabel(part, labels, view))}
         </span>
       </div>
       <div className="max-h-48 overflow-auto [scrollbar-width:thin]">
