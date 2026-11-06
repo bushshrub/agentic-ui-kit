@@ -2,7 +2,8 @@ import type { Message, Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { useCallback, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { ApprovalCard } from "../components/approval-card";
-import type { PendingApproval } from "../hooks/use-chat";
+import { ToolPromptCard } from "../components/tool-prompt";
+import type { PendingApproval, PendingPrompt } from "../hooks/use-chat";
 import { Composer, type ComposerProps } from "../components/composer";
 import { MessageList } from "../components/message-list";
 import type { Feedback, MessageActions } from "../components/messages";
@@ -30,6 +31,16 @@ export interface ChatViewProps {
   /** Tool calls waiting on the user (`useChat().approvals`); the first shows above the composer. */
   approvals?: PendingApproval[];
   onApprove?: (partId: string, granted: boolean) => void;
+  /**
+   * Tool calls waiting for the user's input through their tool view's `Prompt` (`useChat().prompts`), e.g. the
+   * `ask_user` questions; the first shows above the composer, whose placeholder becomes "Or reply directly…".
+   * Needs `onAnswer`.
+   */
+  prompts?: PendingPrompt[];
+  /** The prompt's submitted answer, which becomes the tool call's result (`useChat().answer`). */
+  onAnswer?: (partId: string, result: unknown) => void;
+  /** The user closed the prompt (`useChat().decline`). Replying in the composer declines it too, through `onSend`. */
+  onDecline?: (partId: string) => void;
   onRetry?: (assistantId: string) => void;
   onEdit?: (userId: string) => void;
   onFeedback?: (assistantId: string, feedback: Feedback) => void;
@@ -81,6 +92,9 @@ export function ChatView({
   onStop,
   approvals,
   onApprove,
+  prompts,
+  onAnswer,
+  onDecline,
   onRetry,
   onEdit,
   onFeedback,
@@ -111,6 +125,7 @@ export function ChatView({
   const [body, short] = useShortPane();
   const labels = useLabels();
   const pending = onApprove && approvals?.[0];
+  const asking = !pending && onAnswer ? prompts?.[0] : undefined;
   const box = (variant: ComposerProps["variant"]): ReactNode => {
     if (composer === false) return null;
     const element = <Composer
@@ -119,7 +134,7 @@ export function ChatView({
       onSubmit={onSend}
       {...(onStop && { onStop })}
       {...composer}
-      {...(pending && { placeholder: labels.replyDirectly })}
+      {...((pending || asking) && { placeholder: labels.replyDirectly })}
     />;
     return renderComposer ? renderComposer(element, variant === "centered" ? "empty" : "docked") : element;
   };
@@ -146,6 +161,11 @@ export function ChatView({
             <div className={clsx("bg-linear-to-t from-chat-bg from-70% to-transparent px-(--chat-gutter)", short ? "pt-2" : "pt-4")}>
               <div className="mx-auto w-full max-w-(--chat-content-width)">
                 {pending && <ApprovalCard key={pending.part.id} approval={pending} onRespond={onApprove} className="mb-2" />}
+                {asking && (
+                  <div className="mb-2">
+                    <ToolPromptCard prompt={asking} onAnswer={onAnswer!} onDecline={onDecline ?? (() => {})} />
+                  </div>
+                )}
                 {box("docked")}
                 <div className={clsx("flex items-center justify-center py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle", short ? "min-h-2" : "min-h-6")}>
                   {disclaimer && !short && <span>{disclaimer}</span>}

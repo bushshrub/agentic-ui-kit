@@ -28,10 +28,55 @@ two ways:
 - **As a JSON tree in a tool call**: give the model `renderUiTool(specs)`, which describes them. Its `render_ui` calls are trees of your components;
 a node with an unknown component or props that don't fit renders nothing.
 
+## The ready-made set
+
+The kit ships components so you don't write them: `uiComponents` from `agentic-ui-kit`, with their specs
+(`uiComponentSpecs`) in `agentic-ui-kit/core` for a server that has no React.
+
+- **Display**: Stack, Grid, Card, Heading, Text, Metric, List, Table, Badge, Progress.
+- **Interactive**: Checklist, Tabs, Show, Button.
+
+```tsx
+import { UiComponentsProvider, uiComponentSet } from "agentic-ui-kit";
+import { renderUiTool } from "agentic-ui-kit/core";
+
+const components = uiComponentSet({ exclude: ["Button"] }); // no Button: the model is never told of it
+<UiComponentsProvider components={components} persist={store}>
+  <ChatView {...chat} />
+</UiComponentsProvider>;
+```
+
+On the server, build the tool from the same picks, so the model only hears of (and `checkUiTree` only
+accepts) what you registered:
+
+```ts
+import { renderUiTool, uiSpecSet } from "agentic-ui-kit/core";
+
+const specs = uiSpecSet({ exclude: ["Button"] }); // same options as uiComponentSet
+// tools: [renderUiTool(specs), ...]; checkUiTree(input, specs)
+```
+
+`include` and `exclude` take component names or the groups `"display"` and `"interactive"`, so
+`uiComponentSet({ include: ["display"] })` is display only. Use your own drawing for a component and keep its
+spec (and so the model-facing text and prompt cache) unchanged with `renders`:
+
+```tsx
+uiComponentSet({ renders: { Button: ({ label, onPress }) => {
+  const run = useUiAction();
+  return <MyButton onClick={() => run(onPress)}>{label}</MyButton>;
+} } });
+```
+
+`uiSpecs` (core) and `uiRenders` (React) hold each spec and drawing by name, for mixing: reuse the Card's
+drawing in a component of yours with `{ ...uiSpecs.Card, name: "Panel", render: uiRenders.Card }`. Add your own
+next to the set with `[...uiComponentSet(), myChart]` (plus its spec in the tool).
+
+## Your own components
+
 ```tsx
 const components: UiComponent[] = [
-  { name: "Metric", description: "A key number with a label.", props: metricSchema, render: Metric },
-  { name: "Stack", description: "Children in a column.", children: true, render: Stack },
+  ...uiComponentSet({ include: ["display"] }),
+  { name: "Gauge", description: "A dial for one number, 0-100.", props: gaugeSchema, render: Gauge },
   htmlComponent, // optional: raw HTML in a WidgetFrame, for what your components can't show
 ];
 // tools: [renderUiTool(components.map(({ render, ...spec }) => spec)), ...]
@@ -43,3 +88,7 @@ const components: UiComponent[] = [
 Inside a component, `useUiAction()` runs an action from its props (`uiActionSchema`: set a state key, send
 a message, open a URL, copy), and `useUiState()` reads and writes the widget's state; props read state with
 `{ "$state": key }`. `persist` keeps each widget's state across reloads.
+
+`persist` is keyed by the call's id. When the id differs while streaming and after it is saved, pass a stable
+one: `<UiTree stateKey={activityId} ... />`, or `uiTreeToolView(read, { stateKey: (part) => activityId(part) })`
+(the same option exists on `uiMarkupToolView`).

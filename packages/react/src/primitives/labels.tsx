@@ -102,6 +102,43 @@ export interface ChatLabels {
   replyPlaceholder: string;
   /** Composer placeholder while a tool waits for approval. */
   replyDirectly: string;
+  // Ask-user prompt (the model's questions) and its answers card
+  /** Accessible name of the question prompt over the composer. */
+  askUserPrompt: string;
+  /** Pager in the prompt: "1 of 3". */
+  askUserPager: (current: number, total: number) => string;
+  /** Pager button to the previous question. */
+  askUserPrevious: string;
+  /** Pager button to the next question. */
+  askUserNext: string;
+  /** Button that moves on to the next unanswered question. */
+  askUserContinue: string;
+  /** Button on the last question, which sends the answers. */
+  askUserSubmit: string;
+  /** Close button of the prompt; declines the questions like replying in the composer does. */
+  askUserClose: string;
+  /** The free-text row (and its input's name) under each choice question. */
+  askUserSomethingElse: string;
+  /** Skips the current question. */
+  askUserSkip: string;
+  /** Count under a multiple-choice question: "2 selected". */
+  askUserSelected: (count: number) => string;
+  /** Hint under a rank question. */
+  askUserRankHint: string;
+  /** Accessible name of a rank row's drag handle. */
+  askUserReorder: (option: string) => string;
+  /** Spoken description of the keyboard way to reorder a rank row. */
+  askUserReorderKeys: string;
+  /** Answers card: the options a user picked in a multiple-choice question. */
+  askUserPicked: (options: string[]) => string;
+  /** Answers card: a rank answer, e.g. "Ranked: 1. Fast 2. Cheap". */
+  askUserRanked: (options: string[]) => string;
+  /** Answers card: a question the user skipped. */
+  askUserSkipped: string;
+  /** Answers card: the user closed the prompt or replied instead. */
+  askUserDeclined: string;
+  /** Accessible name of the answers card. */
+  askUserAnswers: string;
   /** Accessible name of the composer text box. */
   message: string;
   /** Stop button. */
@@ -295,6 +332,24 @@ export const defaultLabels: ChatLabels = {
 
   replyPlaceholder: "Reply…",
   replyDirectly: "Or reply directly…",
+  askUserPrompt: "Question for you",
+  askUserPager: (current, total) => `${current} of ${total}`,
+  askUserPrevious: "Previous question",
+  askUserNext: "Next question",
+  askUserContinue: "Continue",
+  askUserSubmit: "Send answers",
+  askUserClose: "Close and decline",
+  askUserSomethingElse: "Something else",
+  askUserSkip: "Skip",
+  askUserSelected: (count) => `${count} selected`,
+  askUserRankHint: "Drag to re-order",
+  askUserReorder: (option) => `Move ${option}`,
+  askUserReorderKeys: "Press Alt with the up or down arrow to move",
+  askUserPicked: (options) => options.join(", "),
+  askUserRanked: (options) => `Ranked: ${options.map((o, i) => `${i + 1}. ${o}`).join(" ")}`,
+  askUserSkipped: "Skipped",
+  askUserDeclined: "You declined to answer",
+  askUserAnswers: "Your answers",
   message: "Message",
   stop: "Stop",
   send: "Send",

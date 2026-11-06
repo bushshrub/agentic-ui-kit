@@ -59,6 +59,12 @@ export interface UseChatOptions {
    * `conversationId`. Safe in React StrictMode: the run is joined once and survives the double mount.
    */
   resume?: boolean;
+  /**
+   * Names of tools the user answers through a prompt (a tool view's `Prompt`, e.g. `ask_user`): a call to one
+   * that ends the run "awaiting" is listed in `prompts` instead of running. Tools registered with
+   * `useChatTool` whose view has a `Prompt` count too. Default `["ask_user"]`.
+   */
+  promptTools?: readonly string[];
 }
 
 export interface SendOptions {
@@ -75,6 +81,12 @@ export interface PendingApproval {
   part: ToolCallPart;
 }
 
+/** A tool call waiting for the user to fill in its `Prompt` (a tool view's prompt over the composer). */
+export interface PendingPrompt {
+  messageId: string;
+  part: ToolCallPart;
+}
+
 export interface UseChat {
   messages: Message[];
   /** True while a reply streams or client tools run. False while waiting on an approval. */
@@ -82,6 +94,15 @@ export interface UseChat {
   /** Tool calls waiting on the user. Sending a new message declines them. */
   approvals: PendingApproval[];
   respond(partId: string, granted: boolean): void;
+  /**
+   * Tool calls waiting for the user's input through their tool view's `Prompt` (e.g. `ask_user`); the first
+   * shows above the composer. Sending a new message declines them.
+   */
+  prompts: PendingPrompt[];
+  /** Settles a prompted call with the user's answer as its result and continues the run once nothing else waits. */
+  answer(partId: string, result: unknown): void;
+  /** Settles a prompted call as declined (an error "Declined by the user" the model sees) and continues the run. */
+  decline(partId: string): void;
   send(text: string, options?: SendOptions): void;
   stop(): void;
   /** Drops the assistant reply and asks again from its user message. */
@@ -105,6 +126,9 @@ export function userMessage(text: string, parentId: string | null, attachments: 
 const wantsApproval = (part: ToolCallPart, tool: AgentTool | undefined) =>
   part.approval === undefined && (part.needsApproval === true || (typeof tool?.approval === "function" ? tool.approval(part.input) : tool?.approval === true));
 
+const wantsPrompt = (part: ToolCallPart, promptTools: readonly string[], tool: AgentTool | undefined) =>
+  part.approval !== "denied" && (promptTools.includes(part.name) || (tool as { view?: { Prompt?: unknown } } | undefined)?.view?.Prompt !== undefined);
+
 const DECLINED = "Declined by the user";
 
 type Run = { controller: AbortController; runId?: string; reply?: Message };
@@ -114,15 +138,16 @@ type Run = { controller: AbortController; runId?: string; reply?: Message };
  * retries. With an `AgentProvider` it also runs the agent loop: client tools run in the page, approvals
  * wait for the user, then the reply continues; every finished tool call reaches its tool's `onResult`.
  */
-export function useChat({ transport, conversationId, initialMessages = [], onTitle, agent, maxSteps = 12, resume = false }: UseChatOptions): UseChat {
+export function useChat({ transport, conversationId, initialMessages = [], onTitle, agent, maxSteps = 12, resume = false, promptTools = ["ask_user"] }: UseChatOptions): UseChat {
   const contextAgent = useAgentRegistry();
   const registry = agent === undefined ? contextAgent : agent;
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [busy, setBusy] = useState(false);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
+  const [prompts, setPrompts] = useState<PendingPrompt[]>([]);
   const run = useRef<Run | null>(null);
-  const latest = useRef({ messages, transport, conversationId, onTitle, registry });
-  latest.current = { messages, transport, conversationId, onTitle, registry };
+  const latest = useRef({ messages, transport, conversationId, onTitle, registry, promptTools });
+  latest.current = { messages, transport, conversationId, onTitle, registry, promptTools };
   // Where the agent loop is, between a run ending and the user answering.
   const loop = useRef<{ options: SendOptions; step: number }>({ options: {}, step: 0 });
   // Tool calls whose onResult already ran; history counts as reported.
@@ -250,6 +275,12 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
         setBusy(false);
         return;
       }
+      const prompted = awaiting.filter((p) => wantsPrompt(p, latest.current.promptTools, registry?.tool(p.name)));
+      if (prompted.length > 0) {
+        setPrompts(prompted.map((part) => ({ messageId: reply.id, part })));
+        setBusy(false);
+        return;
+      }
       const controller = new AbortController();
       const current: Run = { controller, reply };
       run.current = current;
@@ -320,6 +351,23 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
     [approvals, advance, commit],
   );
 
+  const settlePrompt = useCallback(
+    (partId: string, fields: Parameters<typeof settleToolCall>[2]) => {
+      const pending = prompts.find((p) => p.part.id === partId);
+      if (!pending) return;
+      const message = latest.current.messages.find((m) => m.id === pending.messageId);
+      if (!message) return;
+      const next = settleToolCall(message, partId, fields);
+      commit(next);
+      const rest = prompts.filter((p) => p.part.id !== partId);
+      setPrompts(rest);
+      if (rest.length === 0) advance(next);
+    },
+    [prompts, advance, commit],
+  );
+  const answer = useCallback((partId: string, result: unknown) => settlePrompt(partId, { status: "done", result }), [settlePrompt]);
+  const decline = useCallback((partId: string) => settlePrompt(partId, { status: "error", error: DECLINED }), [settlePrompt]);
+
   /** Declines whatever is waiting, e.g. because the user moved on. */
   const declineAll = useCallback(() => {
     for (const { messageId, part } of approvals) {
@@ -329,6 +377,7 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
     for (const message of latest.current.messages)
       for (const part of awaitingToolCalls(message)) commit(settleToolCall(message, part.id, { status: "error", error: DECLINED }));
     setApprovals([]);
+    setPrompts([]);
   }, [approvals, commit]);
 
   const send = useCallback(
@@ -357,6 +406,7 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
       const index = messages.findIndex((m) => m.id === assistantId);
       if (index < 1 || messages[index - 1]!.role !== "user") return;
       setApprovals([]);
+      setPrompts([]);
       loop.current = { options, step: 0 };
       start(messages.slice(0, index), options);
     },
@@ -390,5 +440,5 @@ export function useChat({ transport, conversationId, initialMessages = [], onTit
     };
   }, []);
 
-  return { messages, busy, approvals, respond, send, stop, retry };
+  return { messages, busy, approvals, respond, prompts, answer, decline, send, stop, retry };
 }

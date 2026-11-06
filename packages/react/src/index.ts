@@ -39,7 +39,7 @@ export type { CodeThemes, ChatMotion } from "./primitives/appearance";
 
 // Hooks
 export { useChat, userMessage } from "./hooks/use-chat";
-export type { Transport, SendRequest, SendOptions, UseChat, UseChatOptions, PendingApproval } from "./hooks/use-chat";
+export type { Transport, SendRequest, SendOptions, UseChat, UseChatOptions, PendingApproval, PendingPrompt } from "./hooks/use-chat";
 export { sseTransport, type SseTransportOptions, type SseRequestBody } from "./hooks/sse-transport";
 export { AgentProvider, AgentRegistry, useAgentRegistry, useAgentSnapshot, useAgentTool, useAgentContext } from "./hooks/agent";
 export type { AgentTool, ToolContext, ToolSpec, JsonSchema } from "./hooks/agent";
@@ -51,7 +51,7 @@ export type { SidebarState } from "./hooks/sidebar-state";
 export { UserMessage, AssistantMessage, formatRelativeTime, messageText } from "./components/messages";
 export type { UserMessageProps, AssistantMessageProps, Feedback, MessageActions } from "./components/messages";
 export { Markdown, MarkdownLinksProvider } from "./components/markdown";
-export type { LinkList, MarkdownProps, RenderLink, RenderLinkList } from "./components/markdown";
+export type { LinkList, MarkdownProps, RenderImage, RenderLink, RenderLinkList } from "./components/markdown";
 export { ActivityGroup } from "./components/activity-group";
 export type { ActivityGroupProps } from "./components/activity-group";
 export {
@@ -68,11 +68,16 @@ export {
   formatDuration,
   useChatTool,
 } from "./components/tools";
-export type { ToolView, ToolViews, SearchResult, ChatTool } from "./components/tools";
+export type { ToolView, ToolViews, ToolPromptProps, SearchResult, ChatTool } from "./components/tools";
+export { AskUserPrompt, AskUserAnswers, askUserToolView } from "./components/ask-user";
+export { ToolPromptCard } from "./components/tool-prompt";
+export type { ToolPromptCardProps } from "./components/tool-prompt";
 export { WidgetFrame, WidgetHostProvider, useWidgetHost, WidgetPartView, widgetToolView, readVisualizeInput, widgetCsp, intersectAllow, openInNewTab, WIDGET_MAX_HEIGHT } from "./components/widget-frame";
 export type { WidgetFrameProps, WidgetToolInput, WidgetHost, WidgetAllow, WidgetResource } from "./components/widget-frame";
 export { UiComponentsProvider, UiTree, UiMarkupBlock, useUiMarkupLanguage, useUiAction, useUiState, htmlComponent, uiTreeToolView, uiMarkupToolView, readTreeInput } from "./components/ui-tree";
-export type { UiComponent, UiStateStore, UiTreeProps } from "./components/ui-tree";
+export type { UiComponent, UiStateStore, UiTreeProps, UiToolViewOptions } from "./components/ui-tree";
+export { uiComponents, uiComponentSet, uiRenders } from "./components/ui-components";
+export type { UiComponentSetOptions } from "./components/ui-components";
 export { ApprovalCard } from "./components/approval-card";
 export type { ApprovalCardProps } from "./components/approval-card";
 export { TokenCounter, useCountUp, formatTokens } from "./components/token-counter";

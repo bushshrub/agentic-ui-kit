@@ -28,6 +28,9 @@ export function AgentChat({ transport: make, title, suggestions, density = "pane
       onStop={chat.stop}
       approvals={chat.approvals}
       onApprove={chat.respond}
+      prompts={chat.prompts}
+      onAnswer={chat.answer}
+      onDecline={chat.decline}
       header={header !== undefined ? header : <ChatHeader title={title} />}
       composer={{ placeholder: "Ask the agent…" }}
       emptyState={(composer) => (

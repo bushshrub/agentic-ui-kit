@@ -94,6 +94,8 @@ In ACP terms, a `session/request_permission` request ends the run. The continuat
 `allow_once` or `reject_once` option. If the user sends a new message instead, the bridge cancels the waiting
 turn first.
 
+Questions for the user work the same way as approvals: see [Asking the user](/custom-harness/asking-the-user/).
+
 ## Testing without the agent
 
 `server/bridge.test.ts` connects the bridge to a fake ACP agent in memory, built with the SDK's `agent()`.

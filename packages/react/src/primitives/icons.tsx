@@ -2,19 +2,22 @@ import { clsx } from "clsx";
 import {
   AlertTriangle,
   ArrowDown,
+  ArrowRight,
   ArrowUp,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
   Copy,
   FileText,
+  MessageSquare,
   Folder,
   FolderOpen,
   FolderPlus,
+  GripVertical,
   Globe,
   Info,
-  MessageSquare,
   MoreHorizontal,
   PanelLeft,
   Pencil,
@@ -91,6 +94,14 @@ export interface ChatIcons {
   warning: ReactNode;
   /** Tool approval card. */
   approval: ReactNode;
+  /** Previous question in the ask_user prompt's pager. */
+  askPrevious: ReactNode;
+  /** Next question in the ask_user prompt's pager. */
+  askPagerNext: ReactNode;
+  /** Continue / send answers button in the ask_user prompt. */
+  askNext: ReactNode;
+  /** Drag handle of a rank row in the ask_user prompt. */
+  dragHandle: ReactNode;
   /** Web link without a favicon, in search results. */
   web: ReactNode;
   /** Pin a chat. */
@@ -155,6 +166,10 @@ export const defaultIcons: ChatIcons = {
   info: <Info />,
   warning: <AlertTriangle />,
   approval: <ShieldQuestion />,
+  askPrevious: <ChevronLeft />,
+  askPagerNext: <ChevronRight />,
+  askNext: <ArrowRight />,
+  dragHandle: <GripVertical />,
   web: <Globe />,
   pin: <Pin />,
   unpin: <PinOff />,

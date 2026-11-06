@@ -319,26 +319,24 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
-- From jaa-v2 (on 0.7.0, low priority):
-  1. SidebarUser wraps `menu` in its own Popover, so the account menu can't take width="trigger". A
-     popoverProps/width passthrough.
-  2. ChatList is hidden on the collapsed rail; recent chats are unreachable. A rail icon that opens the list in
-     a popover.
-
-- From burger (dashboard on 0.7.0, branch feat/agentic-ui-kit in ~/slop/burger):
-  1. Panel has no body padding; hosts add their own. A `padded` option or a default card padding.
-  2. Docs: "bring your own messages". Burger's server replays the full ACP history per session over its own
-     SSE; it reduces events client-side (reduceEvents) into Message[] and passes them to ChatView instead of
-     useChat. Document that path for long-lived replaying streams (dashboards watching many sessions).
-
 - jaa-v2 app shell gaps (reply to jaa-v2 with what ships and the version; code in ~/slop/jaa-v2 branch
   worktree-agent-a67fe6e30eb58a8fb, web/src/components/{Layout,Sidebar,SidebarApps}.tsx):
 - Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
   for the local wrapper components.
 - Slopbot friction (on 0.5.1), worst first:
+- jaa-v2 overlay gaps (low priority, from jaa's overlays move; reply to jaa-v2 when shipped):
+  Modal `isDismissable={false}` / `isKeyboardDismissDisabled` (RAC ModalOverlay), so an outside click doesn't
+  close it while Escape still does; Modal close button (`showClose`, label via labels); Modal/Popover `padded`
+  like Panel's; Tooltip on a plain span/anchor (accept any element or document the Focusable wrapper).
+- Example (not a kit export): a host Map component in the component set (spec { center, zoom, markers },
+  Leaflet render, lazy-loaded), as a Storybook example plus a short section in host-components.md.
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
 
+- Scope (user): the kit is the set of things nearly every chat app keeps re-implementing, not everything.
+  Domain-specific content (maps, chart libraries, calendars...) stays in the host, plugged in through host UI
+  components, tool views or widgets. Check each new request against this before adding it. The docs and
+  Storybook can still show how to build such things on the kit (examples, not exports).
 - The kit is only UI: harnesses bring their own tools and prompts. Tool definitions and the design guide are
   suggestions; views map any tool name/input shape (`widgetToolView(read)`, `uiTreeToolView(read)`).
 - Built: checks a harness runs on the tool call and returns as its result (`checkUiTree`, `checkWidgetCode`:
@@ -359,29 +357,9 @@ Each slice ends with tests passing and the states visible in the playground.
 - From slopbot (after 0.3.0):
   - Core without React: `agentic-ui-kit/core` pulls in React and Streamdown (161 packages in a bot image).
     Publish core on its own, or make React/Streamdown optional peers.
-  - Export a ready component set (specs + renders: Stack, Card, Text, Metric, List, Button…) from the kit
-    so hosts don't copy the playground's lib/ui-components.tsx.
-  - UiTree state key: let the host pass a stable key (e.g. its tool activity id) when live and saved part
-    ids differ, so `persist` works.
 - e2e run 3 (qwen, 6 prompts each): show_ui chosen 3/6 vs ```ui 1/6; feedback fixed the one error. Later:
   a failed show_ui call stays visible next to its fix; consider hiding a call whose result was an error
   once a later call succeeds.
-- From slopbot's port (strict CSP `script-src 'self'; style-src 'self'`):
-  - Shiki: use its JS regex engine (or an option) so 'wasm-unsafe-eval' isn't needed; warn once when
-    highlighting fails instead of silently showing plain code. Shiki's inline token styles need
-    style-src 'unsafe-inline' (or a class-based output); decide which.
-  - README "Content Security Policy" section: what the kit needs (script, style, font for KaTeX, frame-src
-    for widgets' srcdoc), and the Vite note (assetsInlineLimit: 0 so KaTeX fonts aren't data: URLs, or allow
-    data: in font-src).
-  - Without Tailwind, the ChatTheme wrapper has no height and ChatView collapses silently. Give the wrapper a
-    usable default (or a documented class) and say so in the README.
-- Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
-  Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
-  (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").
-  Pager "1 of 3", close X, "Something else" free text, Skip. Composer placeholder becomes "Or reply
-  directly…"; replying declines the prompt. Once answered, a standalone card in the message lists each
-  question and its answer ("Ranked: 1. …"). Builds on client tools: a tool with a `Prompt` component
-  whose result is the user's answer; `ToolView.Block` (done) renders the answers card.
 
 ## Open questions
 

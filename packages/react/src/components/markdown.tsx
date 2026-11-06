@@ -7,7 +7,26 @@ import { UiMarkupBlock, useUiMarkupLanguage } from "./ui-tree";
 import { useSmoothText } from "../hooks/smooth-text";
 import { rehypeWordFade } from "./word-fade";
 
-const fadePlugins = [...Object.values(defaultRehypePlugins), rehypeWordFade];
+// Streamdown's sanitizer, adjusted for images: `data:` image sources survive (the image component below
+// decides what loads), and `<source>` (a srcset that would fetch on render) is dropped.
+type Pluggable = (typeof defaultRehypePlugins)[string];
+interface Schema {
+  tagNames?: string[];
+  protocols?: { src?: string[] };
+}
+const [sanitize, sanitizeSchema] = defaultRehypePlugins.sanitize as unknown as [Pluggable, Schema];
+const rehypePlugins: Pluggable[] = Object.values({
+  ...defaultRehypePlugins,
+  sanitize: [
+    sanitize,
+    {
+      ...sanitizeSchema,
+      tagNames: sanitizeSchema.tagNames?.filter((t) => t !== "source"),
+      protocols: { ...sanitizeSchema.protocols, src: [...(sanitizeSchema.protocols?.src ?? []), "data"] },
+    },
+  ] as Pluggable,
+});
+const fadePlugins = [...rehypePlugins, rehypeWordFade];
 
 const math = createMathPlugin({ singleDollarTextMath: true });
 
@@ -43,7 +62,11 @@ function Code({ node, className, children }: { node?: unknown; className?: strin
   return <CodeBlock variant="boxed" code={code} {...(language && { language })} />;
 }
 
+// Elements that fetch a URL on render and have no place in a reply; they never reach here past the sanitizer.
+const dropped = Object.fromEntries(["source", "video", "audio", "track", "iframe", "embed", "object"].map((t) => [t, () => null]));
+
 const components: Components = {
+  ...dropped,
   // Fenced blocks render as our CodeBlock; `pre` only passes through so the block is not nested in a pre.
   pre: ({ children }) => <>{children}</>,
   code: ({ node, className, children }) => <Code node={node} className={className} children={children} />,
@@ -68,9 +91,14 @@ export interface LinkList {
 /** Draws a list whose items are all links your way, e.g. a list of job links as cards. Return undefined to keep the list. */
 export type RenderLinkList = (list: LinkList) => ReactNode | undefined;
 
+/** Draws an image in message markdown your way: an `<img>`, a link, or nothing (return null). Set with `MarkdownLinksProvider`. */
+export type RenderImage = (image: { src: string; alt: string }) => ReactNode;
+
 interface Links {
   renderLink?: RenderLink | undefined;
   renderLinkList?: RenderLinkList | undefined;
+  renderImage?: RenderImage | undefined;
+  imageOrigins?: string[] | "all" | undefined;
 }
 
 const LinksContext = createContext<Links | undefined>(undefined);
@@ -78,15 +106,31 @@ const LinksContext = createContext<Links | undefined>(undefined);
 export function MarkdownLinksProvider({
   renderLink,
   renderLinkList,
+  renderImage,
+  imageOrigins,
   children,
 }: {
   /** Draws single links. */
   renderLink?: RenderLink;
   /** Draws a bullet or numbered list in which every item is a link (and nothing else). */
   renderLinkList?: RenderLinkList;
+  /**
+   * Draws every image in a reply (markdown or raw HTML) your way. Without it, images load only from
+   * `imageOrigins` and otherwise show as a link. Models can be tricked into writing an image whose URL
+   * carries private data, and the browser would send it on render.
+   */
+  renderImage?: RenderImage;
+  /**
+   * Origins (`"https://cdn.example.com"`) whose images load as `<img>`, or `"all"` for any (not advised for
+   * replies built from web pages or other untrusted text). `data:image/` URLs always load. Default: none.
+   */
+  imageOrigins?: string[] | "all";
   children: ReactNode;
 }) {
-  const value = useMemo(() => ({ renderLink, renderLinkList }), [renderLink, renderLinkList]);
+  const value = useMemo(
+    () => ({ renderLink, renderLinkList, renderImage, imageOrigins }),
+    [renderLink, renderLinkList, renderImage, imageOrigins],
+  );
   return <LinksContext.Provider value={value}>{children}</LinksContext.Provider>;
 }
 
@@ -97,6 +141,30 @@ function soleLink(children: ReactNode): { href: string; children: ReactNode } | 
   const props = nodes[0].props as { href?: unknown; children?: ReactNode; node?: HastNode & { tagName?: string } };
   if (typeof props.href === "string") return { href: props.href, children: props.children };
   return props.node?.tagName === "p" ? soleLink(props.children) : undefined;
+}
+
+const originOf = (url: string, base?: string): string | undefined => {
+  try {
+    return new URL(url, base).origin;
+  } catch {
+    return undefined;
+  }
+};
+
+/** Whether an image may load on render. Relative and protocol-relative URLs count as the page's origin or the one they name. */
+function imageAllowed(src: string, origins: string[] | "all" | undefined): boolean {
+  if (/^data:image\//i.test(src)) return true;
+  if (origins === "all") return /^(https?:)?\/\//i.test(src) || !/^[a-z][a-z\d+.-]*:/i.test(src);
+  if (!origins?.length) return false;
+  const origin = originOf(src, typeof location === "undefined" ? undefined : location.href);
+  return origin !== undefined && /^https?:/.test(origin) && origins.some((o) => (originOf(o) ?? o) === origin);
+}
+
+/** What an image the host did not allow becomes: a link to it (alt text or host name), opened only by the reader. */
+function ImageLink({ src, alt }: { src: string; alt: string }) {
+  const url = URL.canParse(src) ? new URL(src) : undefined;
+  if (url?.protocol !== "http:" && url?.protocol !== "https:") return <>{alt}</>;
+  return <a href={src} target="_blank" rel="noopener noreferrer">{alt || url.host}</a>;
 }
 
 type ListProps = ComponentProps<typeof defaultComponents.ul>;
@@ -154,10 +222,16 @@ const MarkdownBody = memo(function MarkdownBody({
   animating: boolean;
   fade: boolean;
 }): ReactNode {
-  const { renderLink, renderLinkList } = useContext(LinksContext) ?? {};
+  const { renderLink, renderLinkList, renderImage, imageOrigins } = useContext(LinksContext) ?? {};
   const withLinks = useMemo<Components>(
     () => ({
       ...components,
+      img: ({ src, alt }: { src?: string | Blob | undefined; alt?: string | undefined }) => {
+        if (typeof src !== "string" || !src) return <>{alt}</>;
+        if (renderImage) return <>{renderImage({ src, alt: alt ?? "" })}</>;
+        if (imageAllowed(src, imageOrigins)) return <img src={src} alt={alt ?? ""} loading="lazy" referrerPolicy="no-referrer" className="max-w-full rounded-chat-md" />;
+        return <ImageLink src={src} alt={alt ?? ""} />;
+      },
       ...(renderLink && {
         a: ({ href, children }: { href?: string | undefined; children?: ReactNode }) => {
           const custom = href ? renderLink({ href, children }) : undefined;
@@ -169,13 +243,13 @@ const MarkdownBody = memo(function MarkdownBody({
         ol: (props: ListProps) => listOf(true, props, renderLinkList),
       }),
     }),
-    [renderLink, renderLinkList],
+    [renderLink, renderLinkList, renderImage, imageOrigins],
   );
   return (
     <Streamdown
       prefix={PREFIX}
       mode={animating || fade ? "streaming" : "static"}
-      {...(fade && { rehypePlugins: fadePlugins })}
+      rehypePlugins={fade ? fadePlugins : rehypePlugins}
       plugins={{ math }}
       components={withLinks}
       controls={false}

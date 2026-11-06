@@ -123,6 +123,68 @@ export const LinkListAsCards: Story = {
   },
 };
 
+const imageReply: Message = {
+  id: "msg_img",
+  parentId: "msg_u1",
+  role: "assistant",
+  status: "done",
+  createdAt: "2026-11-04T18:00:05Z",
+  parts: [
+    {
+      type: "text",
+      id: "t_img",
+      status: "done",
+      text: "Here is the chart: ![Sales by month](https://images.example/chart.png)\n\nAnd one with no alt text: ![](https://tracker.example/pixel?d=profile)",
+    },
+  ],
+};
+
+/** The default: a remote image in a reply is not loaded. It shows as a link (alt text, or the host name) that only loads when the reader opens it. */
+export const ImagesAsLinks: Story = {
+  args: { message: imageReply, question: "Show me the chart." },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("link", { name: "Sales by month" })).toBeVisible();
+    await expect(canvas.getByRole("link", { name: "tracker.example" })).toBeVisible();
+    await expect(canvas.queryByRole("img")).toBeNull();
+  },
+};
+
+/** `MarkdownLinksProvider imageOrigins`: images from the listed origins load; any other stays a link. */
+export const ImagesFromAllowedOrigins: Story = {
+  args: { message: imageReply, question: "Show me the chart." },
+  decorators: [
+    (Story) => (
+      <MarkdownLinksProvider imageOrigins={["https://images.example"]}>
+        <Story />
+      </MarkdownLinksProvider>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole("img")).toHaveLength(1);
+    await expect(canvas.getByRole("link", { name: "tracker.example" })).toBeVisible();
+  },
+};
+
+/** `MarkdownLinksProvider renderImage`: the host draws every image, here as a captioned placeholder with no request. */
+export const ImagesDrawnByTheHost: Story = {
+  args: { message: imageReply, question: "Show me the chart." },
+  decorators: [
+    (Story) => (
+      <MarkdownLinksProvider
+        renderImage={({ alt }) => (
+          <span className="inline-block rounded-chat-md border border-chat-border px-2 py-1 font-chat-sans text-sm">Image: {alt || "untitled"}</span>
+        )}
+      >
+        <Story />
+      </MarkdownLinksProvider>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Image: Sales by month")).toBeVisible();
+    await expect(canvas.queryByRole("img")).toBeNull();
+  },
+};
+
 /** Web searches, then the answer. */
 export const WebResearch: Story = { args: { message: finished(researchRun), question: questions.research } };
 
@@ -131,6 +193,28 @@ export const AgentRun: Story = { args: { message: finished(agentRun), question: 
 
 /** Long reasoning before the answer. */
 export const LongThinking: Story = { args: { message: finished(fullThinkingRun), question: questions.thinking } };
+
+/** Hidden reasoning that finished with only a title: a plain line, not an expandable one with nothing inside. */
+export const HiddenThinkingTitleOnly: Story = {
+  args: {
+    message: {
+      id: "msg_h",
+      parentId: "msg_u1",
+      role: "assistant",
+      status: "done",
+      createdAt: "2026-11-04T18:00:05Z",
+      parts: [
+        { type: "thinking", id: "h_t", text: "", status: "done", visibility: "hidden", title: "Weighing the options" },
+        { type: "text", id: "h_x", status: "done", text: "A 2 pm coffee is mostly gone by about 9 pm." },
+      ],
+    },
+    question: questions.thinking,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Weighing the options")).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: /Weighing the options/ })).toBeNull();
+  },
+};
 
 /** The agent run streaming: thinking, a reply, a command and a search, then the answer. */
 export const Streaming: Story = {

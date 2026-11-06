@@ -19,10 +19,12 @@ export interface ActivityGroupProps {
  * row per step. Each row expands on its own; tool rows render through the registered `ToolView`.
  * A group of one step skips the rows: the heading is the step's own label and the box holds its detail.
  */
-export function ActivityGroup({ parts, defaultExpanded = false, className }: ActivityGroupProps) {
+export function ActivityGroup({ parts: all, defaultExpanded = false, className }: ActivityGroupProps) {
+  const parts = all.filter((p) => !bareThought(p) || p.title || p.durationMs);
   const views = useToolViews();
   const labels = useLabels();
   const [expanded, setExpanded] = useState(defaultExpanded);
+  if (parts.length === 0) return null;
   // Waiting on the user is not work in progress: no shimmer, no counter.
   const live = parts.some(isWorking);
   // Counts up while the group runs and disappears when it is done. Totals live on the message's usage.
@@ -89,6 +91,11 @@ function Shimmer({ children }: { children: ReactNode }) {
   );
 }
 
+/** A finished thought with nothing to open: hidden reasoning, or no text. It is a plain line, not a disclosure. */
+function bareThought(part: ActivityPart): part is Extract<ActivityPart, { type: "thinking" }> {
+  return part.type === "thinking" && part.status === "done" && (part.visibility === "hidden" || !part.text);
+}
+
 function SingleStep({
   part,
   live,
@@ -103,6 +110,14 @@ function SingleStep({
   onExpandedChange: (expanded: boolean) => void;
 }) {
   const { summary, detail } = useStepContent(part);
+  if (bareThought(part)) {
+    return (
+      <div className="flex items-center gap-1.5 text-chat-muted text-(length:--chat-activity-font-size)">
+        <Lead live={live} />
+        {summary}
+      </div>
+    );
+  }
   return (
     <Disclosure
       isExpanded={expanded}
@@ -125,6 +140,9 @@ function SingleStep({
 function Step({ part }: { part: ActivityPart }) {
   const { summary, detail } = useStepContent(part);
   const live = isWorking(part);
+  if (bareThought(part)) {
+    return <div className="px-3 py-2 text-chat-muted text-(length:--chat-activity-font-size)">{summary}</div>;
+  }
   return (
     <Disclosure
       className="px-3 py-2"

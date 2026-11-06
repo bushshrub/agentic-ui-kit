@@ -2,6 +2,7 @@ import type { ActivityPart, ToolCallPart } from "@agentic-ui-kit/core";
 import { useIcons, IconSlot } from "../primitives/icons";
 import { createContext, useContext, useMemo, type ComponentType, type ReactNode } from "react";
 import { useAgentSnapshot, useAgentTool, type AgentTool } from "../hooks/agent";
+import { askUserToolView } from "./ask-user";
 import { CodeBlock } from "../primitives/code-block";
 import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
 
@@ -33,10 +34,27 @@ export interface ToolView {
    */
   Block?: ComponentType<{ part: ToolCallPart }>;
   /**
+   * Makes the call a client tool the user answers: while it is "awaiting" (a client tool no page handler
+   * runs) the prompt shows over the composer, and what it submits becomes the call's result, sent back like
+   * an approval so the run continues. `useChat` (`promptTools`) and `ChatView` (`prompts`) wire this up; apps
+   * without them use `ToolPromptCard` and the guide "Tools the user answers". Typing in the composer instead declines the call.
+   */
+  Prompt?: ComponentType<ToolPromptProps>;
+  /**
    * A card under the activity group the call sits in, while the call keeps its row: job cards, a diff with
    * Apply/Undo. Reads the part's `data` (display data the model does not see) or its result.
    */
   Card?: ComponentType<{ part: ToolCallPart }>;
+}
+
+/** Props of a tool view's `Prompt`. */
+export interface ToolPromptProps {
+  /** The awaiting call; `part.input` is complete. */
+  part: ToolCallPart;
+  /** The user's answer: becomes the call's `result`. */
+  onSubmit: (result: unknown) => void;
+  /** The user closed the prompt without answering: the call ends as an error "Declined by the user". */
+  onDecline: () => void;
 }
 
 export type ToolViews = Record<string, ToolView>;
@@ -215,6 +233,7 @@ export const memoryTool: ToolView = {
 };
 
 export const defaultToolViews: ToolViews = {
+  ask_user: askUserToolView,
   bash: commandTool,
   shell: commandTool,
   web_search: webSearchTool,

@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChatView, htmlComponent, ToolViewsProvider, UiComponentsProvider, userMessage, type UiStateStore, UiTree } from "agentic-ui-kit";
+import { ChatView, htmlComponent, ToolViewsProvider, UiComponentsProvider, uiComponentSet, uiComponents, userMessage, useUiAction, type UiStateStore, UiTree } from "agentic-ui-kit";
 import type { Message } from "agentic-ui-kit/core";
 import { useMemo, useState } from "react";
 import { expect, fn, waitFor } from "storybook/test";
 import { laptopCompare, skiPacking, skiPackingTool, weekendPlan, type VisualScript } from "../examples/visual-replies";
 import { useReplay } from "../lib/replay";
 import { visualViews } from "../lib/visual-views";
-import { uiComponents } from "../lib/ui-components";
 import { replyEvents } from "../lib/visual-reply";
 
 // What the host registers: its components, plus the sandboxed-HTML escape hatch.
@@ -95,3 +94,64 @@ export const MarkupTool: Story = { args: { script: "skiPackingTool" } };
  * No tool call: the block draws element by element as the text arrives.
  */
 export const MarkupInReply: Story = { args: { script: "skiPacking" } };
+
+/** A host's own button for the kit's `Button` spec: `uiComponentSet({ renders })` keeps what the model is told and swaps the drawing. */
+export const HostButton: Story = {
+  render: () => {
+    // A design system's button would go here; this one is a plain styled link-like control.
+    const Own = ({ label, onPress }: { label: string; onPress: unknown }) => {
+      const run = useUiAction();
+      return <button className="self-start rounded-full bg-chat-accent px-3 py-1 text-chat-accent-fg" onClick={() => run(onPress)}>Host: {label}</button>;
+    };
+    const root = {
+      component: "Card",
+      props: { title: "Next step" },
+      children: [
+        { component: "Text", props: { text: "Picked: ", tone: "muted" } },
+        { component: "Text", props: { text: { $state: "picked" } } },
+        { component: "Button", props: { label: "Pick B", onPress: { action: "set", key: "picked", value: "B" } } },
+      ],
+    };
+    return (
+      <div className="p-4">
+        <UiComponentsProvider components={uiComponentSet({ renders: { Button: Own } })}>
+          <UiTree id="host-button" root={root} state={{ picked: "A" }} />
+        </UiComponentsProvider>
+      </div>
+    );
+  },
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByText("A")).toBeTruthy();
+    await userEvent.click(canvas.getByRole("button", { name: "Host: Pick B" }));
+    await expect(canvas.getByText("B")).toBeTruthy();
+  },
+};
+
+/** The kit's display components in a dashboard: Grid, Metric, Badge, Progress and Table. */
+export const Dashboard: Story = {
+  render: () => (
+    <div className="p-4">
+      <UiComponentsProvider components={uiComponentSet({ exclude: ["interactive"] })}>
+        <UiTree
+          id="dashboard"
+          root={{
+            component: "Stack",
+            children: [
+              { component: "Grid", props: { columns: 3 }, children: [
+                { component: "Metric", props: { label: "Requests", value: "12.4k", note: "last hour" } },
+                { component: "Metric", props: { label: "Errors", value: 31, tone: "bad" } },
+                { component: "Badge", props: { label: "Degraded", tone: "warning" } },
+              ] },
+              { component: "Progress", props: { label: "Quota", value: 38, max: 50 } },
+              { component: "Table", props: { columns: ["Service", "p95 ms", "Status"], rows: [["api", 120, "ok"], ["worker", 480, "slow"]] } },
+            ],
+          }}
+        />
+      </UiComponentsProvider>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("progressbar", { name: "Quota" })).toBeTruthy();
+    await expect(canvas.getByRole("cell", { name: "worker" })).toBeTruthy();
+  },
+};

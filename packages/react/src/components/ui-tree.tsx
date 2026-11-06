@@ -120,8 +120,13 @@ function Node({ node, registry }: { node: unknown; registry: Registry }): ReactN
 }
 
 export interface UiTreeProps {
-  /** Keys the widget's state in the store, usually the tool call's id. */
+  /** Identifies the widget, usually the tool call's id. Keys its state in the store unless `stateKey` is set. */
   id: string;
+  /**
+   * Keys the widget's state in the `persist` store instead of `id`. Pass an id that is the same while the
+   * message streams and after it is saved, when the part ids differ between the two (e.g. your tool activity id).
+   */
+  stateKey?: string;
   /** The tree so far; it may be cut short while it streams. */
   root: unknown;
   /** Starting values of the state, from the tree. */
@@ -130,17 +135,18 @@ export interface UiTreeProps {
 }
 
 /** Draws a `render_ui` tree with the registered components. Unknown components and bad props render nothing. */
-export function UiTree({ id, root, state: initial, streaming = false }: UiTreeProps) {
+export function UiTree({ id, stateKey, root, state: initial, streaming = false }: UiTreeProps) {
+  const storeKey = stateKey ?? id;
   const registry = useContext(RegistryContext);
   const host = useWidgetHost();
-  const [local, setLocal] = useState<Record<string, unknown>>(() => registry?.persist?.load(id) ?? {});
+  const [local, setLocal] = useState<Record<string, unknown>>(() => registry?.persist?.load(storeKey) ?? {});
   const changed = useRef(false);
   const latest = useRef(host);
   latest.current = host;
 
   useEffect(() => {
-    if (changed.current) registry?.persist?.save(id, local);
-  }, [id, local, registry]);
+    if (changed.current) registry?.persist?.save(storeKey, local);
+  }, [storeKey, local, registry]);
 
   const run = useCallback((action: UiAction) => {
     switch (action.action) {
@@ -175,9 +181,19 @@ export function useUiMarkupLanguage(): string | undefined {
 }
 
 /** A ```ui block from a reply, drawn with the registered components. Safe on a block that is still streaming. */
-export function UiMarkupBlock({ id, source, streaming = false }: { id: string; source: string; streaming?: boolean }) {
+export function UiMarkupBlock({ id, stateKey, source, streaming = false }: { id: string; stateKey?: string; source: string; streaming?: boolean }) {
   const { nodes, state } = useMemo(() => parseUiMarkup(source), [source]);
-  return <UiTree id={id} root={nodes} state={state} streaming={streaming} />;
+  return <UiTree id={id} {...(stateKey && { stateKey })} root={nodes} state={state} streaming={streaming} />;
+}
+
+export interface UiToolViewOptions {
+  /** The key for the widget's `persist` state, when the call's id differs between live and saved parts. See `UiTreeProps.stateKey`. */
+  stateKey?: (part: ToolCallPart) => string | undefined;
+}
+
+function stateKeyOf(options: UiToolViewOptions, part: ToolCallPart) {
+  const stateKey = options.stateKey?.(part);
+  return stateKey ? { stateKey } : {};
 }
 
 /**
@@ -185,14 +201,17 @@ export function UiMarkupBlock({ id, source, streaming = false }: { id: string; s
  * your harness uses; the suggested one is core's `showUiTool`. Register it under your tool's name:
  * `{ show_ui: uiMarkupToolView() }`. `read` maps your tool's input to the markup; the default reads `markup`.
  */
-export function uiMarkupToolView(read: (input: unknown) => string | undefined = (input) => {
-  const markup = (input as { markup?: unknown } | undefined)?.markup;
-  return typeof markup === "string" ? markup : undefined;
-}) {
+export function uiMarkupToolView(
+  read: (input: unknown) => string | undefined = (input) => {
+    const markup = (input as { markup?: unknown } | undefined)?.markup;
+    return typeof markup === "string" ? markup : undefined;
+  },
+  options: UiToolViewOptions = {},
+) {
   function UiMarkupToolBlock({ part }: { part: ToolCallPart }) {
     const markup = read(part.input ?? part.partialInput);
     if (!markup) return null;
-    return <UiMarkupBlock id={part.id} source={markup} streaming={part.status === "streaming" || part.status === "input"} />;
+    return <UiMarkupBlock id={part.id} {...stateKeyOf(options, part)} source={markup} streaming={part.status === "streaming" || part.status === "input"} />;
   }
   return { Block: UiMarkupToolBlock };
 }
@@ -212,12 +231,12 @@ export function readTreeInput(input: unknown): { root?: unknown; state?: Record<
  * your tool's input to the tree and its starting state; the default reads `{ root, state }`, the shape of
  * the suggested `renderUiTool`.
  */
-export function uiTreeToolView(read: (input: unknown) => { root?: unknown; state?: Record<string, unknown> } = readTreeInput) {
+export function uiTreeToolView(read: (input: unknown) => { root?: unknown; state?: Record<string, unknown> } = readTreeInput, options: UiToolViewOptions = {}) {
   function UiTreeToolBlock({ part }: { part: ToolCallPart }) {
     const { root, state } = read(part.input ?? part.partialInput);
     if (!root) return null;
     const ok = typeof state === "object" && state !== null;
-    return <UiTree id={part.id} root={root} {...(ok && { state })} streaming={part.status === "streaming" || part.status === "input"} />;
+    return <UiTree id={part.id} {...stateKeyOf(options, part)} root={root} {...(ok && { state })} streaming={part.status === "streaming" || part.status === "input"} />;
   }
   return { Block: UiTreeToolBlock };
 }

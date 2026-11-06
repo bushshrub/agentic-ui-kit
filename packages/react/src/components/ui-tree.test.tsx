@@ -155,3 +155,19 @@ it("draws a UI tool call's markup while its input streams", async () => {
   );
   expect(screen.getByTestId("stack").textContent).toBe("firstsecond");
 });
+
+it("keys the stored state by stateKey when the host passes one, so live and saved ids agree", () => {
+  const loaded: string[] = [];
+  const saved: string[] = [];
+  const persist: UiStateStore = { load: (id) => (loaded.push(id), id === "activity-7" ? { picked: "C" } : undefined), save: (id) => void saved.push(id) };
+  const root = { component: "Stack", children: [{ component: "Text", props: { text: { $state: "picked" } } }, { component: "Button", props: { label: "Pick B", onPress: { action: "set", key: "picked", value: "B" } } }] };
+  render(
+    <UiComponentsProvider components={components} persist={persist}>
+      <UiTree id="live-part" stateKey="activity-7" root={root} />
+    </UiComponentsProvider>,
+  );
+  expect(screen.getByText("C")).toBeTruthy();
+  fireEvent.click(screen.getByText("Pick B"));
+  expect(loaded).toEqual(["activity-7"]);
+  expect(saved).toEqual(["activity-7"]);
+});
