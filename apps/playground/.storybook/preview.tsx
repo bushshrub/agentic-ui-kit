@@ -5,8 +5,19 @@ const preview: Preview = {
   parameters: {
     layout: "centered",
     backgrounds: { disable: true },
-    // The package's layers, bottom up, then the kit inside each host app.
-    options: { storySort: { order: ["Primitives", "Components", "Views", "Hosts", "Examples"] } },
+    // What the kit builds first (whole apps, then the features), then its layers top down to the primitives.
+    options: {
+      storySort: {
+        order: [
+          "Examples", ["Claude", "ChatGPT", "Agent tools", "In host apps"],
+          "Inline visuals", ["Replies", "Sandboxed HTML"],
+          "Features",
+          "Views",
+          "Components",
+          "Primitives",
+        ],
+      },
+    },
     // Accessibility checks run on every story; violations show in the Accessibility panel.
     a11y: { test: "todo" },
     viewport: {

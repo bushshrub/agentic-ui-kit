@@ -8,7 +8,7 @@ import { DemoChat, history } from "../lib/demo-chat";
  * The kit inside each host, themed only through --chat-* (see src/themes.css). Each story is what that
  * app's page would look like with the chat dropped in.
  */
-const meta: Meta = { title: "Hosts", parameters: { layout: "fullscreen" } };
+const meta: Meta = { title: "Examples/In host apps", parameters: { layout: "fullscreen" } };
 export default meta;
 
 const jobSections: ChatListSection[] = [
