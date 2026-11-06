@@ -318,9 +318,6 @@ Each slice ends with tests passing and the states visible in the playground.
 12. Later: search, projects with instructions, share links, light theme, voice.
 
 ## Queued
-- Storybook order (user, next after dictation): the feature demos and the claude.ai-like / chatgpt.com-like
-  examples first, then the components, and the primitive UI at the bottom. It is messy now, and the
-  examples are hidden low down.
 - Maybe (user, "we'll see"): a subagent view. Claude Code's Task/Agent calls (and other harnesses' subagents)
   could show as a nested, collapsible run with its own tool calls and text. Design it if it comes up.
 - Approval card wording: it reuses the finished-call label, so it reads "Allow Ran a command?". It needs a
@@ -329,9 +326,6 @@ Each slice ends with tests passing and the states visible in the playground.
   grows after mount; it should stay at scrollTop 0 until the reader scrolls.
 - CopyField (llm-chat-ui): read-only URL + Copy button with a "Copied" state, for share dialogs.
 - Export the relative-time helper ("5 minutes ago") the messages use, with its labels (llm-chat-ui).
-- Voice mode (user, after the ACP example): claude.ai's dictation state in the composer. The placeholder
-  reads "Listening…", a dotted live level meter sits right of the toolbar, then ✕ (cancel) and ✓ (accept)
-  buttons in place of send. Host supplies the audio/transcript; the kit draws the state.
 - ContextMeter (llm-chat-ui): a 14-16px progress ring for the composer toolbar beside ModelPicker, filled to
   used/limit (ContextPanel's count), accent then warning/danger; tooltip "Context: 13.8k / 200k (7%)" with an
   override or extra line; click/Enter opens ContextPanel in a Popover above it; aria label; optional loading.
