@@ -152,7 +152,8 @@ export function renderUiTool(components: readonly UiComponentSpec[]) {
     name: renderUiToolName,
     description: `Show an interactive visual built from the app's components, inline in your reply.
 Write a tree: { "root": { "component": "<name>", "props": { ... }, "children": [ ...nodes ] }, "state": { ... } }.
-Only these components exist; a node with an unknown component or props that don't fit is not shown.
+"root" is a JSON object, never a string. Only these components exist; a node with an unknown component or
+props that don't fit is not shown. One visual per answer: don't also draw the same thing another way.
 ${list}
 
 Actions: a prop the schema marks as an action takes one of
