@@ -205,6 +205,10 @@ export interface ChatLabels {
   // Inline visuals
   /** Accessible name of a widget without a title. */
   widget: string;
+  /** Link left where a visual was, once a later reply updated it. */
+  visualUpdated: string;
+  /** Under a visual while its update streams. */
+  visualUpdating: string;
   /** Loading line while a widget streams and the model gave none. */
   drawingWidget: string;
 }
@@ -315,6 +319,8 @@ export const defaultLabels: ChatLabels = {
   moreModels: "More models",
 
   widget: "Widget",
+  visualUpdated: "Updated below ↓",
+  visualUpdating: "Updating…",
   drawingWidget: "Drawing",
 };
 

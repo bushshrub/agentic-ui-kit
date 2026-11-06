@@ -1,4 +1,5 @@
 import { toBlocks, type Message, type Part } from "@agentic-ui-kit/core";
+import { chainsOf, ToolChain } from "./replacements";
 import { clsx } from "clsx";
 import { useIcons } from "../primitives/icons";
 import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -184,6 +185,7 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
   const streaming = message.status === "streaming";
   const views = useToolViews();
   const blocks = toBlocks(message.parts, (part) => views[part.name]?.Block !== undefined);
+  const { first, chains } = chainsOf(message);
   return (
     <div className={clsx("group/message flex flex-col gap-4", className)}>
       {blocks.map((block) => {
@@ -202,8 +204,18 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
           );
         }
         if (block.kind === "tool") {
-          const ToolBlock = views[block.part.name]!.Block!;
-          return <ToolBlock key={block.id} part={block.part} />;
+          // A call that updates an earlier one in this reply is drawn in that one's place.
+          if (first.get(block.part.id) !== block.part.id) return null;
+          return (
+            <ToolChain
+              key={block.id}
+              chain={chains.get(block.part.id) ?? [block.part]}
+              draw={(part) => {
+                const ToolBlock = (views[part.name] ?? views[block.part.name])!.Block!;
+                return <ToolBlock part={part} />;
+              }}
+            />
+          );
         }
         const part = block.part;
         if (part.type === "text") return <Markdown key={part.id} partId={part.id} streaming={part.status === "streaming"}>{part.text}</Markdown>;

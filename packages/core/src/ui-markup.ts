@@ -8,6 +8,8 @@
  * lenient where the intent is clear (JS-style objects, `{$state.k}`, `{"$state":"k"}`, text children) and
  * tolerates a block cut short while it streams.
  */
+
+import { replacesGuide, replacesProperty } from "./replaces";
 import { checkUiTree, type UiComponentSpec, type UiNode } from "./ui-tree";
 
 export interface UiMarkup {
@@ -418,6 +420,8 @@ export const showUiToolName = "show_ui";
 /** Input of the suggested UI tool, as the model writes it. */
 export interface ShowUiInput {
   markup: string;
+  /** Id of the earlier show_ui call this one updates in place. */
+  replaces?: string;
 }
 
 /**
@@ -431,11 +435,11 @@ export function showUiTool(components: readonly UiComponentSpec[], name = showUi
     description:
       "Show interactive UI inline in your reply, built from the app's components: options to compare, a plan, " +
       "a checklist, numbers at a glance. Write JSX in `markup`. Keep explaining in text around it; one call per " +
-      "answer unless the user asks for more.\n\n" +
+      "answer unless the user asks for more. " + replacesGuide + "\n\n" +
       markupRules(components),
     inputSchema: {
       type: "object",
-      properties: { markup: { type: "string", description: 'JSX of the components above, e.g. <Card title="Plan"><Metric label="Total" value="€184" /></Card>' } },
+      properties: { markup: { type: "string", description: 'JSX of the components above, e.g. <Card title="Plan"><Metric label="Total" value="€184" /></Card>' }, replaces: replacesProperty },
       required: ["markup"],
     },
   } as const;
@@ -453,7 +457,7 @@ export function checkUiMarkupCode(markup: unknown, components: readonly UiCompon
   const ok = errors.length === 0;
   const feedback = ok
     ? "Shown to the user."
-    : `Not all of it is shown. Fix these and call ${toolName} again, without remarking on the fix to the user:\n` + list(errors);
+    : `Not all of it is shown. Fix these and call ${toolName} again with "replaces" set to this call's id, without remarking on the fix to the user:\n` + list(errors);
   return { ok, errors, feedback };
 }
 

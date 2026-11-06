@@ -132,3 +132,56 @@ export const SharedTranscript: StoryObj = {
     );
   },
 };
+
+/** A small bell curve in one color, standing in for a model's widget. */
+const curve = (stroke: string, note: string) => `<svg viewBox="0 0 320 120" width="100%" style="max-width:420px">
+  <path d="M0 110 C 90 110 110 10 160 10 S 230 110 320 110" fill="none" stroke="${stroke}" stroke-width="3"/>
+  <text x="0" y="12" fill="var(--chat-muted)" font-size="12">${note}</text>
+</svg>`;
+
+function draw(id: string, html: string, replaces?: string, status: "input" | "done" = "done"): Part {
+  const input = { title: "normal_distribution", widget_code: html, ...(replaces && { replaces }) };
+  const inputJson = JSON.stringify(input);
+  return status === "done"
+    ? { type: "tool_call", id, name: visualizeTool.name, status, inputJson, input, result: "Shown to the user." }
+    : { type: "tool_call", id, name: visualizeTool.name, status, inputJson: inputJson.slice(0, -2), partialInput: parsePartialJson(inputJson.slice(0, -2)) };
+}
+
+/**
+ * Updating a visual in place with `replaces`. Step 1: the model resends a fixed widget in the same reply;
+ * the first stays (dimmed, "Updating…") until the fix is complete, then the fix takes its place. Step 3: the
+ * user asks for a change in a later turn; the old widget folds into "Updated below ↓".
+ */
+export const UpdatedInPlace: StoryObj = {
+  render: function Render() {
+    const [step, setStep] = useState(0);
+    const ask = userMessage("Interactive visualization of the normal distribution", null);
+    const first: Part[] = [
+      { type: "text", id: "t1", text: "Here is the standard normal curve.", status: "done" },
+      draw("w1", curve("#3b82f6", "hard-coded color")),
+      ...(step >= 1 ? [draw("w2", curve("var(--chat-accent)", "fixed: theme color"), "w1", step === 1 ? "input" : "done")] : []),
+    ];
+    const messages: Message[] = [
+      ask,
+      { id: "a1", parentId: ask.id, role: "assistant", status: "done", createdAt: new Date().toISOString(), parts: first },
+    ];
+    if (step >= 3) {
+      const again = userMessage("Make the line thinner", "a1");
+      messages.push(again, {
+        id: "a2", parentId: again.id, role: "assistant", status: "done", createdAt: new Date().toISOString(),
+        parts: [{ type: "text", id: "t2", text: "Done, the line is thinner now.", status: "done" }, draw("w3", curve("var(--chat-accent)", "thinner").replace(`stroke-width="3"`, `stroke-width="1.5"`), "w2")],
+      });
+    }
+    const steps = ["Fix it in the same reply", "Finish the fix", "Ask for a change in a new turn", "Start over"];
+    return (
+      <div className="flex h-dvh flex-col">
+        <button className="m-2 self-start rounded border border-chat-border px-2 py-1 text-sm text-chat-fg" onClick={() => setStep((step + 1) % 4)}>
+          {steps[step]}
+        </button>
+        <ToolViewsProvider tools={visualViews}>
+          <ChatTranscript messages={messages} />
+        </ToolViewsProvider>
+      </div>
+    );
+  },
+};

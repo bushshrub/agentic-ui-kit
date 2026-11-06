@@ -5,6 +5,7 @@ export { toBlocks, isActivityPart } from "./blocks";
 export type { Block, ActivityPart } from "./blocks";
 export { readEventStream, formatEvent } from "./sse";
 export { parsePartialJson, salvageJson } from "./partial-json";
+export { replacesProperty, replacesGuide, replacedId } from "./replaces";
 export { visualizeTool, visualizeGuide, checkWidgetCode } from "./visualize";
 export type { VisualizeInput, WidgetCodeCheck } from "./visualize";
 export { matchesSchema, schemaErrors, checkUiTree, isStateRef, renderUiTool, renderUiToolName, uiActionSchema } from "./ui-tree";

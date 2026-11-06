@@ -4,6 +4,8 @@
  * its component's schema; bad nodes render nothing. Idea from OpenUI (github.com/thesysdev/openui).
  */
 
+import { replacesGuide, replacesProperty } from "./replaces";
+
 import { salvageJson } from "./partial-json";
 
 export type JsonSchema = Record<string, unknown>;
@@ -33,6 +35,8 @@ export interface RenderUiInput {
   root: UiNode;
   /** Starting values of the widget's state. */
   state?: Record<string, unknown>;
+  /** Id of the earlier render_ui call this one updates in place. */
+  replaces?: string;
 }
 
 /** A component as the model sees it. */
@@ -154,6 +158,7 @@ export function renderUiTool(components: readonly UiComponentSpec[]) {
 Write a tree: { "root": { "component": "<name>", "props": { ... }, "children": [ ...nodes ] }, "state": { ... } }.
 "root" is a JSON object, never a string. Only these components exist; a node with an unknown component or
 props that don't fit is not shown. One visual per answer: don't also draw the same thing another way.
+${replacesGuide}
 ${list}
 
 Actions: a prop the schema marks as an action takes one of
@@ -167,6 +172,7 @@ Set apart what you added or changed from what was already there.`,
       properties: {
         root: { type: "object", description: "The top node.", properties: { component: { enum: components.map((c) => c.name) } }, required: ["component"] },
         state: { type: "object", description: "Starting values of the widget's state." },
+        replaces: replacesProperty,
       },
       required: ["root"],
     },
@@ -273,7 +279,7 @@ export function checkUiTree(input: unknown, components: readonly UiComponentSpec
   const ok = errors.length === 0;
   const feedback = ok
     ? "Shown to the user."
-    : `${bad === 0 ? "Not shown as written" : `Only part of it is shown: ${bad} of ${total} nodes were left out`}. Fix these and call ${toolName} again, without remarking on the fix to the user:\n` +
+    : `${bad === 0 ? "Not shown as written" : `Only part of it is shown: ${bad} of ${total} nodes were left out`}. Fix these and call ${toolName} again with "replaces" set to this call's id, without remarking on the fix to the user:\n` +
       errors.slice(0, 20).map((e) => `- ${e}`).join("\n") +
       (errors.length > 20 ? `\n- ...and ${errors.length - 20} more` : "");
   return { ok, errors, feedback };

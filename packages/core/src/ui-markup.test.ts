@@ -102,6 +102,15 @@ it("suggests a UI tool and answers its calls", () => {
   expect(checkUiMarkupCode('<Card title="A"><Text text="hi" /></Card>', specs)).toEqual({ ok: true, errors: [], feedback: "Shown to the user." });
   const bad = checkUiMarkupCode('<Card title="A">\n  <Text text={3} />\n</Card>', specs);
   expect(bad.errors).toEqual(["line 2 <Text>.props.text: expected string, got number 3"]);
-  expect(bad.feedback).toBe("Not all of it is shown. Fix these and call show_ui again, without remarking on the fix to the user:\n- line 2 <Text>.props.text: expected string, got number 3");
+  expect(bad.feedback).toBe("Not all of it is shown. Fix these and call show_ui again with \"replaces\" set to this call's id, without remarking on the fix to the user:\n- line 2 <Text>.props.text: expected string, got number 3");
   expect(checkUiMarkupCode("", specs).ok).toBe(false);
+});
+
+it("the drawing tools take replaces, and replacedId reads it", async () => {
+  const { replacedId, visualizeTool } = await import("./index");
+  expect(showUiTool([]).inputSchema.properties.replaces.type).toBe("string");
+  expect(visualizeTool.inputSchema.properties.replaces.type).toBe("string");
+  expect(replacedId({ replaces: "call_1" })).toBe("call_1");
+  expect(replacedId({ replaces: "" })).toBeUndefined();
+  expect(replacedId(undefined)).toBeUndefined();
 });

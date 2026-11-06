@@ -4,11 +4,15 @@
  * the streaming `widget_code` into a sandboxed WidgetFrame. The backend runs the tool as a no-op ("shown").
  */
 
+import { replacesGuide, replacesProperty } from "./replaces";
+
 /** Input of the visualize tool, as the model writes it. */
 export interface VisualizeInput {
   widget_code: string;
   title?: string;
   loading_messages?: string[];
+  /** Id of the earlier show_widget call this one updates in place. */
+  replaces?: string;
 }
 
 /** The tool definition to give the model. Same shape as a page tool's `ToolSpec`. */
@@ -33,6 +37,7 @@ export const visualizeTool = {
         maxItems: 4,
         description: "1-4 short lines shown while you write it, e.g. \"Finding free slots\".",
       },
+      replaces: replacesProperty,
     },
     required: ["widget_code"],
   },
@@ -52,6 +57,7 @@ How the frame works
 - Two globals: sendPrompt(text) sends a message as the user (for "Add these to my calendar", "Explain this"),
   openLink(url) opens an http(s) link. Prefer local state (JavaScript in the widget) over round trips: filter,
   toggle, recalculate and animate in place; use sendPrompt only for what needs you.
+- ${replacesGuide}
 
 Look
 - Use the chat's theme variables, never hard-coded colors or fonts: var(--chat-fg) text, var(--chat-muted) and
@@ -123,6 +129,6 @@ export function checkWidgetCode(
   }
   const ok = errors.length === 0;
   const lines = [...errors, ...warnings].map((e) => `- ${e}`).join("\n");
-  const feedback = ok && !warnings.length ? "Shown to the user." : ok ? `Shown to the user, and it works: do not draw it again now. Next time, to fit the chat better:\n${lines}` : `Shown, but it will not work as written. Fix these and call ${toolName} again, without remarking on the fix to the user:\n${lines}`;
+  const feedback = ok && !warnings.length ? "Shown to the user." : ok ? `Shown to the user, and it works: do not draw it again now. Next time, to fit the chat better:\n${lines}` : `Shown, but it will not work as written. Fix these and call ${toolName} again with "replaces" set to this call's id, without remarking on the fix to the user:\n${lines}`;
   return { ok, errors, warnings, feedback };
 }

@@ -10,7 +10,7 @@ that doesn't exist. Rather than retrying until the UI comes out right, check wha
 it a message it can act on. The kit's checks name the line, the component and the fix:
 
 ```text
-Not all of it is shown. Fix these and call show_ui again:
+Not all of it is shown. Fix these and call show_ui again with "replaces" set to this call's id, without remarking on the fix to the user:
 - line 3 <List>.props.items[0]: expected object, got string "Tent"
 - line 5 <Txt>.component: unknown "Txt"; use one of Stack, Card, Text, List, Button
 ```
@@ -33,6 +33,21 @@ if (call.name === "render_ui") return checkUiTree(call.input, uiSpecs).feedback;
 `checkWidgetCode` reports what breaks in the sandbox (document tags, blocked origins, fetch, storage,
 `alert`) as errors and what looks off in the chat (hard-coded colors) as warnings. `checkUiTree` accepts a
 `root` sent as a JSON string, draws what it can, and tells the model to send an object.
+
+### Fixes and changes redraw in place
+
+`show_widget`, `show_ui` and `render_ui` take an optional `replaces`: the id of an earlier call of the
+tool. The checks' feedback asks for it on a resend, and the tool descriptions tell the model to use it when
+the user asks to change a visual. The kit then:
+
+- **same reply** (a fix): keeps the first visual, dimmed with "Updating…", until the new call's input is
+  complete, then draws the new one in its place. A failed update leaves the old one.
+- **later reply** ("make the line thinner"): draws the new visual in the new reply and folds the old one
+  into an "Updated below ↓" link that scrolls to it.
+
+The model refers to its own call ids, so send the history back with the tool call ids intact. Warning-only
+feedback (hard-coded colors) says the widget works and not to redraw it. Your own drawing tool can take part
+too: add `replacesProperty` from agentic-ui-kit/core to its input schema and `replacesGuide` to its description.
 
 ## UI blocks in the reply
 
