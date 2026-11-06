@@ -19,7 +19,7 @@ export function Badge({ children, tone = "outline", icon, className }: BadgeProp
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-1 rounded-full px-2 py-px font-chat-sans text-xs whitespace-nowrap [&_svg]:size-3",
+        "inline-flex items-center gap-1 rounded-full px-2 py-px font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 whitespace-nowrap [&_svg]:size-3",
         tones[tone],
         className,
       )}

@@ -188,7 +188,7 @@ export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", c
         ) : (
           <div className="flex h-full flex-col gap-1.5 p-2.5">
             <IconSlot className="text-chat-muted [&_svg]:size-5">{icons.file}</IconSlot>
-            <span className="line-clamp-3 text-xs break-words text-chat-fg">{a.name}</span>
+            <span className="line-clamp-3 text-(length:--chat-ui-font-size-sm) leading-4 break-words text-chat-fg">{a.name}</span>
           </div>
         )}
       </div>
@@ -287,7 +287,7 @@ export function PastedTextDialog({ text, onClose, onSave, title }: PastedTextDia
         onChange={(e) => setDraft(e.target.value)}
         readOnly={!onSave}
         aria-label={title}
-        className="mx-5 min-h-64 flex-1 resize-none rounded-chat-md border border-chat-border bg-chat-bg p-3 font-chat-mono text-sm leading-relaxed text-chat-fg outline-none focus:border-chat-border-strong [scrollbar-width:thin]"
+        className="mx-5 min-h-64 flex-1 resize-none rounded-chat-md border border-chat-border bg-chat-bg p-3 font-chat-mono text-(length:--chat-ui-font-size) leading-relaxed text-chat-fg outline-none focus:border-chat-border-strong [scrollbar-width:thin]"
       />
       <div className="flex justify-end gap-2 px-5 py-4">
         <Button variant="subtle" onPress={onClose}>

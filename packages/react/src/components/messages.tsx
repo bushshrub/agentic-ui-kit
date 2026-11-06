@@ -47,7 +47,7 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-const timeClass = "px-1 font-chat-sans text-xs text-chat-subtle";
+const timeClass = "px-1 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle";
 
 export interface UserMessageProps {
   message: Message;
@@ -116,7 +116,7 @@ function UserBubble({ text }: { text: string }) {
   }, [text]);
   const folded = long && !open;
   return (
-    <div className="max-w-[85%] rounded-chat-lg bg-chat-bubble px-4 py-2.5 font-chat-sans text-[0.9375rem] leading-relaxed text-chat-fg">
+    <div className="max-w-[85%] rounded-chat-lg bg-chat-bubble px-4 py-2.5 font-chat-sans text-(length:--chat-bubble-font-size) leading-relaxed text-chat-fg">
       <div
         ref={body}
         style={folded ? { maxHeight: FOLD_HEIGHT } : undefined}
@@ -129,7 +129,7 @@ function UserBubble({ text }: { text: string }) {
           type="button"
           aria-expanded={open}
           onClick={() => setOpen(!open)}
-          className="mt-1.5 cursor-pointer rounded-chat-sm text-sm text-chat-muted outline-none hover:text-chat-fg focus-visible:ring-2 focus-visible:ring-chat-focus"
+          className="mt-1.5 cursor-pointer rounded-chat-sm text-(length:--chat-ui-font-size) leading-5 text-chat-muted outline-none hover:text-chat-fg focus-visible:ring-2 focus-visible:ring-chat-focus"
         >
           {open ? labels.showLess : labels.showMore}
         </button>
@@ -180,7 +180,7 @@ export function AssistantMessage({ message, onRetry, onFeedback, onReadAloud, re
         return null;
       })}
       {message.status === "error" && (
-        <p className="font-chat-sans text-sm text-chat-danger">{message.error ?? labels.somethingWentWrong}</p>
+        <p className="font-chat-sans text-(length:--chat-ui-font-size) leading-5 text-chat-danger">{message.error ?? labels.somethingWentWrong}</p>
       )}
       {streaming ? (
         <div className="h-7" />

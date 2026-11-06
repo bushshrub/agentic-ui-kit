@@ -53,7 +53,7 @@ export interface SidebarItemProps {
 export function SidebarItem({ icon, label, onPress, href, active, shortcut }: SidebarItemProps) {
   const { collapsed, dismiss } = useSidebar();
   const className = clsx(
-    "group flex h-8 cursor-pointer items-center gap-2.5 rounded-chat-sm text-left text-sm text-chat-fg outline-none [@media(pointer:coarse)]:h-10",
+    "group flex h-8 cursor-pointer items-center gap-2.5 rounded-chat-sm text-left text-(length:--chat-ui-font-size) leading-5 text-chat-fg outline-none [@media(pointer:coarse)]:h-10",
     "data-hovered:bg-chat-hover data-pressed:bg-chat-selected data-focus-visible:ring-2 data-focus-visible:ring-chat-focus",
     "[&_svg]:size-4 [&_svg]:shrink-0",
     collapsed ? "w-9 justify-center [@media(pointer:coarse)]:w-10" : "w-full px-2",
@@ -67,7 +67,7 @@ export function SidebarItem({ icon, label, onPress, href, active, shortcut }: Si
     <>
       {icon}
       {collapsed ? <span className="sr-only">{label}</span> : <span className="min-w-0 flex-1 truncate">{label}</span>}
-      {!collapsed && shortcut && <kbd className="font-chat-sans text-xs text-chat-subtle opacity-0 group-data-hovered:opacity-100">{shortcut}</kbd>}
+      {!collapsed && shortcut && <kbd className="font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle opacity-0 group-data-hovered:opacity-100">{shortcut}</kbd>}
     </>
   );
   const common = { className, onPress: press, "aria-current": active ? ("page" as const) : undefined };
@@ -99,7 +99,7 @@ export function SidebarUser({ name, detail, avatarUrl, menu }: SidebarUserProps)
   const avatar = avatarUrl ? (
     <img src={avatarUrl} alt="" className="size-8 shrink-0 rounded-full object-cover" />
   ) : (
-    <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-full bg-chat-fg text-xs font-medium text-chat-bg">
+    <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-full bg-chat-fg text-(length:--chat-ui-font-size-sm) leading-4 font-medium text-chat-bg">
       {initials(name)}
     </span>
   );
@@ -116,8 +116,8 @@ export function SidebarUser({ name, detail, avatarUrl, menu }: SidebarUserProps)
       {!collapsed && (
         <>
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm text-chat-fg">{name}</span>
-            {detail && <span className="truncate text-xs text-chat-muted">{detail}</span>}
+            <span className="truncate text-(length:--chat-ui-font-size) leading-5 text-chat-fg">{name}</span>
+            {detail && <span className="truncate text-(length:--chat-ui-font-size-sm) leading-4 text-chat-muted">{detail}</span>}
           </span>
           {menu && <IconSlot className="text-chat-muted [&_svg]:size-4">{icons.switcher}</IconSlot>}
         </>

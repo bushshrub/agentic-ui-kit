@@ -44,7 +44,7 @@ export function MenuSearch({ placeholder, children, value, onChange }: MenuSearc
       <SearchField aria-label={placeholder} autoFocus className="border-b border-chat-popover-border">
         <Input
           placeholder={placeholder}
-          className="w-full bg-transparent px-3.5 py-2.5 text-sm text-chat-fg outline-none placeholder:text-chat-subtle"
+          className="w-full bg-transparent px-3.5 py-2.5 text-(length:--chat-ui-font-size) leading-5 text-chat-fg outline-none placeholder:text-chat-subtle"
         />
       </SearchField>
       {children}
@@ -101,7 +101,7 @@ export function MenuItem({ children, icon, description, detail, shortcut, tone =
       {...props}
       {...(textValue !== undefined && { textValue })}
       className={clsx(
-        "group flex min-h-7 cursor-pointer items-center gap-2.5 rounded-chat-sm px-2 py-1 text-sm text-chat-fg outline-none select-none",
+        "group flex min-h-7 cursor-pointer items-center gap-2.5 rounded-chat-sm px-2 py-1 text-(length:--chat-ui-font-size) leading-5 text-chat-fg outline-none select-none",
         "data-focused:bg-chat-popover-hover data-open:bg-chat-popover-hover data-disabled:opacity-40",
         tone === "danger" && "text-chat-danger",
         className,
@@ -119,13 +119,13 @@ export function MenuItem({ children, icon, description, detail, shortcut, tone =
               {children}
             </Text>
             {description && (
-              <Text slot="description" className="text-xs text-chat-muted">
+              <Text slot="description" className="text-(length:--chat-ui-font-size-sm) leading-4 text-chat-muted">
                 {description}
               </Text>
             )}
           </span>
-          {detail && <span className="shrink-0 text-sm text-chat-muted">{detail}</span>}
-          {shortcut && <Keyboard className="shrink-0 font-chat-sans text-xs text-chat-subtle">{shortcut}</Keyboard>}
+          {detail && <span className="shrink-0 text-(length:--chat-ui-font-size) leading-5 text-chat-muted">{detail}</span>}
+          {shortcut && <Keyboard className="shrink-0 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle">{shortcut}</Keyboard>}
           {selectionMode !== "none" && isSelected && <IconSlot className="text-chat-check [&_svg]:size-4">{icons.check}</IconSlot>}
           {hasSubmenu && <IconSlot className="text-chat-muted [&_svg]:size-4">{icons.submenu}</IconSlot>}
         </>
@@ -147,7 +147,7 @@ export interface MenuSectionProps {
 export function MenuSection({ title, children, ...selection }: MenuSectionProps) {
   return (
     <AriaMenuSection {...selection} className="[&:not(:first-child)]:mt-1">
-      {title && <Header className="px-2 pt-1.5 pb-1 text-xs text-chat-subtle">{title}</Header>}
+      {title && <Header className="px-2 pt-1.5 pb-1 text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle">{title}</Header>}
       {children}
     </AriaMenuSection>
   );
@@ -159,5 +159,5 @@ export function MenuSeparator() {
 
 /** Explanatory text inside a menu, above or below the items. Not focusable. */
 export function MenuNote({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={clsx("px-2 py-1.5 text-sm leading-snug text-chat-muted", className)}>{children}</div>;
+  return <div className={clsx("px-2 py-1.5 text-(length:--chat-ui-font-size) leading-snug text-chat-muted", className)}>{children}</div>;
 }

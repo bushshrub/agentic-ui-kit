@@ -31,7 +31,7 @@ export function ChatHeader({ title, menu, leading, actions, className }: ChatHea
           <Popover placement="bottom start">{menu}</Popover>
         </MenuTrigger>
       ) : (
-        <h1 className="min-w-0 truncate px-2 text-sm text-chat-fg">{title}</h1>
+        <h1 className="min-w-0 truncate px-2 text-(length:--chat-ui-font-size) leading-5 text-chat-fg">{title}</h1>
       )}
       <div className="ml-auto flex shrink-0 items-center gap-1">{actions}</div>
     </header>

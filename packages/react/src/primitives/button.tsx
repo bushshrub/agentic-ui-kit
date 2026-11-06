@@ -15,8 +15,8 @@ const variants = {
 };
 
 const sizes = {
-  sm: "h-7 gap-1.5 px-2 text-sm [@media(pointer:coarse)]:h-9",
-  md: "h-8 gap-2 px-2.5 text-sm [@media(pointer:coarse)]:h-10",
+  sm: "h-7 gap-1.5 px-2 text-(length:--chat-ui-font-size) leading-5 [@media(pointer:coarse)]:h-9",
+  md: "h-8 gap-2 px-2.5 text-(length:--chat-ui-font-size) leading-5 [@media(pointer:coarse)]:h-10",
 };
 
 export interface ButtonProps extends Omit<AriaButtonProps, "className"> {

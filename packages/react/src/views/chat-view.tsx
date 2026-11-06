@@ -10,7 +10,11 @@ import { useLabels } from "../primitives/labels";
 
 export type Density = "full" | "panel" | "inline";
 
-/** Column defaults per density; `contentWidth` / `contentPadding` override them. */
+/**
+ * Column defaults per density; `contentWidth` / `contentPadding` override them. Only the message size changes
+ * with density: UI text is the same in all three. A theme can set the other text-size variables per density
+ * with `[data-chat-density="panel"] { --chat-ui-font-size: … }`.
+ */
 export const densityVars: Record<Density, CSSProperties> = {
   full: {},
   panel: { "--chat-content-width": "100%", "--chat-content-padding": "1rem", "--chat-message-font-size": "1rem" } as CSSProperties,
@@ -110,7 +114,7 @@ export function ChatView({
               <div className="mx-auto w-full max-w-(--chat-content-width)">
                 {pending && <ApprovalCard key={pending.part.id} approval={pending} onRespond={onApprove} className="mb-2" />}
                 {box("docked")}
-                <div className={clsx("flex items-center justify-center py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center font-chat-sans text-xs text-chat-subtle", short ? "min-h-2" : "min-h-6")}>
+                <div className={clsx("flex items-center justify-center py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle", short ? "min-h-2" : "min-h-6")}>
                   {disclaimer && !short && <span>{disclaimer}</span>}
                 </div>
               </div>

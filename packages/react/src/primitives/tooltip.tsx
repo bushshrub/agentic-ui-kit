@@ -16,7 +16,7 @@ export function Tooltip({ content, children, placement = "top", delay = 600 }: T
       <AriaTooltip
         placement={placement}
         offset={6}
-        className="rounded-chat-sm bg-chat-raised px-2 py-1 font-chat-sans text-xs text-chat-fg shadow-chat-popover motion-safe:data-entering:animate-chat-in motion-safe:data-exiting:animate-chat-out"
+        className="rounded-chat-sm bg-chat-raised px-2 py-1 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-fg shadow-chat-popover motion-safe:data-entering:animate-chat-in motion-safe:data-exiting:animate-chat-out"
       >
         {content}
       </AriaTooltip>

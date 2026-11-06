@@ -35,12 +35,12 @@ export function ContextPanel({ usage, title, defaultExpanded = true, className }
       summary={title ?? labels.context}
       defaultExpanded={defaultExpanded}
       className={clsx("font-chat-sans text-chat-fg", className)}
-      summaryClassName="text-[0.9375rem] text-chat-fg"
+      summaryClassName="text-(length:--chat-activity-font-size) text-chat-fg"
       panelClassName="pt-3"
     >
-      <div className="mb-2 flex items-baseline justify-between text-[0.9375rem]">
+      <div className="mb-2 flex items-baseline justify-between text-(length:--chat-activity-font-size)">
         <span>{labels.percentUsed(Math.round((used / usage.limit) * 100))}</span>
-        <span className="text-sm text-chat-muted tabular-nums">
+        <span className="text-(length:--chat-ui-font-size) leading-5 text-chat-muted tabular-nums">
           {formatTokens(used)} / {formatTokens(usage.limit)}
         </span>
       </div>
@@ -105,7 +105,7 @@ function CategoryRow({ category, share }: { category: ContextCategory; share: st
     category.label
   );
   return (
-    <li className="flex items-center gap-2.5 text-sm">
+    <li className="flex items-center gap-2.5 text-(length:--chat-ui-font-size) leading-5">
       <span
         aria-hidden
         className="size-2.5 shrink-0 rounded-[2px]"
@@ -122,14 +122,14 @@ function GroupList({ group }: { group: ContextGroup }) {
   return (
     <Disclosure
       summary={group.label}
-      trailing={<span className="text-sm text-chat-subtle tabular-nums">{group.items.length}</span>}
+      trailing={<span className="text-(length:--chat-ui-font-size) leading-5 text-chat-subtle tabular-nums">{group.items.length}</span>}
       indicator="chevron"
-      summaryClassName="text-sm"
+      summaryClassName="text-(length:--chat-ui-font-size) leading-5"
       panelClassName="pt-1.5"
     >
       <ul className="max-h-72 space-y-1 overflow-y-auto pl-6 [scrollbar-color:var(--chat-border-strong)_transparent] [scrollbar-width:thin]">
         {group.items.map((item) => (
-          <li key={item.id} className="flex items-center gap-2 text-sm text-chat-muted">
+          <li key={item.id} className="flex items-center gap-2 text-(length:--chat-ui-font-size) leading-5 text-chat-muted">
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
             <span className="w-12 shrink-0 text-right tabular-nums">{formatTokens(item.tokens)}</span>
           </li>

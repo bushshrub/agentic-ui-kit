@@ -242,8 +242,10 @@ your brand and of the space it sits in.
 **Yours to change**
 
 - Colors, fonts, radii, shadows: `--chat-*` variables.
-- Text sizes: message and code text are variables (`--chat-message-font-size`, `--chat-code-font-size`);
-  the interface text sizes are next.
+- Text sizes: variables for message text (`--chat-message-font-size`), code (`--chat-code-font-size`),
+  interface text (`--chat-ui-font-size`), small interface text (`--chat-ui-font-size-sm`), the user bubble
+  (`--chat-bubble-font-size`) and activity rows (`--chat-activity-font-size`). A theme can set them per
+  `[data-chat-density]`.
 - Width and density: `contentWidth`, and `density="full" | "panel" | "inline"` for a page, a side panel or a
   box in a form.
 - Code themes and motion on or off: `ChatTheme` props.

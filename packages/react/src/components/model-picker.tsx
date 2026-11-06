@@ -109,7 +109,7 @@ export function ModelPicker({
             </SubmenuTrigger>
           )}
         </Menu>
-        {footnote && <MenuNote className="border-t border-chat-popover-border text-xs">{footnote}</MenuNote>}
+        {footnote && <MenuNote className="border-t border-chat-popover-border text-(length:--chat-ui-font-size-sm) leading-4">{footnote}</MenuNote>}
       </Popover>
     </MenuTrigger>
   );

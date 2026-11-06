@@ -57,7 +57,7 @@ export interface ChatListProps {
 const isProject = (item: ChatListItem): item is ProjectSummary => "type" in item && item.type === "project";
 
 const rowClass = clsx(
-  "group/row relative flex h-8 w-full min-w-0 cursor-pointer items-center gap-2 rounded-chat-sm px-2 text-left font-chat-sans text-sm text-chat-fg outline-none",
+  "group/row relative flex h-8 w-full min-w-0 cursor-pointer items-center gap-2 rounded-chat-sm px-2 text-left font-chat-sans text-(length:--chat-ui-font-size) leading-5 text-chat-fg outline-none",
   "data-hovered:bg-chat-hover data-pressed:bg-chat-selected data-focus-visible:ring-2 data-focus-visible:ring-chat-focus data-focus-visible:ring-inset",
   "[@media(pointer:coarse)]:h-10",
 );
@@ -80,7 +80,7 @@ export function ChatList({ sections, activeId, onSelect, rowMenu, className, ...
       {sections.map((section) =>
         section.title ? (
           <Disclosure key={section.id} defaultExpanded={section.defaultExpanded ?? true} className="group/section">
-            <Heading className="m-0 flex h-7 items-center gap-1 pr-1 pl-2 font-chat-sans text-xs font-normal text-chat-subtle">
+            <Heading className="m-0 flex h-7 items-center gap-1 pr-1 pl-2 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 font-normal text-chat-subtle">
               <AriaButton slot="trigger" className="group/trigger flex min-w-0 cursor-pointer items-center gap-1 rounded-chat-sm outline-none data-hovered:text-chat-muted data-focus-visible:ring-2 data-focus-visible:ring-chat-focus">
                 <span className="truncate">{section.title}</span>
                 <IconSlot className="opacity-0 transition group-hover/section:opacity-100 group-aria-expanded/trigger:rotate-90 group-data-focus-visible/trigger:opacity-100 [@media(hover:none)]:opacity-100 [&_svg]:size-3">

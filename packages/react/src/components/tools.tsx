@@ -115,7 +115,7 @@ export const commandTool: ToolView = {
       <div className="space-y-4">
         <CodeBlock label="bash" code={command} />
         {(output || part.status === "done") && <CodeBlock label={labels.output} code={output || labels.noOutput} />}
-        {part.error && <p className="text-sm text-chat-danger">{part.error}</p>}
+        {part.error && <p className="text-(length:--chat-ui-font-size) leading-5 text-chat-danger">{part.error}</p>}
       </div>
     );
   },
@@ -139,8 +139,8 @@ export const webSearchTool: ToolView = {
     const results = (Array.isArray(part.result) ? part.result : recordOf(part.result).results) as
       | SearchResult[]
       | undefined;
-    if (part.error) return <p className="text-sm text-chat-danger">{part.error}</p>;
-    if (!results?.length) return <p className="text-sm text-chat-muted">{labels.noResults}</p>;
+    if (part.error) return <p className="text-(length:--chat-ui-font-size) leading-5 text-chat-danger">{part.error}</p>;
+    if (!results?.length) return <p className="text-(length:--chat-ui-font-size) leading-5 text-chat-muted">{labels.noResults}</p>;
     return (
       <ul className="-mx-1">
         {results.map((result) => (
@@ -149,7 +149,7 @@ export const webSearchTool: ToolView = {
               href={result.url}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2.5 rounded-chat-sm px-1 py-2 text-[0.9375rem] text-chat-muted outline-none hover:text-chat-fg focus-visible:ring-2 focus-visible:ring-chat-focus"
+              className="flex items-center gap-2.5 rounded-chat-sm px-1 py-2 text-(length:--chat-activity-font-size) text-chat-muted outline-none hover:text-chat-fg focus-visible:ring-2 focus-visible:ring-chat-focus"
             >
               {result.favicon ? (
                 <img src={result.favicon} alt="" className="size-4 shrink-0 rounded-sm" />
@@ -157,7 +157,7 @@ export const webSearchTool: ToolView = {
                 <IconSlot className="[&_svg]:size-4">{icons.web}</IconSlot>
               )}
               <span className="min-w-0 flex-1 truncate">{result.title}</span>
-              <span className="shrink-0 text-sm">{hostOf(result.url)}</span>
+              <span className="shrink-0 text-(length:--chat-ui-font-size) leading-5">{hostOf(result.url)}</span>
             </a>
           </li>
         ))}

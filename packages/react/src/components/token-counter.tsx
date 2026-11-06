@@ -65,7 +65,7 @@ export function TokenCounter({ tokens, variant = "standalone", className }: Toke
     return <span className={clsx("text-chat-subtle tabular-nums", className)}>({labels.tokenCount(formatTokens(shown))})</span>;
   }
   return (
-    <span className={clsx("inline-flex items-center gap-1 font-chat-sans text-xs text-chat-subtle tabular-nums", className)}>
+    <span className={clsx("inline-flex items-center gap-1 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle tabular-nums", className)}>
       <IconSlot className="[&_svg]:size-3">{icons.tokens}</IconSlot>
       {labels.tokenCount(formatTokens(shown))}
     </span>

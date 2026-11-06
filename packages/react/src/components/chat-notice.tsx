@@ -16,7 +16,7 @@ export function ChatNotice({ children, actions, icon, className }: ChatNoticePro
   const icons = useIcons();
   const shown = icon === undefined ? icons.info : icon;
   return (
-    <div role="note" className={clsx("flex gap-3 rounded-chat-lg border border-(--chat-notice-border,var(--chat-border)) bg-(--chat-notice-bg,transparent) px-4 py-3.5 font-chat-sans text-sm leading-relaxed text-chat-fg", className)}>
+    <div role="note" className={clsx("flex gap-3 rounded-chat-lg border border-(--chat-notice-border,var(--chat-border)) bg-(--chat-notice-bg,transparent) px-4 py-3.5 font-chat-sans text-(length:--chat-ui-font-size) leading-relaxed text-chat-fg", className)}>
       {shown && <span className="mt-0.5 shrink-0 text-chat-muted [&_svg]:size-4">{shown}</span>}
       <div className="min-w-0 flex-1">
         <div>{children}</div>

@@ -34,7 +34,7 @@ export function CodeBlock({ code, language, label = language, variant = "plain",
         className,
       )}
     >
-      {label && <div className="mb-3 font-chat-sans text-xs text-chat-subtle">{label}</div>}
+      {label && <div className="mb-3 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle">{label}</div>}
       <pre
         className={clsx(
           "overflow-auto font-chat-mono text-(length:--chat-code-font-size) leading-[1.75] whitespace-pre text-chat-fg",

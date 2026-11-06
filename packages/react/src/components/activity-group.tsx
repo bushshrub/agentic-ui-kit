@@ -41,7 +41,7 @@ export function ActivityGroup({ parts, defaultExpanded = false, className }: Act
               {after}
             </>
           }
-          summaryClassName="text-[0.9375rem]"
+          summaryClassName="text-(length:--chat-activity-font-size)"
           panelClassName="pt-3"
         >
           <div className="divide-y divide-chat-divider rounded-chat-md border border-chat-divider">
@@ -99,7 +99,7 @@ function SingleStep({
           {after}
         </>
       }
-      summaryClassName="text-[0.9375rem]"
+      summaryClassName="text-(length:--chat-activity-font-size)"
       panelClassName="pt-3"
     >
       <div className="rounded-chat-md border border-chat-divider px-3 py-2">{detail}</div>
@@ -113,7 +113,7 @@ function Step({ part }: { part: ActivityPart }) {
   return (
     <Disclosure
       className="px-3 py-2"
-      summaryClassName="text-[0.9375rem]"
+      summaryClassName="text-(length:--chat-activity-font-size)"
       panelClassName="pt-2 pb-1"
       summary={<Live live={live}>{summary}</Live>}
     >
@@ -131,7 +131,7 @@ function useStepContent(part: ActivityPart): { summary: ReactNode; detail: React
       summary: activityLabel(part, labels),
       detail:
         part.visibility === "hidden" || !part.text ? (
-          <p className="text-sm text-chat-subtle">{labels.reasoningHidden}</p>
+          <p className="text-(length:--chat-ui-font-size) leading-5 text-chat-subtle">{labels.reasoningHidden}</p>
         ) : (
           <div className="max-h-96 overflow-y-auto [scrollbar-width:thin]">
             <Markdown className="chat-thinking" streaming={part.status === "streaming"}>
@@ -155,10 +155,10 @@ function useStepContent(part: ActivityPart): { summary: ReactNode; detail: React
 }
 
 function DefaultDetail({ part }: { part: Extract<ActivityPart, { type: "tool_call" }> }) {
-  if (part.error) return <p className="text-sm text-chat-danger">{part.error}</p>;
+  if (part.error) return <p className="text-(length:--chat-ui-font-size) leading-5 text-chat-danger">{part.error}</p>;
   const body = part.result ?? part.input ?? part.inputJson;
   if (typeof body === "string") {
-    return <p className="text-[0.9375rem] leading-relaxed whitespace-pre-wrap text-chat-muted">{body}</p>;
+    return <p className="text-(length:--chat-activity-font-size) leading-relaxed whitespace-pre-wrap text-chat-muted">{body}</p>;
   }
   return (
     <pre className="max-h-56 overflow-auto font-chat-mono text-(length:--chat-code-font-size) leading-relaxed text-chat-muted">

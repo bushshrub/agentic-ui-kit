@@ -153,6 +153,14 @@
     /* Code blocks and tool output. Inline code follows the text around it. */
     --chat-code-font-size: 0.8125rem;
     --chat-message-line-height: 1.65;
+    /* Interface text: labels, buttons, menus, rows (Tailwind text-sm). */
+    --chat-ui-font-size: 0.875rem;
+    /* Small interface text: timestamps, badges, the disclaimer, captions (text-xs). */
+    --chat-ui-font-size-sm: 0.75rem;
+    /* The user message bubble. */
+    --chat-bubble-font-size: 0.9375rem;
+    /* Activity rows: thinking, tool summaries, search results, the context panel headings. */
+    --chat-activity-font-size: 0.9375rem;
   }
 }
 
@@ -214,7 +222,7 @@
   .chat-markdown table {
     border-collapse: collapse;
     font-family: var(--chat-font-sans);
-    font-size: 0.875rem;
+    font-size: var(--chat-ui-font-size);
   }
   .chat-markdown :is(th, td) {
     border-bottom: 1px solid var(--chat-border);
@@ -315,7 +323,7 @@
   }
   .chat-markdown.chat-thinking {
     font-family: var(--chat-font-sans);
-    font-size: 0.9375rem;
+    font-size: var(--chat-activity-font-size);
     line-height: 1.6;
     color: var(--chat-muted);
   }

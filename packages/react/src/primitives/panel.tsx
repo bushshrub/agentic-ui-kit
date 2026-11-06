@@ -30,7 +30,7 @@ export function Panel({ title, actions, footer, children, variant = "card", clas
       )}
     >
       {(title || actions) && (
-        <header className="flex h-10 shrink-0 items-center gap-2 border-b border-chat-divider px-3 text-sm">
+        <header className="flex h-10 shrink-0 items-center gap-2 border-b border-chat-divider px-3 text-(length:--chat-ui-font-size) leading-5">
           <div className="min-w-0 flex-1 truncate font-medium">{title}</div>
           {actions && <div className="flex shrink-0 items-center gap-0.5">{actions}</div>}
         </header>
