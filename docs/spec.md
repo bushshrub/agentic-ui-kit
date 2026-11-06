@@ -319,6 +319,12 @@ Each slice ends with tests passing and the states visible in the playground.
 
 ## Queued
 
+- From burger (dashboard on 0.7.0, branch feat/agentic-ui-kit in ~/slop/burger):
+  1. Panel has no body padding; hosts add their own. A `padded` option or a default card padding.
+  2. Docs: "bring your own messages". Burger's server replays the full ACP history per session over its own
+     SSE; it reduces events client-side (reduceEvents) into Message[] and passes them to ChatView instead of
+     useChat. Document that path for long-lived replaying streams (dashboards watching many sessions).
+
 - jaa-v2 app shell gaps (reply to jaa-v2 with what ships and the version; code in ~/slop/jaa-v2 branch
   worktree-agent-a67fe6e30eb58a8fb, web/src/components/{Layout,Sidebar,SidebarApps}.tsx):
 - Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
