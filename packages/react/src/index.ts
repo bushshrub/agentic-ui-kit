@@ -13,6 +13,7 @@ export { Badge } from "./primitives/badge";
 export type { BadgeProps } from "./primitives/badge";
 export { Tooltip } from "./primitives/tooltip";
 export type { TooltipProps } from "./primitives/tooltip";
+export { CopyButton } from "./primitives/copy-button";
 export { SegmentedControl } from "./primitives/segmented-control";
 export type { SegmentedControlProps, SegmentedOption } from "./primitives/segmented-control";
 export { Caret } from "./primitives/caret";

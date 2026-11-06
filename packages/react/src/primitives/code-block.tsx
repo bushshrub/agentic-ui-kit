@@ -2,6 +2,7 @@ import type React from "react";
 import { clsx } from "clsx";
 import { Fragment } from "react";
 import { useCodeThemes } from "./appearance";
+import { CopyButton } from "./copy-button";
 import { useHighlight } from "./highlight";
 
 export interface CodeBlockProps {
@@ -12,11 +13,13 @@ export interface CodeBlockProps {
   label?: string;
   /** "boxed" for code in a message (bordered box); "plain" inside tool details. */
   variant?: "boxed" | "plain";
+  /** A button that copies the whole block, right of the caption. Default: on for "boxed", off for "plain". */
+  copy?: boolean;
   className?: string;
 }
 
 /** Monospace code with Shiki highlighting, scrolling past a fixed height. */
-export function CodeBlock({ code, language, label = language, variant = "plain", className }: CodeBlockProps) {
+export function CodeBlock({ code, language, label = language, variant = "plain", copy = variant === "boxed", className }: CodeBlockProps) {
   const result = useHighlight(code, language);
   const lines = result?.lines;
   const themeBackground = useCodeThemes().background === "theme" && variant === "boxed" && !!result;
@@ -34,7 +37,12 @@ export function CodeBlock({ code, language, label = language, variant = "plain",
         className,
       )}
     >
-      {label && <div className="mb-3 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle">{label}</div>}
+      {(label || copy) && (
+        <div className={clsx("flex items-center gap-2 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle", copy ? "-mt-1.5 -mr-2 mb-1.5" : "mb-3")}>
+          <span className="min-w-0 flex-1 truncate">{label}</span>
+          {copy && <CopyButton text={code} />}
+        </div>
+      )}
       <pre
         className={clsx(
           "overflow-auto font-chat-mono text-(length:--chat-code-font-size) leading-[1.75] whitespace-pre text-chat-fg",

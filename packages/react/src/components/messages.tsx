@@ -1,4 +1,5 @@
 import { toBlocks, type Message, type Part } from "@agentic-ui-kit/core";
+import { CopyButton } from "../primitives/copy-button";
 import { chainsOf, ToolChain } from "./replacements";
 import { clsx } from "clsx";
 import { useIcons } from "../primitives/icons";
@@ -28,25 +29,6 @@ export function messageText(message: Message): string {
     .map((p) => (p.type === "text" ? p.text : p.type === "custom" ? (p.text ?? "") : ""))
     .filter(Boolean)
     .join("\n\n");
-}
-
-function CopyButton({ text }: { text: string }) {
-  const icons = useIcons();
-  const labels = useLabels();
-  const [copied, setCopied] = useState(false);
-  return (
-    <IconButton
-      label={copied ? labels.copied : labels.copy}
-      size="sm"
-      onPress={() => {
-        void navigator.clipboard?.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
-    >
-      {copied ? icons.copied : icons.copy}
-    </IconButton>
-  );
 }
 
 /**
