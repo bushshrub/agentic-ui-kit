@@ -1,2 +1,3 @@
 dist/
 .astro/
+src/content/docs/reference/api/
