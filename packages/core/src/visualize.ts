@@ -1,5 +1,5 @@
 /**
- * The visualize preset: a tool the model calls to draw an interactive visual inline (like claude.ai's
+ * The visualize preset: a tool the model calls to draw an interactive visual inline (similar to claude.ai's
  * visualize tool), and the design guide to put in the system prompt. The kit's `show_widget` tool view feeds
  * the streaming `widget_code` into a sandboxed WidgetFrame. The backend runs the tool as a no-op ("shown").
  */

@@ -136,7 +136,7 @@
     --chat-font-serif: "Source Serif 4", ui-serif, Georgia, serif;
     --chat-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
     /*
-     * --chat-font-message (unset): assistant message text. Falls back to the serif, like claude.ai; hosts
+     * --chat-font-message (unset): assistant message text. Falls back to the serif, similar to claude.ai; hosts
      * with sans UIs set it to var(--chat-font-sans). Left unset here so it follows a nested theme's fonts.
      */
 

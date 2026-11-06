@@ -43,7 +43,7 @@ const longAsk: Message = {
 };
 
 /**
- * A shared chat, read only, like claude.ai's shared links: a notice on top, then the conversation; long
+ * A shared chat, read only, similar to claude.ai's shared links: a notice on top, then the conversation; long
  * messages fold behind "Show more". No composer, retry, edit or feedback; Copy stays. Starts at the top.
  */
 function SharedChat() {

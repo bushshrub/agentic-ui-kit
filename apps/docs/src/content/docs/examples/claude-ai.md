@@ -1,15 +1,15 @@
 ---
-title: Build claude.ai's web chat
-description: The kit's defaults are styled after claude.ai. A sidebar with chats and projects, a chat with a model picker, in about 60 lines.
+title: A chat similar to claude.ai
+description: The kit's defaults are similar to claude.ai. A sidebar with chats and projects, a chat with a model picker, in about 60 lines.
 sidebar:
   order: 1
 ---
 
-![claude.ai built from the kit: pinned projects, Chat / Cowork, model and effort](/images/example-claude.jpg)
+![A chat similar to claude.ai, built from the kit: pinned projects, Chat / Cowork, model and effort](/images/example-claude.jpg)
 
 [Try it live in Storybook](/storybook/?path=/story/examples-claude--new-chat) (also [a conversation](/storybook/?path=/story/examples-claude--conversation))
 
-The kit's defaults are styled after claude.ai: a warm dark (or light) page, serif message text, a sans
+The kit's defaults are similar to claude.ai: a warm dark (or light) page, serif message text, a sans
 interface, a rounded composer with the model picker inside it. You get that look without writing any CSS.
 
 ## The shell
@@ -90,7 +90,7 @@ function ChatPage({ id }: { id?: string }) {
 
 ## The composer toolbar
 
-claude.ai's toolbar is built from slots. `leading` holds the `+` menu (`AttachButton` with a `Menu`) and a
+The toolbar is built from slots. `leading` holds the `+` menu (`AttachButton` with a `Menu`) and a
 `SegmentedControl` for Chat / Cowork. `trailing` holds the `ModelPicker` with effort levels, plus dictation
 and voice buttons. The sidebar's Chat / Code switch is a `SegmentedControl` too, with `iconOnly` options.
 

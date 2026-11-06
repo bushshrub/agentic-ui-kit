@@ -1,17 +1,17 @@
 ---
-title: Build chatgpt.com's web chat
-description: The same components as the claude.ai example, arranged and themed like chatgpt.com.
+title: A chat similar to chatgpt.com
+description: The same components as the claude.ai-like example, arranged and themed to be similar to chatgpt.com.
 sidebar:
   order: 2
 ---
 
-![chatgpt.com built from the kit: black page, pill composer with Think and dictation](/images/example-chatgpt.jpg)
+![A chat similar to chatgpt.com, built from the kit: black page, pill composer with Think and dictation](/images/example-chatgpt.jpg)
 
 [Try it live in Storybook](/storybook/?path=/story/examples-chatgpt--conversation) (also
 [the new-chat screen](/storybook/?path=/story/examples-chatgpt--dark) and [light](/storybook/?path=/story/examples-chatgpt--light))
 
-The components are the same as in [the claude.ai example](/examples/claude-ai/): `AppShell`, `Sidebar`,
-`ChatList`, `ChatView`. What makes it chatgpt.com is how you fill their slots, plus a theme. The whole
+The components are the same as in [the claude.ai-like example](/examples/claude-ai/): `AppShell`, `Sidebar`,
+`ChatList`, `ChatView`. What makes it look similar to chatgpt.com is how you fill their slots, plus a theme. The whole
 example is `apps/playground/src/stories/chatgpt.stories.tsx`.
 
 ## Layout: fill the slots differently

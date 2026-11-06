@@ -98,7 +98,7 @@ export interface EffortButtonProps extends EffortSliderProps {
   children?: ReactNode;
 }
 
-/** A composer pill ("◎ Medium") that opens the effort slider above it, like chatgpt.com's Think button. */
+/** A composer pill ("◎ Medium") that opens the effort slider above it, similar to chatgpt.com's Think button. */
 export function EffortButton({ icon, children, className, ...slider }: EffortButtonProps) {
   const current = slider.efforts.find((e) => e.id === slider.value) ?? slider.efforts[0];
   const labels = useLabels();

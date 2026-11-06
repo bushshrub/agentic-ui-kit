@@ -11,7 +11,7 @@ const meta: Meta = { title: "Inline visuals/Sandboxed HTML", parameters: { layou
 export default meta;
 
 /**
- * Model-written HTML in a sandboxed frame, like claude.ai's visualize tool. Each widget below is what a model
+ * Model-written HTML in a sandboxed frame, similar to claude.ai's visualize tool. Each widget below is what a model
  * would send as `widget_code` to the `show_widget` tool (the kit's visualize preset). Buttons inside call
  * sendPrompt(text), which posts a message as the user.
  */

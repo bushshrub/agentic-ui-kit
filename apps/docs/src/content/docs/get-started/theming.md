@@ -9,7 +9,7 @@ sidebar:
 
 [Try it live in Storybook](/storybook/?path=/story/views-chat-view--shared-in-host-theme)
 
-The defaults look like claude.ai. Every colour, font, radius and width is a `--chat-*` CSS variable. Set them on `:root` to theme the whole app,
+The defaults are similar to claude.ai. Every colour, font, radius and width is a `--chat-*` CSS variable. Set them on `:root` to theme the whole app,
 or on any element to theme part of it:
 
 ```css

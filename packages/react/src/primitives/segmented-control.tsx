@@ -21,7 +21,7 @@ export interface SegmentedControlProps<T extends string = string> {
 }
 
 /**
- * One of a few options, side by side on a track, like claude.ai's Chat / Cowork switch. Themed with
+ * One of a few options, side by side on a track, similar to claude.ai's Chat / Cowork switch. Themed with
  * `--chat-segment-track` (default: a shade darker than the surface it sits on) and `--chat-segment-selected`
  * (default `--chat-raised`).
  */
