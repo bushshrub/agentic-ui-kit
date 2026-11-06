@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
+  SegmentedControl,
   Badge,
   CodeBlock,
   ContextMenu,
@@ -46,51 +47,117 @@ import {
   Volume2,
   Wand2,
 } from "lucide-react";
-import { Maximize2, X } from "lucide-react";
-import { useState } from "react";
+import { ArrowUp, Check, LayoutGrid, List, Maximize2, X } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import type { Selection } from "react-aria-components";
 
 const meta: Meta = { title: "Primitives" };
 export default meta;
 
+/** One labeled row of the sheet. */
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <>
+      <div className="pt-1.5 font-chat-sans text-(length:--chat-ui-font-size-sm) text-chat-subtle">{label}</div>
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
+    </>
+  );
+}
+
+/** Buttons, icon buttons, the segmented control and badges, in every variant, size and state. */
 export const Buttons: StoryObj = {
-  render: () => (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <Button>
-          <Plus className="size-4" /> New
-        </Button>
-        <Button variant="subtle" size="sm">
-          Chat
-        </Button>
-        <Button size="sm">Cowork</Button>
-        <Button isDisabled>Disabled</Button>
+  render: function Render() {
+    const [mode, setMode] = useState<"chat" | "cowork">("chat");
+    const [view, setView] = useState<"list" | "grid">("list");
+    return (
+      <div className="grid max-w-2xl grid-cols-[7rem_1fr] gap-x-6 gap-y-5">
+        <Row label="Variants">
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="subtle">Subtle</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="primary">Primary</Button>
+          <Button variant="danger">Delete</Button>
+        </Row>
+        <Row label="Sizes">
+          <Button variant="outline" size="sm">
+            Small
+          </Button>
+          <Button variant="outline">Medium</Button>
+          <Button variant="outline" size="lg">
+            Large
+          </Button>
+        </Row>
+        <Row label="With icon">
+          <Button>
+            <Plus /> New chat
+          </Button>
+          <Button variant="outline">
+            <Share /> Share
+          </Button>
+          <Button variant="primary">
+            <Check /> Save
+          </Button>
+        </Row>
+        <Row label="Disabled">
+          <Button variant="outline" isDisabled>
+            Outline
+          </Button>
+          <Button variant="primary" isDisabled>
+            Primary
+          </Button>
+        </Row>
+        <Row label="A dialog's actions">
+          <Button variant="outline">Cancel</Button>
+          <Button variant="danger">Delete chat</Button>
+        </Row>
+        <Row label="Icon buttons">
+          <div className="flex items-center gap-0.5">
+            <IconButton label="Copy" size="sm">
+              <Copy />
+            </IconButton>
+            <IconButton label="Read aloud" size="sm">
+              <Volume2 />
+            </IconButton>
+            <IconButton label="Good response" size="sm">
+              <ThumbsUp />
+            </IconButton>
+            <IconButton label="Bad response" size="sm">
+              <ThumbsDown />
+            </IconButton>
+            <IconButton label="Retry" size="sm">
+              <RefreshCw />
+            </IconButton>
+          </div>
+          <IconButton label="Attach" variant="outline">
+            <Plus />
+          </IconButton>
+          <IconButton label="Send" variant="primary">
+            <ArrowUp />
+          </IconButton>
+        </Row>
+        <Row label="Segmented (on the composer)">
+          <div className="flex items-center gap-3 rounded-chat-lg bg-chat-surface p-2">
+          <SegmentedControl label="Mode" value={mode} onChange={setMode} options={[{ id: "chat", label: "Chat" }, { id: "cowork", label: "Cowork" }]} />
+          <SegmentedControl
+            label="View"
+            value={view}
+            onChange={setView}
+            options={[
+              { id: "list", label: "List", icon: <List />, iconOnly: true },
+              { id: "grid", label: "Grid", icon: <LayoutGrid />, iconOnly: true },
+            ]}
+          />
+          </div>
+        </Row>
+        <Row label="Badges">
+          <Badge>Recommended</Badge>
+          <Badge tone="warning" icon={<AlertTriangle />}>
+            5.5× or more usage
+          </Badge>
+        </Row>
       </div>
-      <div className="flex items-center gap-0.5">
-        <IconButton label="Copy" size="sm">
-          <Copy />
-        </IconButton>
-        <IconButton label="Read aloud" size="sm">
-          <Volume2 />
-        </IconButton>
-        <IconButton label="Good response" size="sm">
-          <ThumbsUp />
-        </IconButton>
-        <IconButton label="Bad response" size="sm">
-          <ThumbsDown />
-        </IconButton>
-        <IconButton label="Retry" size="sm">
-          <RefreshCw />
-        </IconButton>
-      </div>
-      <div className="flex items-center gap-2">
-        <Badge>Recommended</Badge>
-        <Badge tone="warning" icon={<AlertTriangle />}>
-          5.5× or more usage
-        </Badge>
-      </div>
-    </div>
-  ),
+    );
+  },
 };
 
 export const AttachMenu: StoryObj = {

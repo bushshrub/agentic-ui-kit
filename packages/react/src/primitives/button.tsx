@@ -9,14 +9,23 @@ const variants = {
   /** Plain text button, highlights on hover. Sidebar rows, header buttons. */
   ghost: "text-chat-fg data-hovered:bg-chat-hover data-pressed:bg-chat-selected",
   /** Filled with the surface color, e.g. the selected Chat/Cowork toggle. */
-  subtle: "bg-chat-surface text-chat-fg data-hovered:bg-chat-hover data-pressed:bg-chat-selected",
-  /** The send button. */
-  primary: "bg-chat-accent text-chat-accent-fg data-hovered:brightness-110 data-pressed:brightness-95",
+  subtle: "bg-chat-surface font-medium text-chat-fg data-hovered:bg-chat-hover data-pressed:bg-chat-selected",
+  /** A thin border, no fill: secondary actions next to a primary one, e.g. Cancel or Share. */
+  outline: "border border-chat-border-strong font-medium text-chat-fg data-hovered:bg-chat-hover data-pressed:bg-chat-selected",
+  /** The send button and the one main action of a dialog. */
+  primary: "bg-chat-accent font-medium text-chat-accent-fg data-hovered:brightness-110 data-pressed:brightness-95",
+  /**
+   * Destructive confirmations, e.g. Delete chat. Fill --chat-danger-bg (default: --chat-danger, darkened so it
+   * doesn't read as the accent), text --chat-danger-fg (default white).
+   */
+  danger: "bg-[var(--chat-danger-bg,color-mix(in_srgb,var(--chat-danger)_70%,black))] font-medium text-[var(--chat-danger-fg,#fff)] data-hovered:brightness-110 data-pressed:brightness-95",
 };
 
 const sizes = {
   sm: "h-7 gap-1.5 px-2 text-(length:--chat-ui-font-size) leading-5 [@media(pointer:coarse)]:h-9",
   md: "h-8 gap-2 px-2.5 text-(length:--chat-ui-font-size) leading-5 [@media(pointer:coarse)]:h-10",
+  /** Dialog and empty-state actions. */
+  lg: "h-9 gap-2 px-3.5 text-(length:--chat-ui-font-size) leading-5 [@media(pointer:coarse)]:h-11",
 };
 
 export interface ButtonProps extends Omit<AriaButtonProps, "className"> {
@@ -30,7 +39,7 @@ export function Button({ variant = "ghost", size = "md", className, ...props }: 
     <AriaButton
       {...props}
       className={clsx(
-        "inline-flex cursor-pointer items-center rounded-chat-sm font-chat-sans whitespace-nowrap transition-colors select-none",
+        "inline-flex cursor-pointer items-center rounded-chat-sm font-chat-sans whitespace-nowrap transition-colors select-none [&_svg]:size-4 [&_svg]:shrink-0",
         "data-disabled:cursor-default data-disabled:opacity-40",
         focusRing,
         variants[variant],
@@ -58,11 +67,12 @@ export function IconButton({ label, variant = "ghost", size = "md", tooltip = tr
       {...props}
       aria-label={label}
       className={clsx(
-        "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-chat-sm text-chat-muted transition-colors select-none",
-        "data-hovered:text-chat-fg data-disabled:cursor-default data-disabled:opacity-40 [&_svg]:size-4",
+        "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-chat-sm transition-colors select-none",
+        "data-disabled:cursor-default data-disabled:opacity-40 [&_svg]:size-4",
         focusRing,
         variants[variant],
-        variant === "ghost" && "text-chat-muted",
+        // Quiet until hovered; the filled variants keep their own text color.
+        variant === "ghost" && "text-chat-muted data-hovered:text-chat-fg",
         // Touch screens get bigger targets (40px for md).
         size === "sm" ? "size-7 [@media(pointer:coarse)]:size-9" : "size-8 [@media(pointer:coarse)]:size-10",
         className,
