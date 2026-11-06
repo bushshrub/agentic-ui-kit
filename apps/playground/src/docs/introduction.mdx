@@ -20,15 +20,18 @@ npm install agentic-ui-kit
 - **Components**: messages, the composer, the activity group, the chat list…
 - **Primitives**: buttons, menus, dialogs, code blocks: what the components are made of.
 
-Each component has a **Docs** page: what it is for, its stories, and its props from the TypeScript types.
+## How to read this Storybook
 
-## Panels below a story
-
-- **Controls** change the story: which run to replay, streaming or finished, variants, themes.
+- **Stories** in the sidebar are the named states and examples of a component: one idea each (empty, busy,
+  shared, in a side panel…). Open one to see it.
+- **Controls** tweak the open story: the component's props, and a few story-only settings. They don't switch
+  between stories; use the sidebar for that.
 - **Actions** log the callbacks your app would handle (`onSend`, `onApprove`, `onFeedback`…) with their arguments.
-- **Interactions** replay the story's `play` function step by step: what a user does, and what must happen.
-  These also run as tests (`pnpm test` in apps/playground).
+- **Interactions** replay the story's `play` function: what a user does, and what must happen. Pause, step
+  forward and back, or rewind. These also run as tests (`pnpm test` in apps/playground).
 - **Accessibility** checks the story with axe.
+- The **theme button** in the toolbar switches between light and dark.
+- Each component has a **Documentation** page: what it is for, its stories, and its props from the TypeScript types.
 
 ## Guides
 

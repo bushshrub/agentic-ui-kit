@@ -202,14 +202,22 @@ function App({ dark, chat, collapsed, onNewChat, onSelectChat, ...handlers }: Ap
   );
 }
 
-/** chatgpt.com built from the kit: its sidebar items, a pill composer with Think and dictation, the model-free header. Chat and sidebar are Controls; light and dark follow the toolbar's theme. */
+const ev = (description: string) => ({ description, table: { category: "Events" } });
+const hidden = { table: { disable: true } };
+
+/** chatgpt.com built from the kit: its sidebar items, a pill composer with Think and dictation, the model-free header. Light and dark follow the toolbar's theme. */
 const meta = {
   title: "Examples/ChatGPT", tags: ["!autodocs"],
   parameters: { layout: "fullscreen" },
   // Keyed so the controls apply again when changed.
   render: (args, { globals }) => <App key={`${args.chat}-${args.collapsed}`} dark={globals.theme !== "light"} {...args} />,
   argTypes: {
-    chat: { control: "select", options: chatIds },
+    chat: hidden,
+    collapsed: hidden,
+    onNewChat: ev("Called when the user starts a new chat from the sidebar."),
+    onSelectChat: ev("Called with the chat id when the user picks a chat in the list."),
+    onSend: ev("Called with the text when the user sends a message."),
+    onThinkingChange: ev("Called with the level when the user moves the Think slider."),
   },
   args: { chat: "new", collapsed: false, onNewChat: fn(), onSelectChat: fn(), onSend: fn(), onThinkingChange: fn() },
 } satisfies Meta<AppArgs>;
@@ -231,3 +239,6 @@ export const Light: Story = { globals: { theme: "light" } };
 
 /** A conversation in progress: the pill composer docks under the messages. */
 export const Conversation: Story = { args: { chat: "ci" } };
+
+/** The sidebar folded to its icon rail. */
+export const Collapsed: Story = { args: { collapsed: true } };

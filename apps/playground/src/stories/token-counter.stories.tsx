@@ -12,5 +12,9 @@ const meta = {
   args: { tokens: 1300, variant: "standalone" },
 } satisfies Meta<typeof TokenCounter>;
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-export const Default: StoryObj<typeof meta> = {};
+export const Default: Story = {};
+
+/** "(1.2k tokens)", for inside a heading. */
+export const Inline: Story = { args: { variant: "inline" } };

@@ -31,18 +31,6 @@ const search = tool({
 });
 const custom = tool({ id: "t7", name: "run_benchmark", input: { runs: 20 }, result: { p50: 312, p95: 401 } });
 
-/** The tool calls to pick from. */
-const calls = {
-  "command (bash)": [command],
-  "web search": [search],
-  memory: [tool({ id: "t3", name: "memory", input: { path: "/memories/ci.md" }, result: "The team deploys from GitHub Actions." })],
-  running: [tool({ id: "t4", name: "bash", status: "running", input: { command: "pnpm install --frozen-lockfile" } })],
-  failed: [tool({ id: "t5", name: "bash", status: "error", input: { command: "pnpm install --frozen-lockfile" }, error: "ERR_PNPM_OUTDATED_LOCKFILE: pnpm-lock.yaml is out of date" })],
-  "no view (title from the part, JSON body)": [tool({ id: "t6", name: "create_ticket", title: "Created a ticket", input: { title: "Cache the pnpm store in CI", labels: ["ci"] }, result: { id: "OPS-142" } })],
-  "host-defined ToolView": [custom],
-  "several in one group": [command, search, custom],
-} satisfies Record<string, ToolCallPart[]>;
-
 /** How a host adds its own tool: a label, a summary phrase and a Detail body. */
 const benchmarkTool: ToolView = {
   label: () => "Ran a benchmark",
@@ -60,32 +48,58 @@ const benchmarkTool: ToolView = {
   },
 };
 
-interface ToolArgs {
-  /** The tool call(s) to show, in a state each. */
-  call: keyof typeof calls;
-  defaultExpanded: boolean;
-}
-
-function ToolResult({ call, defaultExpanded }: ToolArgs) {
-  return (
-    <ToolViewsProvider tools={{ ...defaultToolViews, run_benchmark: benchmarkTool }}>
-      {/* Keyed so a new pick re-applies defaultExpanded. */}
-      <div className="mx-auto max-w-3xl">
-        <ActivityGroup key={`${call}-${defaultExpanded}`} parts={calls[call]} defaultExpanded={defaultExpanded} />
-      </div>
-    </ToolViewsProvider>
-  );
-}
-
-/** Tool results through the default views and one host-defined view. Pick the call in Controls. */
+/** Tool results through the default views and one host-defined view. */
 const meta = {
   title: "Components/Tool results",
-  component: ToolResult,
-  subcomponents: { ActivityGroup },
+  component: ActivityGroup,
+  // Keyed so `defaultExpanded` applies again when the control changes.
+  render: (args) => <ActivityGroup key={String(args.defaultExpanded)} {...args} />,
+  decorators: [
+    (Story) => (
+      <ToolViewsProvider tools={{ ...defaultToolViews, run_benchmark: benchmarkTool }}>
+        <div className="mx-auto max-w-3xl"><Story /></div>
+      </ToolViewsProvider>
+    ),
+  ],
   parameters: { layout: "padded" },
-  argTypes: { call: { control: "select", options: Object.keys(calls) } },
-  args: { call: "command (bash)", defaultExpanded: true },
-} satisfies Meta<typeof ToolResult>;
+  argTypes: { className: { control: false } },
+  args: { parts: [command], defaultExpanded: true },
+} satisfies Meta<typeof ActivityGroup>;
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-export const Default: StoryObj<typeof meta> = {};
+/** A bash command. */
+export const Command: Story = {};
+
+/** A web search with its results. */
+export const WebSearch: Story = { args: { parts: [search] } };
+
+/** A memory read. */
+export const Memory: Story = {
+  args: { parts: [tool({ id: "t3", name: "memory", input: { path: "/memories/ci.md" }, result: "The team deploys from GitHub Actions." })] },
+};
+
+/** A call that has not finished. */
+export const Running: Story = {
+  args: { parts: [tool({ id: "t4", name: "bash", status: "running", input: { command: "pnpm install --frozen-lockfile" } })] },
+};
+
+/** A call that failed, with its error. */
+export const Failed: Story = {
+  args: {
+    parts: [tool({ id: "t5", name: "bash", status: "error", input: { command: "pnpm install --frozen-lockfile" }, error: "ERR_PNPM_OUTDATED_LOCKFILE: pnpm-lock.yaml is out of date" })],
+  },
+};
+
+/** A tool with no view: the title comes from the part and the body is JSON. */
+export const NoView: Story = {
+  args: {
+    parts: [tool({ id: "t6", name: "create_ticket", title: "Created a ticket", input: { title: "Cache the pnpm store in CI", labels: ["ci"] }, result: { id: "OPS-142" } })],
+  },
+};
+
+/** A tool the host defines with its own `ToolView`. */
+export const HostDefinedView: Story = { args: { parts: [custom] } };
+
+/** Several calls in one group. */
+export const SeveralInOneGroup: Story = { args: { parts: [command, search, custom] } };

@@ -7,6 +7,8 @@ const preview: Preview = {
   // A Docs page per component: its description, the stories, and the props table.
   tags: ["autodocs"],
   parameters: {
+    // Controls show each arg's description and default, not just its name.
+    controls: { expanded: true },
     // Docs pages in the same dark as the kit's default theme.
     docs: { theme: themes.dark },
     layout: "centered",

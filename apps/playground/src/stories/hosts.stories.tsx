@@ -158,6 +158,11 @@ export const JobBoardHost: StoryObj<JobBoardArgs> = {
   // Keyed so the control applies again when changed.
   render: (args) => <JobBoard key={String(args.assistant)} {...args} />,
   args: { assistant: true, onSelectChat: fn(), onCloseAssistant: fn() },
+  argTypes: {
+    assistant: { description: "Show the docked assistant panel on the right (wide screens only).", table: { category: "Story" } },
+    onSelectChat: { description: "Called with the chat id when the user picks a chat in the sidebar.", table: { category: "Events" } },
+    onCloseAssistant: { description: "Called when the user closes the docked assistant panel.", table: { category: "Events" } },
+  },
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.type(canvas.getAllByRole("textbox")[0]!, "Which invoices are overdue?{Enter}");
     await expect(await canvas.findByText("Which invoices are overdue?")).toBeVisible();
@@ -174,8 +179,8 @@ export const DashboardPanes: StoryObj<{ layout: Layout; panes: number }> = {
   args: { layout: "grid", panes: 4 },
   globals: { theme: "light" },
   argTypes: {
-    layout: { control: "inline-radio", options: ["grid", "columns", "rows"] },
-    panes: { control: { type: "range", min: 1, max: 4 } },
+    layout: { description: "How the panes are arranged: a 2x2 grid, side by side, or stacked.", control: "inline-radio", options: ["grid", "columns", "rows"], table: { category: "Story" } },
+    panes: { description: "How many agent sessions to show.", control: { type: "range", min: 1, max: 4 }, table: { category: "Story" } },
   },
   render: (args, { globals }) => <Dashboard {...args} dark={globals.theme === "dark"} />,
 };

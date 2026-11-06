@@ -9,15 +9,6 @@ function activityOf(events: StreamEvent[]): ActivityPart[] {
   return block?.kind === "activity" ? block.parts : [];
 }
 
-/** The activity to show, from recorded runs. */
-const activities = {
-  memory: activityOf(mathRun),
-  "command and search": activityOf(researchRun),
-  "single search": activityOf(researchRun).filter((p) => p.type === "tool_call" && p.name === "web_search"),
-  "stopped tool call": activityOf(stoppedRun),
-  "still thinking": [{ type: "thinking", id: "t1", text: "Working out which dates are free...", status: "streaming" }] as ActivityPart[],
-};
-
 /** A four-petal mark, standing in for a host's logo. */
 function Logo({ spinning }: { spinning?: boolean }) {
   return (
@@ -29,37 +20,23 @@ function Logo({ spinning }: { spinning?: boolean }) {
   );
 }
 
-interface GroupArgs {
-  activity: keyof typeof activities;
-  /** Open on first render. */
-  defaultExpanded: boolean;
-  /**
-   * The host's logo left of the summary: `icons.activity` while the model works (here spinning),
-   * `icons.activityDone` once done. Set on ChatTheme; by default there is none.
-   */
-  logo: boolean;
-}
-
-function Group({ activity, defaultExpanded, logo }: GroupArgs) {
-  // Keyed so `defaultExpanded` applies again when a control changes.
-  const group = <ActivityGroup key={`${activity}-${defaultExpanded}`} parts={activities[activity]} defaultExpanded={defaultExpanded} />;
-  return logo ? <ChatTheme icons={{ activity: <Logo spinning />, activityDone: <Logo /> }}>{group}</ChatTheme> : group;
-}
+const thinking: ActivityPart[] = [{ type: "thinking", id: "t1", text: "Working out which dates are free...", status: "streaming" }];
 
 /** The collapsible summary of what the model did: thinking, tool calls, memory. */
 const meta = {
   title: "Components/ActivityGroup",
-  component: Group,
-  subcomponents: { ActivityGroup },
+  component: ActivityGroup,
+  // Keyed so `defaultExpanded` applies again when the control changes.
+  render: (args) => <ActivityGroup key={String(args.defaultExpanded)} {...args} />,
   decorators: [(Story) => <div className="w-[52rem]"><Story /></div>],
-  argTypes: { activity: { control: "select", options: Object.keys(activities) } },
-  args: { activity: "command and search", defaultExpanded: false, logo: false },
-} satisfies Meta<typeof Group>;
+  argTypes: { className: { control: false } },
+  args: { parts: activityOf(researchRun), defaultExpanded: false },
+} satisfies Meta<typeof ActivityGroup>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Activity: Story = {
-  name: "ActivityGroup",
+/** A command and a web search. Click the summary to open it. */
+export const Default: Story = {
   play: async ({ canvas, userEvent }) => {
     const summary = canvas.getAllByRole("button", { expanded: false })[0]!;
     await userEvent.click(summary);
@@ -67,4 +44,25 @@ export const Activity: Story = {
   },
 };
 
-export const WithLogo: Story = { args: { activity: "still thinking", logo: true } };
+/** A memory lookup, from the math run. */
+export const Memory: Story = { args: { parts: activityOf(mathRun) } };
+
+/** One step: the heading is the step's own label and the box holds its detail. */
+export const SingleSearch: Story = {
+  args: { parts: activityOf(researchRun).filter((p) => p.type === "tool_call" && p.name === "web_search") },
+};
+
+/** A tool call cut short by Stop. */
+export const StoppedToolCall: Story = { args: { parts: activityOf(stoppedRun) } };
+
+/** The model is still thinking. */
+export const StillThinking: Story = { args: { parts: thinking } };
+
+/**
+ * The host's logo left of the summary: `icons.activity` while the model works (here spinning),
+ * `icons.activityDone` once done. Set on ChatTheme; by default there is none.
+ */
+export const WithLogo: Story = {
+  args: { parts: thinking },
+  decorators: [(Story) => <ChatTheme icons={{ activity: <Logo spinning />, activityDone: <Logo /> }}><Story /></ChatTheme>],
+};

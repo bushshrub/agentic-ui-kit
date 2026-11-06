@@ -8,7 +8,19 @@ const meta = {
   component: ContextPanel,
   decorators: [(Story) => <div className="w-[19rem]"><Story /></div>],
   args: { usage: sampleContext, title: "Context", defaultExpanded: true },
+  argTypes: {
+    usage: { control: "object", description: "The window size, the used total and the categories that fill it." },
+    title: { control: "text", description: "Section title." },
+    defaultExpanded: { control: "boolean", description: "Open the breakdown on first render." },
+  },
+  parameters: { controls: { include: ["usage", "title", "defaultExpanded"] } },
 } satisfies Meta<typeof ContextPanel>;
 export default meta;
 
-export const Default: StoryObj<typeof meta> = {};
+type Story = StoryObj<typeof meta>;
+
+/** Expanded, with the sample usage. */
+export const Default: Story = {};
+
+/** Collapsed to its summary line. */
+export const Collapsed: Story = { args: { defaultExpanded: false } };

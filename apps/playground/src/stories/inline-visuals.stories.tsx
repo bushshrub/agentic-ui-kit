@@ -137,9 +137,11 @@ const meta = {
   subcomponents: { WidgetFrame, ChatView },
   parameters: { layout: "fullscreen" },
   argTypes: {
-    demo: { control: "inline-radio", options: Object.keys(demos) },
-    instant: { if: { arg: "shared", truthy: false } },
-    hostFrame: { if: { arg: "shared", truthy: false } },
+    demo: { table: { disable: true } },
+    hostFrame: { table: { disable: true } },
+    shared: { table: { disable: true } },
+    instant: { description: "Show the finished widget at once instead of streaming its markup in chunks.", table: { category: "Story" } },
+    onSend: { description: "Called with the text when the user sends a message: the composer, or a button inside the widget calling sendPrompt(text).", table: { category: "Events" } },
   },
   args: { demo: "calendar", instant: false, hostFrame: false, shared: false, onSend: fn() },
 } satisfies Meta<typeof VisualChat>;
@@ -200,7 +202,7 @@ function draw(id: string, html: string, replaces?: string, status: "input" | "do
  */
 export const UpdatedInPlace: StoryObj<{ startStep: number }> = {
   args: { startStep: 0 },
-  argTypes: { startStep: { control: { type: "range", min: 0, max: 3 }, description: "0 first draft, 1 fixing, 2 fixed, 3 changed in a later turn" } },
+  argTypes: { startStep: { control: { type: "range", min: 0, max: 3 }, description: "The step to start on: 0 first draft, 1 fixing, 2 fixed, 3 changed in a later turn. The button above the chat steps on.", table: { category: "Story" } } },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Fix it in the same reply" }));
     await expect(canvas.getByRole("button", { name: "Finish the fix" })).toBeInTheDocument();

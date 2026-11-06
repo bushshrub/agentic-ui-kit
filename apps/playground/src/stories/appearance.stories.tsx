@@ -1,16 +1,34 @@
-import { ChatTheme, CodeBlock, Markdown, type ChatMotion } from "agentic-ui-kit";
+import { ChatTheme, CodeBlock, Markdown } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { useEffect, useState } from "react";
 
-/** ChatTheme's `codeThemes` (any bundled Shiki theme) and `motion` ("system" | "reduce" | "full"). */
-const meta: Meta = { title: "Primitives/Appearance", parameters: { layout: "centered" } };
+/**
+ * ChatTheme's `codeThemes` (any bundled Shiki theme) and `motion` ("system" | "reduce" | "full"), applied to a
+ * streaming reply and a code block. Use the theme toolbar to switch light and dark.
+ */
+const meta = {
+  title: "Primitives/ChatTheme",
+  component: ChatTheme,
+  parameters: { layout: "centered", controls: { include: ["codeThemes", "motion"] } },
+  args: { codeThemes: { light: "catppuccin-latte", dark: "dracula", background: "theme" }, motion: "system", children: null },
+  argTypes: {
+    codeThemes: { control: "object", description: "Shiki themes for code blocks and Markdown fences: `light`, `dark`, and `background` (\"kit\" keeps the kit's surface, \"theme\" uses the Shiki theme's own)." },
+    motion: { control: "inline-radio", options: ["system", "reduce", "full"], description: "\"system\" follows the OS reduced-motion setting; \"reduce\" and \"full\" force it." },
+    children: { control: false, description: "The content to theme. The story supplies a streaming reply and a code block." },
+  },
+  render: ({ codeThemes, motion }, { globals }) => (
+    <div style={{ colorScheme: globals.theme === "light" ? "light" : "dark" }}>
+      <ChatTheme codeThemes={codeThemes} motion={motion} className="w-[40rem] rounded-chat-md p-6">
+        <Stream text={reply} />
+        <CodeBlock variant="boxed" language="bash" code="pnpm install --frozen-lockfile && pnpm test" />
+      </ChatTheme>
+    </div>
+  ),
+} satisfies Meta<typeof ChatTheme>;
 export default meta;
 
-const THEMES = [
-  "github-light", "github-dark", "one-dark-pro", "dracula", "catppuccin-latte", "catppuccin-mocha",
-  "nord", "solarized-light", "tokyo-night", "vitesse-light", "not-a-theme",
-];
+type Story = StoryObj<typeof meta>;
 
 const reply = [
   "Here is the fix. The loop never ended because `done` was shadowed:",
@@ -46,35 +64,23 @@ function Stream({ text }: { text: string }) {
   );
 }
 
-interface Args {
-  light: string;
-  dark: string;
-  background: "kit" | "theme";
-  motion: ChatMotion;
-  colorScheme: "light" | "dark";
-}
-
-/** ChatTheme's code themes and motion applied to a streaming reply and a code block. */
-export const CodeThemesAndMotion: StoryObj<Args> = {
-  name: "Code themes and motion",
-  args: { light: "catppuccin-latte", dark: "dracula", background: "theme", motion: "system", colorScheme: "dark" },
-  argTypes: {
-    light: { control: "select", options: THEMES },
-    dark: { control: "select", options: THEMES },
-    background: { control: "inline-radio", options: ["kit", "theme"] },
-    motion: { control: "inline-radio", options: ["system", "reduce", "full"] },
-    colorScheme: { control: "inline-radio", options: ["light", "dark"] },
-  },
-  render: ({ light, dark, background, motion, colorScheme }) => (
-    <div style={{ colorScheme }}>
-      <ChatTheme codeThemes={{ light, dark, background }} motion={motion} className="w-[40rem] rounded-chat-md p-6">
-        <Stream text={reply} />
-        <CodeBlock variant="boxed" language="bash" code="pnpm install --frozen-lockfile && pnpm test" />
-      </ChatTheme>
-    </div>
-  ),
+/** Catppuccin Latte in light mode, Dracula in dark, with the Shiki theme's own background. */
+export const Default: Story = {
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Replay stream" }));
     await expect(canvas.getByText(/pnpm install/)).toBeVisible();
   },
+};
+
+/** Code keeps the kit's surface color instead of the Shiki theme's background. */
+export const KitBackground: Story = {
+  args: { codeThemes: { light: "github-light", dark: "github-dark", background: "kit" } },
+};
+
+/** Reduced motion: the stream still fills in, without the animations. */
+export const ReducedMotion: Story = { args: { motion: "reduce" } };
+
+/** An unknown theme name falls back to plain code instead of breaking. */
+export const UnknownTheme: Story = {
+  args: { codeThemes: { light: "not-a-theme", dark: "not-a-theme", background: "theme" } },
 };

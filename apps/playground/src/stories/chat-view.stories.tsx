@@ -183,17 +183,30 @@ function ChatDemo(args: ChatArgs) {
   return <div className="h-dvh"><LiveChat key={key} {...args} /></div>;
 }
 
-/** The chat view in the places it lives: full page, side panel, inline, and the shared read-only snapshot. */
+const ev = (description: string) => ({ description, table: { category: "Events" } });
+const hidden = { table: { disable: true } };
+
+/** The chat view in the places it lives: full page, side panel, inline in a form, new chat, and the shared read-only snapshot. */
 const meta = {
   title: "Views/Chat view",
   component: ChatDemo,
   subcomponents: { ChatView, ChatTranscript, ChatHeader, ChatNotice },
   parameters: { layout: "fullscreen" },
   argTypes: {
-    view: { control: "inline-radio", options: ["chat", "shared"] },
-    density: { control: "inline-radio", options: ["full", "panel", "inline"], if: { arg: "view", eq: "chat" } },
-    conversation: { if: { arg: "view", eq: "chat" } },
-    hostTheme: { if: { arg: "view", eq: "shared" } },
+    view: hidden,
+    density: hidden,
+    conversation: hidden,
+    hostTheme: hidden,
+    onSend: ev("Called with the text when the user sends a message; a recorded reply then streams in."),
+    onStop: ev("Called when the user stops a reply midway."),
+    onRetry: ev("Called with the message id when the user retries a reply."),
+    onFeedback: ev("Called with the message id and the feedback when the user rates a reply."),
+    onShare: ev("Share, from the header button and the title menu."),
+    onPin: ev("Pin, from the title menu."),
+    onRename: ev("Rename, from the title menu."),
+    onDelete: ev("Delete, from the title menu."),
+    onReport: ev("Shared view: the notice's Report button."),
+    onContinue: ev("Shared view: the footer's Continue this chat button."),
   },
   args: {
     view: "chat", density: "full", conversation: true, hostTheme: false,
@@ -203,15 +216,38 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/**
- * A chat in progress. Send a message to get a recorded reply; stop it midway; retry any reply. Controls:
- * `density` puts it in a side panel or inline in a form, `conversation` off shows the new-chat greeting.
- */
+/** A chat in progress, full page. Send a message to get a recorded reply; stop it midway; retry any reply. */
 export const InProgress: Story = {
   name: "Chat view",
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.type(canvas.getByRole("textbox"), "Thanks!{Enter}");
     await expect(args.onSend).toHaveBeenCalledWith("Thanks!");
+  },
+};
+
+/** A new chat: the greeting over the centered composer. */
+export const NewChat: Story = {
+  args: { conversation: false },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("textbox")).toBeVisible();
+  },
+};
+
+/** In a host app's side panel (`density="panel"`). */
+export const InASidePanel: Story = {
+  name: "In a side panel",
+  args: { density: "panel" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("textbox")).toBeVisible();
+  },
+};
+
+/** Inline in a form, a small area of a page (`density="inline"`). */
+export const InlineInAForm: Story = {
+  name: "Inline in a form",
+  args: { density: "inline" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("textbox")).toBeVisible();
   },
 };
 
@@ -224,7 +260,7 @@ export const Shared: Story = {
   },
 };
 
-/** The same shared chat in a host's theme ("warm" from themes.css). */
+/** The same shared chat in a host's theme ("warm" from themes.css); the notice takes --chat-notice-bg and --chat-notice-border. */
 export const SharedInHostTheme: Story = { args: { view: "shared", hostTheme: true } };
 
 const pasted = `Lighthouses were never meant to be beautiful. They were built to warn ships off coastlines that had already sunk too many of them, and every design decision followed from that. A tower had to be tall enough for its light to clear the curve of the earth.`;
@@ -244,6 +280,7 @@ const drafts: DraftAttachment[] = [
 /** Pasted text, images and files in the composer; the shimmering ones are uploading. Paste long text or drop files to add more. */
 export const Attachments: StoryObj<{ onSubmit: (text: string) => void }> = {
   args: { onSubmit: fn() },
+  argTypes: { onSubmit: ev("Called with the text when the user sends.") },
   render: function Render({ onSubmit }) {
     const [list, setList] = useState(drafts);
     const files = useAttachments({ upload: fakeUpload });

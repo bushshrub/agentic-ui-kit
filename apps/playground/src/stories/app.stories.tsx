@@ -126,13 +126,25 @@ function App({ chat, collapsed, onNewChat, onSelectChat, ...on }: AppArgs) {
   );
 }
 
-/** Sidebar, chat list and chat together. Pick the chat and the sidebar state in Controls; the sidebar's actions log to Actions. */
+const ev = (description: string) => ({ description, table: { category: "Events" } });
+const hidden = { table: { disable: true } };
+
+/** Sidebar, chat list and chat together. Pick a chat in the sidebar; its actions log to Actions. */
 const meta = {
   title: "Views/App", tags: ["!autodocs"],
   parameters: { layout: "fullscreen" },
   // Keyed so the controls apply again when changed.
   render: (args) => <App key={`${args.chat}-${args.collapsed}`} {...args} />,
-  argTypes: { chat: { control: "select", options: ["new", "ci", "wiki", "redesign", "blog", "dock", "caffeine", "lighthouse", "python"] } },
+  argTypes: {
+    chat: hidden,
+    collapsed: hidden,
+    onNewChat: ev("Called when the user starts a new chat from the sidebar."),
+    onSelectChat: ev("Called with the chat id when the user picks a chat in the list."),
+    onSend: ev("Called with the text when the user sends a message."),
+    onShare: ev("Called when the user presses Share."),
+    onFeedback: ev("Called with the message id and \"good\" or \"bad\" when the user rates a reply."),
+    onModelChange: ev("Called with the model id when the user picks another model."),
+  },
   args: { chat: "ci", collapsed: false, onNewChat: fn(), onSelectChat: fn(), onSend: fn(), onShare: fn(), onFeedback: fn(), onModelChange: fn() },
 } satisfies Meta<AppArgs>;
 export default meta;
@@ -151,3 +163,9 @@ export const Full: Story = {
 
 /** On phones the sidebar becomes a drawer. */
 export const Phone: Story = { globals: { viewport: { value: "phonePortrait" } } };
+
+/** A new chat: the greeting over the centered composer. */
+export const NewChat: Story = { args: { chat: "new" } };
+
+/** The sidebar folded to its icon rail. */
+export const Collapsed: Story = { args: { collapsed: true } };

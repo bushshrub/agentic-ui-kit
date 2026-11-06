@@ -1,16 +1,13 @@
-import { Composer, DictationButton, useDictation, type DictationState, VoiceMeter } from "agentic-ui-kit";
+import { Composer, DictationButton, useDictation, type ComposerProps, type DictationState, VoiceMeter } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
 import { expect, fn, waitFor } from "storybook/test";
 
 const spoken = "Book a table for two at seven tonight, somewhere quiet near the office.".split(" ");
 
-interface DictationArgs {
-  onSubmit: (text: string) => void;
-}
 
 /** Dictation with a stand-in for the mic and the transcription model: words arrive as they are "heard". */
-function SimulatedDictation({ onSubmit }: DictationArgs) {
+function SimulatedDictation(props: ComposerProps) {
   const [listening, setListening] = useState(false);
   const [levels, setLevels] = useState<number[]>([]);
   const [words, setWords] = useState(0);
@@ -34,16 +31,16 @@ function SimulatedDictation({ onSubmit }: DictationArgs) {
         onAccept: () => new Promise<string>((done) => setTimeout(() => (stop(), done(spoken.join(" "))), 900)),
       }
     : undefined;
-  return <Composer onSubmit={onSubmit} dictation={dictation} trailing={<DictationButton onPress={() => setListening(true)} />} />;
+  return <Composer {...props} dictation={dictation} trailing={<DictationButton onPress={() => setListening(true)} />} />;
 }
 
 /** The browser's own speech recognition (no transcription model plugged in). Needs a mic and Chrome or Safari. */
-function BrowserDictation({ onSubmit }: DictationArgs) {
+function BrowserDictation(props: ComposerProps) {
   const dictation = useDictation({ onError: console.error });
   return (
     <Composer
-      onSubmit={onSubmit}
       placeholder={dictation.supported ? "Press the mic and talk" : "This browser has no speech recognition"}
+      {...props}
       dictation={dictation.state}
       trailing={dictation.supported && <DictationButton onPress={dictation.start} />}
     />
@@ -56,10 +53,12 @@ function BrowserDictation({ onSubmit }: DictationArgs) {
  */
 const meta = {
   title: "Features/Voice dictation",
-  component: SimulatedDictation,
-  subcomponents: { Composer, DictationButton, VoiceMeter },
+  component: Composer,
+  subcomponents: { DictationButton, VoiceMeter },
+  render: (args) => <SimulatedDictation {...args} />,
+  parameters: { controls: { exclude: ["leading", "trailing", "above", "dictation", "value", "onChange", "className"] } },
   args: { onSubmit: fn() },
-} satisfies Meta<typeof SimulatedDictation>;
+} satisfies Meta<typeof Composer>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 

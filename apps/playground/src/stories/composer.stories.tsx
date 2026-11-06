@@ -1,55 +1,43 @@
-import { Composer, ModelPicker, AttachButton } from "agentic-ui-kit";
+import { Composer, ModelPicker, AttachButton, type ComposerProps } from "agentic-ui-kit";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn } from "storybook/test";
 import { attachMenu, models } from "../lib/demo-chat";
 
-interface ComposerArgs {
-  /** docked: under a chat in progress. centered: the empty state, taller. compact: one row, no model picker. */
-  variant: "docked" | "centered" | "compact";
-  /** A reply is streaming: send becomes stop, and Enter does not send. */
-  busy: boolean;
-  isDisabled: boolean;
-  /** Shows the ModelPicker in the toolbar. */
-  modelPicker: boolean;
-  onSubmit: (text: string) => void;
-  onStop: () => void;
-  onFiles: (files: File[]) => void;
-}
+type ComposerArgs = ComposerProps & {
+  /** Shows the ModelPicker in the toolbar (not in the compact variant). */
+  modelPicker?: boolean;
+};
 
-function ComposerDemo({ variant, busy, isDisabled, modelPicker, onSubmit, onStop, onFiles }: ComposerArgs) {
+function ComposerDemo({ modelPicker, ...args }: ComposerArgs) {
   const [model, setModel] = useState(models[0]!.id);
   const [effort, setEffort] = useState("medium");
   return (
     <div className="w-[40rem]">
       <Composer
-        variant={variant}
-        busy={busy}
-        isDisabled={isDisabled}
-        onSubmit={onSubmit}
-        onStop={onStop}
-        onFiles={onFiles}
-        placeholder={variant === "centered" ? "How can I help you today?" : "Reply…"}
         leading={attachMenu()}
-        {...(modelPicker && variant !== "compact" && {
+        {...(modelPicker && args.variant !== "compact" && {
           trailing: <ModelPicker models={models} model={model} onModelChange={setModel} effort={effort} onEffortChange={setEffort} />,
         })}
+        {...args}
       />
     </div>
   );
 }
 
-/** The message box. Pick the variant and state in Controls; submit, stop and dropped files log to Actions. */
+/** The message box. Submit, stop and dropped files log to Actions. */
 const meta = {
   title: "Components/Composer",
-  component: ComposerDemo,
-  subcomponents: { Composer, AttachButton },
+  component: Composer,
+  subcomponents: { AttachButton },
+  render: (args) => <ComposerDemo {...args} />,
+  parameters: { controls: { exclude: ["leading", "trailing", "above", "dictation", "value", "onChange", "className"] } },
   argTypes: {
     variant: { control: "inline-radio", options: ["docked", "centered", "compact"] },
-    modelPicker: { if: { arg: "variant", neq: "compact" } },
+    modelPicker: { description: "Shows the ModelPicker in the toolbar (not in the compact variant).", table: { category: "Story" } },
   },
-  args: { variant: "docked", busy: false, isDisabled: false, modelPicker: true, onSubmit: fn(), onStop: fn(), onFiles: fn() },
-} satisfies Meta<typeof ComposerDemo>;
+  args: { variant: "docked", busy: false, isDisabled: false, placeholder: "Reply…", onSubmit: fn(), onStop: fn(), onFiles: fn(), modelPicker: true } as ComposerArgs,
+} satisfies Meta<ComposerArgs>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
@@ -60,6 +48,12 @@ export const Default: Story = {
   },
 };
 
+/** The empty state of a new chat: taller, with a welcome prompt. */
+export const Centered: Story = { args: { variant: "centered", placeholder: "How can I help you today?" } };
+
+/** One row, no model picker, for panels and inline use. */
+export const Compact: Story = { args: { variant: "compact" } };
+
 /** While a reply streams the send button is a stop button. */
 export const Busy: Story = {
   args: { busy: true },
@@ -68,3 +62,6 @@ export const Busy: Story = {
     await expect(args.onStop).toHaveBeenCalled();
   },
 };
+
+/** The box and its buttons can't be used. */
+export const Disabled: Story = { args: { isDisabled: true } };

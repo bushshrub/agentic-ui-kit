@@ -5,11 +5,8 @@ import { CodingExample } from "../examples/coding";
 import { JobApplicationExample } from "../examples/job-application";
 
 interface ExampleArgs {
-  /** job application: a client tool fills the form. calendar: proposed events wait for approval. coding: server edits stream into the open file. */
   example: "job application" | "calendar" | "coding";
-  /** Job application: the chat docked beside the form, or inline in it. */
   layout: "panel" | "inline";
-  /** Calendar and coding: break the stream mid-proposal / mid-edit. */
   fail: boolean;
 }
 
@@ -28,9 +25,14 @@ const meta = {
   component: Example,
   parameters: { layout: "fullscreen" },
   argTypes: {
-    example: { control: "inline-radio", options: ["job application", "calendar", "coding"] },
-    layout: { control: "inline-radio", options: ["panel", "inline"], if: { arg: "example", eq: "job application" } },
-    fail: { name: "Break the stream", if: { arg: "example", neq: "job application" } },
+    example: { table: { disable: true } },
+    layout: { table: { disable: true } },
+    fail: {
+      name: "Break the stream",
+      description: "Break the stream mid-proposal (calendar) or mid-edit (coding).",
+      table: { category: "Story" },
+      if: { arg: "example", neq: "job application" },
+    },
   },
   args: { example: "job application", layout: "panel", fail: false },
 } satisfies Meta<typeof Example>;
@@ -39,6 +41,9 @@ type Story = StoryObj<typeof meta>;
 
 /** A client tool fills the form, a server tool reads the résumé, submitting asks first. */
 export const JobApplication: Story = { name: "Job application" };
+
+/** The same job application with the chat inline in the form instead of docked beside it. */
+export const JobApplicationInline: Story = { name: "Job application, inline chat", args: { layout: "inline" } };
 
 /** Proposed events draw as the model writes them, wait for approval, then the server creates them. */
 export const Calendar: Story = {

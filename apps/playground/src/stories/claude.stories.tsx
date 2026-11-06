@@ -248,15 +248,24 @@ function App({ chat, model, collapsed, onNewChat, onSelectChat, ...handlers }: A
   );
 }
 
-/** claude.ai built from the kit: sidebar with pinned projects, Chat / Cowork, model and effort. Chat, model and sidebar are Controls; what a host would handle logs to Actions. */
+const ev = (description: string) => ({ description, table: { category: "Events" } });
+const hidden = { table: { disable: true } };
+
+/** claude.ai built from the kit: sidebar with pinned projects, Chat / Cowork, model and effort. What a host would handle logs to Actions. */
 const meta = {
   title: "Examples/Claude", tags: ["!autodocs"],
   parameters: { layout: "fullscreen" },
   // Keyed so the controls apply again when changed.
   render: (args) => <App key={`${args.chat}-${args.model}-${args.collapsed}`} {...args} />,
   argTypes: {
-    chat: { control: "select", options: chatIds },
-    model: { control: "inline-radio", options: models.map((m) => m.id) },
+    chat: hidden,
+    collapsed: hidden,
+    model: { description: "The model the picker starts on.", control: "inline-radio", options: models.map((m) => m.id), table: { category: "Story" } },
+    onNewChat: ev("Called when the user starts a new chat from the sidebar."),
+    onSelectChat: ev("Called with the chat id when the user picks a chat in the list."),
+    onSend: ev("Called with the text when the user sends a message."),
+    onShare: ev("Called when the user presses Share."),
+    onModelChange: ev("Called with the model id when the user picks another model."),
   },
   args: { chat: "new", model: "opus", collapsed: false, onNewChat: fn(), onSelectChat: fn(), onSend: fn(), onShare: fn(), onModelChange: fn() },
 } satisfies Meta<AppArgs>;
@@ -276,3 +285,6 @@ export const NewChat: Story = {
 
 /** A conversation in a project. */
 export const Conversation: Story = { args: { chat: "midpoint" } };
+
+/** The sidebar folded to its icon rail. */
+export const Collapsed: Story = { args: { collapsed: true } };

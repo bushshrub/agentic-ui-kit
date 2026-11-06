@@ -56,13 +56,16 @@ function ScriptedChat({ script: name, onSend: send }: ScriptedArgs) {
   );
 }
 
-/** A scripted reply streamed through the kit's reducer and drawn with the kit's views. Pick the script in Controls. */
+/** A scripted reply streamed through the kit's reducer and drawn with the kit's views. Each story plays one script. */
 const meta = {
   title: "Inline visuals/Replies",
   component: ScriptedChat,
   subcomponents: { ChatView, UiTree },
   parameters: { layout: "fullscreen" },
-  argTypes: { script: { control: "select", options: Object.keys(scripts) } },
+  argTypes: {
+    script: { table: { disable: true } },
+    onSend: { description: "Called with the text when the user sends a message: the composer, or a button in the reply that calls sendPrompt.", table: { category: "Events" } },
+  },
   args: { script: "weekendPlan", onSend: fn() },
 } satisfies Meta<typeof ScriptedChat>;
 export default meta;
