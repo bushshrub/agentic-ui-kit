@@ -335,6 +335,16 @@ Each slice ends with tests passing and the states visible in the playground.
   (List items as plain strings, `{"$state":"tab"}` without outer braces, unknown variants), so the checks
   apply as is. Latency is the model's reasoning (2.9-4.9k reasoning tokens before the first text on the
   bigger asks), not the format.
+- From slopbot's port (strict CSP `script-src 'self'; style-src 'self'`):
+  - Shiki: use its JS regex engine (or an option) so 'wasm-unsafe-eval' isn't needed; warn once when
+    highlighting fails instead of silently showing plain code. Shiki's inline token styles need
+    style-src 'unsafe-inline' (or a class-based output); decide which.
+  - README "Content Security Policy" section: what the kit needs (script, style, font for KaTeX, frame-src
+    for widgets' srcdoc), and the Vite note (assetsInlineLimit: 0 so KaTeX fonts aren't data: URLs, or allow
+    data: in font-src).
+  - Without Tailwind, the ChatTheme wrapper has no height and ChatView collapses silently. Give the wrapper a
+    usable default (or a documented class) and say so in the README.
+  - Check `**bold**` in the serif message font (650 weight with a variable Source Serif 4).
 - Ask-user tool (`ask_user`): the model asks the user questions; a prompt over the composer like claude.ai.
   Per question: single choice (numbered rows, number keys, picks and moves on), multiple choice
   (checkboxes, "1 selected", next arrow), rank (drag handles, keyboard reorder, "Drag to re-order").
