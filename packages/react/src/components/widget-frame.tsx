@@ -164,6 +164,8 @@ const BOOT = `(() => {
   new ResizeObserver(() => {
     const h = Math.ceil(root.getBoundingClientRect().height);
     if (h !== last) { last = h; post("ui/notifications/size-changed", { height: h }); }
+    // The frame grows to fit, a moment behind; only content past the cap gets a scrollbar.
+    document.documentElement.style.overflowY = h > ${"${WIDGET_MAX_HEIGHT}"} ? "auto" : "hidden";
   }).observe(root);
   const seen = new Set();
   const report = (text) => { if (!seen.has(text) && seen.size < 10) { seen.add(text); post("notifications/message", { level: "error", logger: "widget", data: text }); } };
@@ -177,6 +179,7 @@ function fragmentDoc(csp: string, theme: Theme) {
 <meta http-equiv="Content-Security-Policy" content="${csp}">
 <style>
 :root { ${Object.entries(theme.vars).map(([k, v]) => `${k}: ${v};`).join(" ")} color-scheme: ${theme.scheme}; }
+html { overflow: hidden; }
 html, body { margin: 0; background: transparent; color: var(--chat-fg); font-family: var(--chat-font-sans);
   font-size: var(--chat-ui-font-size); line-height: 1.5; }
 #widget { display: flow-root; }
