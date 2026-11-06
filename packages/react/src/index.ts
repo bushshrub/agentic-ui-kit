@@ -41,6 +41,7 @@ export type { CodeThemes, ChatMotion } from "./primitives/appearance";
 export { useChat, userMessage } from "./hooks/use-chat";
 export type { Transport, SendRequest, SendOptions, UseChat, UseChatOptions, PendingApproval, PendingPrompt } from "./hooks/use-chat";
 export { sseTransport, type SseTransportOptions, type SseRequestBody } from "./hooks/sse-transport";
+export { agUiTransport, type AgUiTransportOptions } from "./hooks/ag-ui-transport";
 export { AgentProvider, AgentRegistry, useAgentRegistry, useAgentSnapshot, useAgentTool, useAgentContext } from "./hooks/agent";
 export type { AgentTool, ToolContext, ToolSpec, JsonSchema } from "./hooks/agent";
 export { useSmoothText } from "./hooks/smooth-text";

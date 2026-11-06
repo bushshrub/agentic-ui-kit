@@ -7,3 +7,5 @@ export { readEventStream, formatEvent } from "./sse";
 export { parsePartialJson, salvageJson } from "./partial-json";
 export { askUserTool, readAskUserInput, readAskUserResult } from "./ask-user";
 export type { AskUserKind, AskUserQuestion, AskUserInput, AskUserAnswer, AskUserResult } from "./ask-user";
+export { toAgUiMessages, fromAgUiEvents, agUiResume } from "./ag-ui";
+export type { AgUiEvent, AgUiMessage, AgUiInputContent, AgUiToolCall, AgUiTool, AgUiContext, AgUiInterrupt, AgUiResumeEntry, RunAgentInput, AgUiTranslateOptions } from "./ag-ui";

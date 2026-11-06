@@ -1,10 +1,10 @@
 import type { StreamEvent } from "./events";
 
 /**
- * Reads a server-sent event stream of `StreamEvent`s. Each SSE message carries one JSON event in `data`;
+ * Reads a server-sent event stream of `StreamEvent`s (or another JSON event type, e.g. `AgUiEvent`). Each SSE message carries one JSON event in `data`;
  * comments and messages without data (keep-alives) are skipped.
  */
-export async function* readEventStream(body: ReadableStream<Uint8Array>): AsyncGenerator<StreamEvent> {
+export async function* readEventStream<T = StreamEvent>(body: ReadableStream<Uint8Array>): AsyncGenerator<T> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -15,12 +15,12 @@ export async function* readEventStream(body: ReadableStream<Uint8Array>): AsyncG
       buffer += decoder.decode(value, { stream: true });
       let end: number;
       while ((end = messageEnd(buffer)) !== -1) {
-        const event = parseMessage(buffer.slice(0, end));
+        const event = parseMessage<T>(buffer.slice(0, end));
         buffer = buffer.slice(end).replace(BLANK_LINE_START, "");
         if (event) yield event;
       }
     }
-    const event = parseMessage(buffer + decoder.decode());
+    const event = parseMessage<T>(buffer + decoder.decode());
     if (event) yield event;
   } finally {
     reader.releaseLock();
@@ -41,11 +41,11 @@ function messageEnd(buffer: string): number {
   return match ? match.index : -1;
 }
 
-function parseMessage(text: string): StreamEvent | undefined {
+function parseMessage<T>(text: string): T | undefined {
   const data: string[] = [];
   for (const line of text.split(/\r\n|\r|\n/)) {
     if (line.startsWith("data:")) data.push(line.slice(line.startsWith("data: ") ? 6 : 5));
   }
   if (data.length === 0) return undefined;
-  return JSON.parse(data.join("\n")) as StreamEvent;
+  return JSON.parse(data.join("\n")) as T;
 }

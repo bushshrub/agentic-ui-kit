@@ -211,6 +211,10 @@ title          { conversationId, title }                      // auto title afte
 
 `custom` parts use the same events with `type: "custom"` and a `kind`.
 
+AG-UI agents plug in without a server of ours: `agUiTransport` (react hooks) sends a `RunAgentInput` and
+core's `fromAgUiEvents` turns the AG-UI run into these events, one run per assistant message. Tool call
+interrupts become approvals and resume through `RunAgentInput.resume`. No resume or server-side stop.
+
 ## Server
 
 - Hono REST API plus SSE. Routes: auth (Better Auth), conversations (list, get, rename, pin, delete,

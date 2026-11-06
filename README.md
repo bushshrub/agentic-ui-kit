@@ -128,6 +128,23 @@ export async function POST(request: Request) {
 Every event carries `runId` and an increasing `seq`, so a client can resume a dropped stream. Not using SSE?
 Implement `Transport` yourself: one `send(request)` that returns an async iterable of events.
 
+### AG-UI agents
+
+Agents that speak [AG-UI](https://docs.ag-ui.com) (LangGraph, Mastra, CrewAI, Pydantic AI, ADK, ...) need no
+server code of yours. Use `agUiTransport` instead:
+
+```ts
+import { agUiTransport } from "agentic-ui-kit";
+
+const transport = agUiTransport({ url: "/agent", customKinds: ["job_row"], onEvent: (e) => e.type === "STATE_SNAPSHOT" && setState(e.snapshot) });
+```
+
+One AG-UI run becomes one assistant message: text, reasoning and tool calls become parts. Page tools
+(`useAgentTool`) go to the agent as frontend tools, page context as AG-UI context. An interrupt on a tool call
+shows as an approval, and the answer resumes the run. `CUSTOM` events with a name in `customKinds` become custom
+parts. Everything else (state, steps, activity) reaches `onEvent`. AG-UI has no stop or rejoin endpoint, so Stop
+only closes the stream and `useChat({ resume: true })` has nothing to rejoin.
+
 ## Agent tools
 
 ![The model proposes calendar events; the page draws them and asks before adding them](docs/images/calendar.png)
@@ -291,7 +308,7 @@ The React package has four layers, each built only from the ones before it:
 | Layer      | Examples                                                                                      |
 | ---------- | --------------------------------------------------------------------------------------------- |
 | Primitives | `Button`, `IconButton`, `Menu`, `ContextMenu`, `Modal`, `Drawer`, `Panel`, `Tooltip`, `CodeBlock`, `ChatTheme` |
-| Hooks      | `useChat`, `sseTransport`, `AgentProvider`, `useAgentTool`, `useAgentContext`, `useSmoothText` |
+| Hooks      | `useChat`, `sseTransport`, `agUiTransport`, `AgentProvider`, `useAgentTool`, `useAgentContext`, `useSmoothText` |
 | Components | `Composer`, `ModelPicker`, `MessageList`, `ActivityGroup`, `ApprovalCard`, `Markdown`, `ChatHeader`, `ChatList`, `ContextPanel` |
 | Views      | `ChatView`, `AppShell`, `Sidebar`                                                             |
 
