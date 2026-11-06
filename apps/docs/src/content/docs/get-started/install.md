@@ -27,3 +27,8 @@ pnpm --filter agentic-ui-kit pack        # builds and writes agentic-ui-kit-0.1.
 cd ../your-app && npm install ../agentic-ui-kit/agentic-ui-kit-0.1.0.tgz
 ```
 
+### Upgrading
+
+Vite pre-bundles dependencies. After you upgrade the kit, a running dev server can keep serving the old
+build, and you get errors like "does not provide an export named …". Restart it with `vite --force` (or
+delete `node_modules/.vite`).
