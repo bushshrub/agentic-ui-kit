@@ -318,8 +318,6 @@ Each slice ends with tests passing and the states visible in the playground.
 12. Later: search, projects with instructions, share links, light theme, voice.
 
 ## Queued
-- Storybook used properly (user, now): stories take `component` + `args` so Controls edit them, callbacks are
-  `fn()` so Actions logs them, and the key flows have `play` functions (Interactions), run as tests.
 - Slopbot friction (on 0.5.1), worst first:
   1. Modal size: className loses to the panel's own w-full/max-w-2xl (no class merging), so every override
      needs `!`. Add `size` (sm/md/lg/xl/full) and `placement` ("center" | "top"), or merge classes.
