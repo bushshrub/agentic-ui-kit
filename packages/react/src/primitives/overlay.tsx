@@ -1,4 +1,7 @@
+import { IconButton } from "./button";
 import { cx } from "./cx";
+import { useIcons } from "./icons";
+import { useLabels } from "./labels";
 import type { ReactNode } from "react";
 import { Dialog, Heading, Modal as AriaModal, ModalOverlay } from "react-aria-components";
 
@@ -27,15 +30,42 @@ export interface ModalProps extends OverlayProps {
   size?: keyof typeof modalSizes;
   /** "center" (default) vertically centers the dialog; "top" puts it near the top edge, e.g. a command palette. */
   placement?: "center" | "top";
+  /** Clicking outside closes the dialog. Default true; false for dialogs that hold unsaved work. */
+  isDismissable?: boolean;
+  /** Escape doesn't close the dialog. Default false. */
+  isKeyboardDismissDisabled?: boolean;
+  /** A close button in the top right corner (label from `labels.close`). Default false. */
+  showClose?: boolean;
+  /** Pad the content like the title (px-5 pb-4). Default false: the content brings its own padding. */
+  padded?: boolean;
 }
 
-/** A centered dialog over a dimmed page. Escape and clicking outside close it; focus stays inside. */
-export function Modal({ isOpen, onOpenChange, title, size = "lg", placement = "center", children, className, ...props }: ModalProps) {
+/**
+ * A centered dialog over a dimmed page. Escape and (unless `isDismissable={false}`) clicking outside close it;
+ * focus stays inside.
+ */
+export function Modal({
+  isOpen,
+  onOpenChange,
+  title,
+  size = "lg",
+  placement = "center",
+  isDismissable = true,
+  isKeyboardDismissDisabled = false,
+  showClose = false,
+  padded = false,
+  children,
+  className,
+  ...props
+}: ModalProps) {
+  const labels = useLabels();
+  const icons = useIcons();
   return (
     <ModalOverlay
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      isDismissable
+      isDismissable={isDismissable}
+      isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       className={cx(
         "fixed inset-0 z-50 flex justify-center bg-(--chat-backdrop) p-4 data-entering:animate-chat-fade-in data-exiting:animate-chat-fade-out",
         placement === "top" ? "items-start pt-[10dvh]" : "items-center",
@@ -49,13 +79,24 @@ export function Modal({ isOpen, onOpenChange, title, size = "lg", placement = "c
           className,
         )}
       >
-        <Dialog {...props} className="flex min-h-0 flex-1 flex-col outline-none">
+        <Dialog {...props} className="relative flex min-h-0 flex-1 flex-col outline-none">
           {title && (
-            <Heading slot="title" className="px-5 pt-4 pb-3 text-base font-medium">
+            <Heading slot="title" className={cx("px-5 pt-4 pb-3 text-base font-medium", showClose && "pr-12")}>
               {title}
             </Heading>
           )}
-          {children}
+          {showClose && (
+            <IconButton slot="close" label={labels.close} size="sm" tooltip={false} className="absolute top-3 right-3 z-10">
+              {icons.remove}
+            </IconButton>
+          )}
+          {padded ? (
+            <div className={cx("min-h-0 flex-1 overflow-y-auto px-5 pb-4", !title && "pt-4", !title && showClose && "pr-12")}>
+              {children}
+            </div>
+          ) : (
+            children
+          )}
         </Dialog>
       </AriaModal>
     </ModalOverlay>

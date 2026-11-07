@@ -26,7 +26,8 @@ export const densityVars: Record<Density, CSSProperties> = {
 export interface ChatViewProps {
   messages: Message[];
   busy?: boolean;
-  onSend: (text: string) => void;
+  /** Sends a message from the composer or a tool view. Optional for a read-only chat (`composer={false}`). */
+  onSend?: (text: string) => void;
   onStop?: () => void;
   /** Tool calls waiting on the user (`useChat().approvals`); the first shows above the composer. */
   approvals?: PendingApproval[];
@@ -78,6 +79,8 @@ export interface ChatViewProps {
   className?: string;
 }
 
+const noop = () => {};
+
 /** A whole chat: header, the conversation, the docked composer. An empty chat shows `emptyState`. */
 export function ChatView({
   messages,
@@ -110,7 +113,7 @@ export function ChatView({
     ...(contentWidth && { "--chat-content-width": contentWidth }),
     ...(contentPadding && { "--chat-content-padding": contentPadding }),
   } as CSSProperties;
-  const interaction = useMemo(() => ({ send: onSend }), [onSend]);
+  const interaction = useMemo(() => (onSend ? { send: onSend } : {}), [onSend]);
   const empty = messages.length === 0;
   const [body, short] = useShortPane();
   const labels = useLabels();
@@ -121,7 +124,7 @@ export function ChatView({
     const element = <Composer
       variant={density === "inline" || (short && !empty) ? "compact" : variant}
       busy={busy}
-      onSubmit={onSend}
+      onSubmit={onSend ?? noop}
       {...(onStop && { onStop })}
       {...composer}
       {...((pending || asking) && { placeholder: labels.replyDirectly })}

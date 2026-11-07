@@ -1,4 +1,4 @@
-import type { Message, Part } from "@agentic-ui-kit/core";
+import type { AttachmentPart, Message, Part } from "@agentic-ui-kit/core";
 import { clsx } from "clsx";
 import { useIcons } from "../primitives/icons";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -102,7 +102,7 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, onReadAloud
             <Scope messages={messages}>
             {messages.map((m) =>
               m.role === "user" ? (
-                <UserMessage key={m.id} message={m} {...(onEdit && { onEdit: () => onEdit(m.id) })} {...(actions?.extra && { actions: actions.extra(m) })} {...(actions?.copy === false && { copy: false })} {...(actions?.time === false && { time: false })} />
+                <UserMessage key={m.id} message={m} {...(onEdit && { onEdit: () => onEdit(m.id) })} {...(actions?.extra && { actions: actions.extra(m) })} {...(actions?.copy === false && { copy: false })} {...(actions?.time === false && { time: false })} {...(actions?.caption && { caption: actions.caption(m) })} {...(actions?.onOpenAttachment && { onOpenAttachment: (a: AttachmentPart) => actions.onOpenAttachment!(a, m) })} />
               ) : (
                 <AssistantMessage
                   key={m.id}

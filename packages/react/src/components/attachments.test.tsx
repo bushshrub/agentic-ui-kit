@@ -1,6 +1,9 @@
-import { render } from "@testing-library/react";
-import { expect, it } from "vitest";
-import { AttachmentCard } from "./attachments";
+import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, expect, it } from "vitest";
+import { AttachmentCard, AttachmentRow } from "./attachments";
+
+afterEach(cleanup);
 
 const thumb = (attachment: Parameters<typeof AttachmentCard>[0]["attachment"]) => render(<AttachmentCard attachment={attachment} />).container.querySelector("img");
 
@@ -18,4 +21,16 @@ it("shows a file card for a non-image url", () => {
   const { container } = render(<AttachmentCard attachment={{ name: "report.pdf", url: "https://cdn.example/report.pdf" }} />);
   expect(container.querySelector("img")).toBeNull();
   expect(container.textContent).toContain("PDF");
+});
+
+it("composer row: an image card opens the full image and keeps its remove button", async () => {
+  render(
+    <AttachmentRow
+      attachments={[{ id: "d1", kind: "image", name: "shot.png", mime: "image/png", size: 1, previewUrl: "blob:shot", status: "ready" }]}
+      onRemove={() => {}}
+    />,
+  );
+  expect(screen.getByRole("button", { name: "Remove shot.png" })).toBeTruthy();
+  await userEvent.click(screen.getByRole("button", { name: "Open image shot.png" }));
+  expect(screen.getByRole("dialog", { name: "shot.png" })).toBeTruthy();
 });

@@ -47,3 +47,11 @@ it("shows a bare thought among other steps as a row without a disclosure", () =>
   expect(getByText("Searched").closest("button")).toBeTruthy();
   expect(container.querySelectorAll("button").length).toBe(2);
 });
+
+it("shows no token count for a tiny running step, and one once it grows", () => {
+  const { container, rerender } = render(<ActivityGroup parts={part("streaming")} />);
+  expect(container.textContent).not.toMatch(/tokens?\)/);
+  const long = [{ type: "thinking", id: "t", text: "x".repeat(400), status: "streaming" } as ActivityPart];
+  rerender(<ActivityGroup parts={long} />);
+  expect(container.textContent).toMatch(/\(\d+ tokens\)/);
+});

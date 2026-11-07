@@ -328,20 +328,11 @@ Each slice ends with tests passing and the states visible in the playground.
 - Storybook: decide how stories are organized (proposal sent to the user); Controls show no descriptions
   for the local wrapper components.
 - Slopbot friction (on 0.5.1), worst first:
-- jaa-v2 overlay gaps (low priority, from jaa's overlays move; reply to jaa-v2 when shipped):
-  Modal `isDismissable={false}` / `isKeyboardDismissDisabled` (RAC ModalOverlay), so an outside click doesn't
-  close it while Escape still does; Modal close button (`showClose`, label via labels); Modal/Popover `padded`
-  like Panel's; Tooltip on a plain span/anchor (accept any element or document the Focusable wrapper).
+- Popover `padded` like Panel's (left over from the jaa-v2 overlay gaps; Modal got it in 0.10.0).
 - Example (not a kit export): a host Map component in the component set (spec { center, zoom, markers },
   Leaflet render, lazy-loaded), as a Storybook example plus a short section in host-components.md.
 - API reference: typedoc is single-entry, so agentic-ui-kit/visuals and visuals/core have no pages (adding
   entries renamed every existing URL). Configure module naming so the old URLs stay and the visuals get pages.
-- jaa-v2 chat gaps (jaa-v2 session is shut down; no reply needed), low priority:
-  1. Composer: option to allow sending while busy (server queues it); Stop only while the box is empty.
-  2. ChatView `onSend` optional when `composer={false}`.
-  3. Composer `id` / ref so a caller can focus or label the box.
-  4. UserMessage caption ("Sent by the agent" for prefilled prompts).
-  5. A streaming tool part shows "(1 tokens)": hide the count for tiny tool inputs.
 - From llm-chat-ui (on 0.8.0):
   1. CopyButton (primitives/copy-button.tsx:17) does nothing without navigator.clipboard (plain http on a LAN
      host); fall back like CopyField (hidden textarea + execCommand) and never show "Copied" on failure.

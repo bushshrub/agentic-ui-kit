@@ -1,9 +1,18 @@
-import type { ReactElement, ReactNode } from "react";
-import { Tooltip as AriaTooltip, TooltipTrigger, type TooltipProps as AriaTooltipProps } from "react-aria-components";
+import type { DOMAttributes, ReactElement, ReactNode } from "react";
+import { Focusable, Tooltip as AriaTooltip, TooltipTrigger, type TooltipProps as AriaTooltipProps } from "react-aria-components";
+
+/**
+ * A react-aria component (Button, IconButton, Link...) is used as is. A plain element (span, a, div...) gets
+ * react-aria's Focusable around it, which makes it focusable, so the tooltip also shows on keyboard focus.
+ */
+function asTrigger(children: ReactElement) {
+  if (typeof children.type !== "string") return children;
+  return <Focusable>{children as ReactElement<DOMAttributes<HTMLElement>, string>}</Focusable>;
+}
 
 export interface TooltipProps {
   content: ReactNode;
-  /** A focusable element, usually a Button or IconButton. */
+  /** The trigger: a react-aria component (Button, IconButton) or any plain element, e.g. a span. */
   children: ReactElement;
   placement?: AriaTooltipProps["placement"];
   delay?: number;
@@ -12,7 +21,7 @@ export interface TooltipProps {
 export function Tooltip({ content, children, placement = "top", delay = 600 }: TooltipProps) {
   return (
     <TooltipTrigger delay={delay} closeDelay={0}>
-      {children}
+      {asTrigger(children)}
       <AriaTooltip
         placement={placement}
         offset={6}

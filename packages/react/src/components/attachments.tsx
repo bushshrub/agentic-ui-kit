@@ -164,7 +164,7 @@ export interface AttachmentCardProps {
 const IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|avif|svg|bmp|ico)$/i;
 
 /** Whether the card draws a thumbnail: by mime when given, else by `kind`, else by the file extension of the url or name. */
-function isImage({ mime, kind, url, name }: AttachmentCardData): boolean {
+export function isImage({ mime, kind, url, name }: AttachmentCardData): boolean {
   if (mime) return mime.startsWith("image/");
   if (kind) return kind === "image";
   const path = url && !url.startsWith("data:") ? url.split(/[?#]/)[0]! : "";
@@ -222,8 +222,13 @@ export function AttachmentCard({ attachment: a, onRemove, onOpen, size = "md", c
           )}
         </div>
       )}
-      {pasted && onOpen && !onRemove && (
-        <button type="button" aria-label={labels.viewPastedText} onClick={onOpen} className="absolute inset-0 cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-chat-focus" />
+      {onOpen && (image || (pasted && !onRemove)) && (
+        <button
+          type="button"
+          aria-label={image ? labels.openImage(a.name) : labels.viewPastedText}
+          onClick={onOpen}
+          className="absolute inset-0 cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-chat-focus"
+        />
       )}
       {onRemove && (
         <IconButton
@@ -254,6 +259,7 @@ export interface AttachmentRowProps {
 /** The composer's row of cards above the text. Renders nothing when empty. */
 export function AttachmentRow({ attachments, onRemove, onEditText }: AttachmentRowProps) {
   const [editing, setEditing] = useState<DraftAttachment>();
+  const [viewing, setViewing] = useState<DraftAttachment>();
   const labels = useLabels();
   if (attachments.length === 0) return null;
   return (
@@ -265,16 +271,38 @@ export function AttachmentRow({ attachments, onRemove, onEditText }: AttachmentR
               attachment={{ ...a, ...(a.previewUrl && { url: a.previewUrl }) }}
               onRemove={() => onRemove(a.id)}
               {...(a.kind === "text" && { onOpen: () => setEditing(a) })}
+              {...(a.kind === "image" && !!(a.previewUrl ?? a.url) && { onOpen: () => setViewing(a) })}
             />
           </li>
         ))}
       </ul>
+      <ImageDialog image={viewing && { url: (viewing.previewUrl ?? viewing.url)!, name: viewing.name }} onClose={() => setViewing(undefined)} />
       <PastedTextDialog
         text={editing?.text}
         onClose={() => setEditing(undefined)}
         {...(onEditText && editing && { onSave: (text: string) => onEditText(editing.id, text) })}
       />
     </>
+  );
+}
+
+export interface ImageDialogProps {
+  /** Open while set. */
+  image: { url: string; name: string } | undefined;
+  onClose: () => void;
+}
+
+/** Shows an image attachment at full size in a modal. */
+export function ImageDialog({ image, onClose }: ImageDialogProps) {
+  // Keep the last image while the modal animates out.
+  const [shown, setShown] = useState(image);
+  useEffect(() => {
+    if (image) setShown(image);
+  }, [image]);
+  return (
+    <Modal isOpen={image !== undefined} onOpenChange={(open) => !open && onClose()} aria-label={shown?.name ?? ""} size="xl" showClose className="w-auto">
+      {shown && <img src={shown.url} alt={shown.name} className="max-h-[calc(85dvh-2px)] min-h-0 rounded-[inherit] object-contain" />}
+    </Modal>
   );
 }
 

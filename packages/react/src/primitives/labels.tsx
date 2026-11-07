@@ -167,6 +167,8 @@ export interface ChatLabels {
   viewPastedText: string;
   /** Remove button of an attachment card. */
   removeAttachment: (name: string) => string;
+  /** Overlay button on an image card; opens the full image. */
+  openImage: (name: string) => string;
   /** Dialog title, and the name given to pasted text. */
   pastedText: string;
   /** Badge on a pasted-text card. */
@@ -328,7 +330,7 @@ export const defaultLabels: ChatLabels = {
   contextSummary: (used, limit, percent) => `Context: ${used} / ${limit} (${percent}%)`,
   contextLoading: "Context: loading",
   freeSpace: "Free space",
-  tokenCount: (count) => `${count} tokens`,
+  tokenCount: (count) => (count === "1" ? "1 token" : `${count} tokens`),
 
   replyPlaceholder: "Reply…",
   replyDirectly: "Or reply directly…",
@@ -364,6 +366,7 @@ export const defaultLabels: ChatLabels = {
   editPastedText: "Edit pasted text",
   viewPastedText: "View pasted text",
   removeAttachment: (name) => `Remove ${name}`,
+  openImage: (name) => `Open image ${name}`,
   pastedText: "Pasted text",
   pasted: "Pasted",
   failed: "Failed",

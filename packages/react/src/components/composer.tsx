@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { useIcons } from "../primitives/icons";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type Ref } from "react";
 import type React from "react";
 import { IconButton } from "../primitives/button";
 import { useLabels } from "../primitives/labels";
@@ -11,8 +11,13 @@ export interface ComposerProps {
   onSubmit: (text: string) => void;
   /** Shown as a stop button while `busy`. */
   onStop?: () => void;
-  /** A reply is streaming: the send button becomes stop, and Enter does not send. */
+  /** A reply is streaming: the send button becomes stop, and Enter does not send (see `sendWhileBusy`). */
   busy?: boolean;
+  /**
+   * Sending works while `busy`, e.g. when the server queues the message: Enter sends, and the button is
+   * send while there is text and stop while the box is empty.
+   */
+  sendWhileBusy?: boolean;
   /** Controlled text. Leave both unset to let the composer keep its own. */
   value?: string;
   onChange?: (text: string) => void;
@@ -44,6 +49,10 @@ export interface ComposerProps {
    */
   dictation?: DictationState;
   autoFocus?: boolean;
+  /** On the textarea, e.g. for a `<label htmlFor>` or to find the box. */
+  id?: string;
+  /** The textarea, e.g. to focus it. */
+  ref?: Ref<HTMLTextAreaElement>;
   className?: string;
 }
 
@@ -55,6 +64,7 @@ export function Composer({
   onSubmit,
   onStop,
   busy = false,
+  sendWhileBusy = false,
   value,
   onChange,
   placeholder,
@@ -70,6 +80,8 @@ export function Composer({
   isDisabled = false,
   dictation,
   autoFocus,
+  id,
+  ref,
   className,
 }: ComposerProps) {
   const icons = useIcons();
@@ -81,6 +93,7 @@ export function Composer({
     onChange?.(next);
   };
   const area = useRef<HTMLTextAreaElement>(null);
+  useImperativeHandle(ref, () => area.current!, []);
 
   // Grow with the text up to the CSS max height, then scroll. Re-measured when the variant's padding or
   // the pane's width changes; it only scrolls once the text is taller than the max height.
@@ -119,7 +132,8 @@ export function Composer({
   };
 
   const [dragging, setDragging] = useState(false);
-  const canSend = !dictation && !busy && !isDisabled && !submitDisabled && (allowEmpty || text.trim().length > 0);
+  const hasText = text.trim().length > 0;
+  const canSend = !dictation && (!busy || sendWhileBusy) && !isDisabled && !submitDisabled && (allowEmpty || hasText);
   const submit = () => {
     if (!canSend) return;
     onSubmit(text);
@@ -164,7 +178,7 @@ export function Composer({
   const compact = variant === "compact";
   const action = dictation ? (
     <DictationControls dictation={dictation} onAccept={() => void acceptDictation()} finishing={finishing} />
-  ) : busy ? (
+  ) : busy && !(sendWhileBusy && hasText) ? (
     <IconButton label={labels.stop} variant="primary" onPress={onStop} className="rounded-[var(--chat-send-radius,var(--chat-radius-md))]! [&_svg]:size-3.5 [&_svg]:fill-current">
       {icons.stop}
     </IconButton>
@@ -207,6 +221,7 @@ export function Composer({
           aria-label={labels.message}
           disabled={isDisabled}
           autoFocus={autoFocus}
+          id={id}
           className={clsx(
             "w-full resize-none bg-transparent px-1.5 text-chat-fg outline-none placeholder:text-chat-subtle",
             "text-base leading-relaxed [scrollbar-width:thin]",

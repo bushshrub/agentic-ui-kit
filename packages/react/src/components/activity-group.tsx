@@ -14,6 +14,9 @@ export interface ActivityGroupProps {
   className?: string;
 }
 
+/** Below this the running group shows no token count. */
+const MIN_SHOWN_TOKENS = 50;
+
 /**
  * The "Ran a command, searched the web ▾" dropdown: a one-line heading that opens a bordered box with one
  * row per step. Each row expands on its own; tool rows render through the registered `ToolView`.
@@ -28,8 +31,9 @@ export function ActivityGroup({ parts: all, defaultExpanded = false, className }
   // Waiting on the user is not work in progress: no shimmer, no counter.
   const live = parts.some(isWorking);
   // Counts up while the group runs and disappears when it is done. Totals live on the message's usage.
+  // A tiny tool input or thought shows none: "(1 tokens)" is noise.
   const tokens = activityTokens(parts);
-  const after = live && tokens > 0 && <TokenCounter variant="inline" tokens={tokens} className="ml-1.5" />;
+  const after = live && tokens >= MIN_SHOWN_TOKENS && <TokenCounter variant="inline" tokens={tokens} className="ml-1.5" />;
   return (
     <div className={className}>
       {parts.length === 1 ? (

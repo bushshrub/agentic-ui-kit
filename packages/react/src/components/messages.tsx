@@ -1,4 +1,4 @@
-import { toBlocks, type Message, type Part, type ToolCallPart } from "@agentic-ui-kit/core";
+import { toBlocks, type AttachmentPart, type Message, type Part, type ToolCallPart } from "@agentic-ui-kit/core";
 import { CopyButton } from "../primitives/copy-button";
 import { useChatExtensions } from "./extensions";
 import { clsx } from "clsx";
@@ -7,7 +7,7 @@ import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "rea
 import { IconButton } from "../primitives/button";
 import { defaultLabels, useLabels, type ChatLabels } from "../primitives/labels";
 import { ActivityGroup } from "./activity-group";
-import { AttachmentCard, PastedTextDialog } from "./attachments";
+import { AttachmentCard, ImageDialog, PastedTextDialog, isImage } from "./attachments";
 import { Markdown } from "./markdown";
 import { useToolViews } from "./tools";
 
@@ -41,6 +41,10 @@ export interface MessageActions {
   copy?: boolean;
   /** The relative time. Default true. */
   time?: boolean;
+  /** A line above a user message, per message, e.g. "Sent by the agent". Return nothing for none. */
+  caption?: (message: Message) => ReactNode;
+  /** Opens an image attachment in your own viewer instead of the kit's `ImageDialog`. */
+  onOpenAttachment?: (attachment: AttachmentPart, message: Message) => void;
 }
 
 const timeClass = "px-1 font-chat-sans text-(length:--chat-ui-font-size-sm) leading-4 text-chat-subtle";
@@ -55,28 +59,42 @@ export interface UserMessageProps {
   copy?: boolean;
   /** Hide the time. */
   time?: boolean;
+  /** A small line above the message, e.g. "Sent by the agent" for a prefilled prompt. */
+  caption?: ReactNode;
+  /** Opens an image attachment in your own viewer instead of the kit's `ImageDialog`. */
+  onOpenAttachment?: (attachment: AttachmentPart) => void;
   className?: string;
 }
 
 /** The user's turn: a bubble on the right, with time, retry, edit and copy under it on hover. */
-export function UserMessage({ message, onRetry, onEdit, actions, copy = true, time = true, className }: UserMessageProps) {
+export function UserMessage({ message, onRetry, onEdit, actions, copy = true, time = true, caption, onOpenAttachment, className }: UserMessageProps) {
   const icons = useIcons();
   const labels = useLabels();
   const text = messageText(message);
   const attachments = message.parts.filter((p) => p.type === "attachment");
   const [viewing, setViewing] = useState<string>();
+  const [image, setImage] = useState<AttachmentPart>();
+  // Pasted text opens in its dialog, an image in the host's viewer or the kit's.
+  const opens = (a: AttachmentPart) =>
+    a.text !== undefined
+      ? { onOpen: () => setViewing(a.text) }
+      : a.url && isImage(a)
+        ? { onOpen: () => (onOpenAttachment ? onOpenAttachment(a) : setImage(a)) }
+        : {};
   return (
     <div className={clsx("group/message flex flex-col items-end", className)}>
+      {caption != null && caption !== false && <div className={clsx(timeClass, "mb-1")}>{caption}</div>}
       {attachments.length > 0 && (
         <ul aria-label={labels.attachments} className="mb-2 flex max-w-[85%] flex-wrap justify-end gap-2">
           {attachments.map((a) => (
             <li key={a.id}>
-              <AttachmentCard attachment={a} size="sm" {...(a.text !== undefined && { onOpen: () => setViewing(a.text) })} />
+              <AttachmentCard attachment={a} size="sm" {...opens(a)} />
             </li>
           ))}
         </ul>
       )}
       <PastedTextDialog text={viewing} onClose={() => setViewing(undefined)} />
+      <ImageDialog image={image?.url ? { url: image.url, name: image.name } : undefined} onClose={() => setImage(undefined)} />
       {text && <UserBubble text={text} />}
       <div className="mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/message:opacity-100 group-focus-within/message:opacity-100 [@media(hover:none)]:opacity-100">
         {time && <span className={timeClass}>{formatRelativeTime(message.createdAt, undefined, labels)}</span>}

@@ -95,7 +95,7 @@ export type { EffortSliderProps, EffortButtonProps } from "./components/effort-s
 export type { ComposerProps, AttachButtonProps } from "./components/composer";
 export { ModelPicker } from "./components/model-picker";
 export type { ModelOption, ModelPickerProps } from "./components/model-picker";
-export { useAttachments, AttachmentCard, AttachmentRow, PastedTextDialog } from "./components/attachments";
+export { useAttachments, AttachmentCard, AttachmentRow, PastedTextDialog, ImageDialog } from "./components/attachments";
 export type {
   DraftAttachment,
   UploadResult,
@@ -105,6 +105,7 @@ export type {
   AttachmentCardProps,
   AttachmentRowProps,
   PastedTextDialogProps,
+  ImageDialogProps,
 } from "./components/attachments";
 
 // Components: around the conversation
