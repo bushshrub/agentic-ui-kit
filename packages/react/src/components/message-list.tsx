@@ -89,6 +89,20 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, onReadAloud
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nearBottom only reads refs
   }, [lastUser, toBottom]);
 
+  const scrollButton = (position: string) =>
+    !atBottom && (
+      <IconButton
+        label={labels.scrollToBottom}
+        variant="subtle"
+        onPress={() => {
+          stuck.current = true;
+          toBottom("smooth");
+        }}
+        className={clsx("absolute left-1/2 -translate-x-1/2 rounded-full border border-chat-border shadow-chat-popover", position)}
+      >
+        {icons.scrollToBottom}
+      </IconButton>
+    );
   return (
     <div className={clsx("relative min-h-0 flex-1", className)}>
       <div ref={scroller} onScroll={onScroll} className="h-full overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin]">
@@ -117,22 +131,16 @@ export function MessageList({ messages, onRetry, onEdit, onFeedback, onReadAloud
             )}
             </Scope>
           </div>
-          {footer && <div className="sticky bottom-0">{footer}</div>}
+          {footer && (
+            <div className="sticky bottom-0">
+              {/* Anchored to the top of the footer, so a composer that grows with a long draft pushes the button up. */}
+              {scrollButton("bottom-full mb-4")}
+              {footer}
+            </div>
+          )}
         </div>
       </div>
-      {!atBottom && (
-        <IconButton
-          label={labels.scrollToBottom}
-          variant="subtle"
-          onPress={() => {
-            stuck.current = true;
-            toBottom("smooth");
-          }}
-          className="absolute bottom-[min(10rem,40%)] left-1/2 -translate-x-1/2 rounded-full border border-chat-border shadow-chat-popover"
-        >
-          {icons.scrollToBottom}
-        </IconButton>
-      )}
+      {!footer && scrollButton("bottom-[min(10rem,40%)]")}
     </div>
   );
 }
